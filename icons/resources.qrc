@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/plugins/Ferramentas_Producao/icons" >
+     <file>buttonIcon.png</file>
+  </qresource>
+</RCC>
