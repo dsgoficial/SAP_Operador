@@ -23,7 +23,7 @@ class Login(QtGui.QDialog, GUI):
         self.setupUi(self)
         self.iface = iface
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 7.10.0</b>")
+        self.version_lb.setText(u"<b>versão : 2.11.0</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -67,14 +67,13 @@ class Login(QtGui.QDialog, GUI):
         self.showTools.emit({})
 
     def loginRemote(self, user=False, password=False, server=False):
-        network = Network()
         if not(server):
             server = self.serverLineEdit.text()
         if not(user):
             user = self.nameLineEdit.text()
         if not(password):
             password = self.passwordLineEdit.text()
-        data, status_code = network.checkLogin(server, user, password)
+        data, status_code = self.checkLogin(server, user, password)
         if (status_code == 500):
             QtGui.QMessageBox.critical(
                 self,
@@ -118,7 +117,7 @@ class Login(QtGui.QDialog, GUI):
                 buttons=QtGui.QMessageBox.No|QtGui.QMessageBox.Ok
             )
             if result == 1024:
-                data = network.initActivity(server, data['token'])
+                data = self.initActivity(server, data['token'])
                 if "dados" in data:
                     data[u"connectionType"] = u"remote"
                     data[u"user"] = user
@@ -135,4 +134,44 @@ class Login(QtGui.QDialog, GUI):
                     u"Aviso!", 
                     u"Status : <p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
                 )
-        
+                
+    def initActivity(self, server, token):
+        header = {'authorization' : token}
+        url = u"{0}/distribuicao/inicia".format(server)
+        response = Network().POST(server, url, header=header)
+        data = response.json()
+        if data["sucess"]:
+            data['token'] = token
+            return data
+
+    def finishActivity(self, server, unitId, faseId, token):
+        postData = {
+            "subfase_etapa_id" : faseId,
+            "unidade_trabalho_id" : unitId,
+        }
+        header = {'authorization' : token}
+        url = u"{0}/distribuicao/finaliza".format(server)
+        response = self.POST(server, url, postData, header)
+        return response.status_code
+
+    def checkLogin(self, server, user, password):
+        if Network().server_on(server):
+            try:
+                postData = { 
+                    u"usuario" : user,
+                    u"senha" : password
+                }
+                url = u"{0}/login".format(server)
+                response = Network().POST(server, url, postData)
+                if response.json()["sucess"]:
+                    token = response.json()["dados"]["token"]
+                    header = {'authorization' : token}
+                    url = u"{0}/distribuicao/verifica".format(server)
+                    response = Network().GET(server, url, header)
+                    data = response.json()
+                    data['token'] = token
+                    return data, response.status_code
+                return False, response.status_code
+            except:
+                return False, 1
+        return False, 2

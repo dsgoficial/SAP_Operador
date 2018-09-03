@@ -53,7 +53,7 @@ class Main:
             user = self.data["user"] 
             password = self.data["password"]
             self.net = Network()
-            code = self.net.finishActivity(server, unitId, faseId, token)
+            code = self.login.finishActivity(server, unitId, faseId, token)
             if code == 500:
                 QtGui.QMessageBox.critical(
                     self.tools,
