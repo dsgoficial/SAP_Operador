@@ -228,11 +228,12 @@ class Menu_interface(QtGui.QDockWidget):
         buttonData = buttonOld.buttonData
         oldName = buttonOld.objectName()
         newName = formValues[u'Nome bot\xe3o : ']
-        buttonData['formValues'][u'*Nome do bot\xe3o:'] = newName
-        formatName = '%s_%s'%(newName, buttonOld.text().split('_')[-1])
+        if newName != oldName:
+            buttonData['formValues'][u'*Nome do bot\xe3o:'] = newName
+            formatName = '%s_%s'%(newName, buttonOld.text().split('_')[-1])
+            buttonOld.setText(formatName)
+            buttonOld.setObjectName(newName)
         short = buttonOld.shortcut()
-        buttonOld.setText(formatName)
-        buttonOld.setObjectName(newName)
         buttonOld.setShortcut(short)
         for field in formValues:
             if field in buttonData['formValues']:

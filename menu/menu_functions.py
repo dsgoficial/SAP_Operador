@@ -36,16 +36,6 @@ class Menu_functions(QtCore.QObject):
         elif self.tools and self.tools.getWorkspace():
             return self.tools.getWorkspace() 
         return ProjectQgis(self.iface).getVariableProject('workspace') 
-    
-    def getProfileMenu(self):
-        if self.tools and self.tools.profile:
-            return self.tools.profile 
-        return json.loads(ProjectQgis(self.iface).getVariableProject('profile', isJson=True)) 
-    
-    def getOrderMenu(self):
-        if self.tools and self.tools.orderMenu:
-            return self.tools.orderMenu 
-        return json.loads(ProjectQgis(self.iface).getVariableProject('orderMenu', isJson=True)) 
 
     def getPostgresql(self):
         postgresql = Postgresql(self.iface)
@@ -86,6 +76,16 @@ class Menu_functions(QtCore.QObject):
                 )
             return True 
         return False
+
+    def getProfileMenu(self):
+        if self.tools and self.tools.profile:
+            return self.tools.profile 
+        return json.loads(ProjectQgis(self.iface).getVariableProject('profile', isJson=True)) 
+    
+    def getOrderMenu(self):
+        if self.tools and self.tools.orderMenu:
+            return self.tools.orderMenu 
+        return json.loads(ProjectQgis(self.iface).getVariableProject('orderMenu', isJson=True)) 
 
     def closeMenuClassification(self):
         self.menu_interface.close()
@@ -137,10 +137,13 @@ class Menu_functions(QtCore.QObject):
 
     def updateMenuData(self, tabwidget, profile):
         projectQgis = ProjectQgis(self.iface)
+        orderMenu = tabwidget.getOrderMenu()
+        self.tools.orderMenu = tabwidget.getOrderMenu()
         projectQgis.setProjectVariable(
             "orderMenu", 
-            json.dumps(copy.deepcopy(tabwidget.getOrderMenu()))
+            json.dumps(copy.deepcopy(orderMenu))
         )
+        self.tools.profile = profile
         projectQgis.setProjectVariable(
             "profile", 
             json.dumps(copy.deepcopy(profile))
@@ -231,15 +234,16 @@ class Menu_functions(QtCore.QObject):
         )
 
     def showFormSaveProfileOnFile(self):
-        profileData = self.tools.profileData
-        profiles = [ profileData[i]['nome_do_perfil'] for i in profileData]
-        profileSelected = str(self.tools.getProfileNameSelected())
-        self.menu_forms = Menu_forms()
-        self.menu_forms.ok.connect(
-            self.saveProfileOnFile        
-        )
-        self.menu_forms.createSaveProfileOnFileForm(profiles, profileSelected)
-        self.updateCurrentForm()
+        profileData = self.tools.profiles
+        if profileData:
+            profiles = [ profileData[i]['nome_do_perfil'] for i in profileData]
+            profileSelected = str(self.tools.getProfileNameSelected())
+            self.menu_forms = Menu_forms()
+            self.menu_forms.ok.connect(
+                self.saveProfileOnFile        
+            )
+            self.menu_forms.createSaveProfileOnFileForm(profiles, profileSelected)
+            self.updateCurrentForm()
 
     def validateValuesForm(self, formValues):
         for key in formValues:
@@ -295,10 +299,9 @@ class Menu_functions(QtCore.QObject):
             "Aviso:", 
             "Perfil salvo com sucesso!"
         )
-        profileData = postgresql.getProfilesData()
-	if self.tools:
-            self.tools.cleanProfilesGroupBox()
-            self.tools.loadProfileGroupBox(profileData)
+        if self.tools:
+            self.tools.loadProfileGroupBox()
+            self.tools.profiles = self.tools.getProfilesDataFormated()
 
     def showEditAttributesShortcutButton(self, button):
         self.menu_forms = Menu_forms()

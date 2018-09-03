@@ -12,6 +12,7 @@ from rules.rules import Rules
 from finishActivity import FinishActivity
 from activity_widget import Activity_widget
 from rotines.rotines_manager import Rotines_Manager
+from platform   import system as system_name
 
 #carrega o arquivo da interface .ui
 sys.path.append(os.path.dirname(__file__))
@@ -35,11 +36,12 @@ class Tools(QtGui.QDialog, GUI):
         self.insumosSpacerItem = None
         self.rotinesSpacerItem = None
         self.vLayoutMenuForm = QtGui.QVBoxLayout(self.areaUserForm)
-        self.profile = None
-        self.orderMenu = None
         self.menu_functions = None
         self.rules = None
-        self.profileData = None
+        self.profile = None
+        self.orderMenu = None
+        self.profiles = None
+        self.postgresql = None
         self.statisticRulesButton.setEnabled(False)
 
     def getDbName(self):
@@ -103,46 +105,39 @@ class Tools(QtGui.QDialog, GUI):
         groupBox = self.listRulesGroupBox
         for idx in range(groupBox.children()[0].count()):
             groupBox.children()[0].itemAt(idx).widget().deleteLater()
-
+    
+    def loadProfileGroupBox(self):
+        self.cleanProfilesGroupBox()
+        profileGroupBox = self.listProfilesGroupBox
+        profileGroupBox.setVisible(False)
+        if self.profiles:
+            for name in self.profiles.keys():
+                radioButton = self.createRadioButton(
+                    name,
+                    profileGroupBox,
+                )
+                radioButton.clicked.connect(
+                    self.setMenuProfileSelected
+                )
+            profileGroupBox.setVisible(True)
+    
     def getProfileNameSelected(self):
         groupBox = self.listProfilesGroupBox
         for idx in range(groupBox.children()[0].count()):
             if groupBox.children()[0].itemAt(idx).widget().isChecked():
                 return groupBox.children()[0].itemAt(idx).widget().text()
         return False
-    
-    def loadProfileGroupBox(self, profileData):
-        self.cleanProfilesGroupBox()
-        profileGroupBox = self.listProfilesGroupBox
-        profileGroupBox.setVisible(False)
-        if profileData:
-            dbName = self.dataBaseCombo.currentText()
-            tps = []
-            for i in profileData:
-                tps.append(profileData[i]['nome_do_perfil'])
-            for name in list(set(tps)):
-                radioButton = self.createRadioButton(
-                    name,
-                    profileGroupBox,
-                )
-                radioButton.clicked.connect(
-                    lambda:self.setMenuProfileSelected(profileData)
-                )
-            profileGroupBox.setVisible(True)
+
+    def setMenuProfileSelected(self):
+        name = self.getProfileNameSelected()
+        self.profile = self.profiles[name][0]
+        self.orderMenu = self.profiles[name][1]
+        self.menu_functions.showMenuClassification()
 
     def cleanProfilesGroupBox(self):
         groupBox = self.listProfilesGroupBox
         for idx in range(groupBox.children()[0].count()):
             groupBox.children()[0].itemAt(idx).widget().deleteLater()
-            
-    def setMenuProfileSelected(self, profileData):
-        profileNameSelected = self.getProfileNameSelected()
-        if profileNameSelected: 
-            for i in profileData:
-                if profileNameSelected == profileData[i]['nome_do_perfil']:
-                    self.profile = profileData[i]['perfil']
-                    self.orderMenu = profileData[i]['orderMenu']
-            self.menu_functions.showMenuClassification()
 
     def loadInsumos(self):
         self.removeAllInsumos()
@@ -177,20 +172,19 @@ class Tools(QtGui.QDialog, GUI):
         pathOrigin = bt.objectName()
         pathDest = unicode(QtGui.QFileDialog.getExistingDirectory(self, "Selecionar pasta de destino:")).encode('utf-8')
         if pathOrigin and pathDest:
-            result =  Network().download(pathOrigin, pathDest)
+            result =  Network(self).download(pathOrigin, pathDest)
             if result:
+                QtGui.QMessageBox.information(
+                    self,
+                    u"Aviso", 
+                    u"Arquivo salvo!"
+                )
                 originalName = pathOrigin.split(u"\\")[-1]
                 extensao = pathOrigin.split(u".")[-1]
-                if os.path.exists(u"{0}/{1}".format(pathDest, originalName)):
-                    QtGui.QMessageBox.information(
-                        self,
-                        u"Aviso", 
-                        u"Arquivo salvo!"
-                    )
-                    if extensao == 'ecw':
-                        loadLayers = LoadLayers(self.iface, self.data)
-                        loadLayers.loadRasterLayer(pathDest, originalName, bt.text())
-                        return
+                if extensao == 'ecw':
+                    loadLayers = LoadLayers(self.iface, self.data)
+                    loadLayers.loadRasterLayer(pathDest, originalName, bt.text())
+                    return
             QtGui.QMessageBox.critical(
                     self,
                     u"Erro", 
@@ -208,6 +202,7 @@ class Tools(QtGui.QDialog, GUI):
         return radioButton
     
     def showEvent(self, e):
+        self.postgresql = self.getPostgresConnection()
         if self.data:
             self.configModeRemote()
         else:
@@ -218,10 +213,9 @@ class Tools(QtGui.QDialog, GUI):
         self.disconnectSignals()
 
     def configModeLocal(self):
-        postgresql = Postgresql(self.iface)
         self.loadCombo(
             self.dataBaseCombo,
-            postgresql.getAliasNamesDb(),
+            self.postgresql.getAliasNamesDb(),
             u'<Opções>',
         )       
         self.toolsTabWidget.setTabEnabled(0, False)
@@ -247,7 +241,7 @@ class Tools(QtGui.QDialog, GUI):
         self.toolsTabWidget.setCurrentIndex(6)
         self.toolsTabWidget.setTabEnabled(1, True)
         self.toolsTabWidget.setTabEnabled(2, True)
-        self.toolsTabWidget.setTabEnabled(5, True)
+        #self.toolsTabWidget.setTabEnabled(5, False) if system_name() == 'Linux' else ""
         self.toolsTabWidget.setTabEnabled(4, False)
         if self.data["dados"][u"perfil"] >= 3:
             self.toolsTabWidget.setTabEnabled(4, True)
@@ -257,7 +251,8 @@ class Tools(QtGui.QDialog, GUI):
         )
         self.loadActivity()
         self.loadRulesGroupBox(self.validateRules())
-        self.loadProfileGroupBox(self.validateProfileMenu())
+        self.profiles = self.getProfilesDataFormated()
+        self.loadProfileGroupBox()
         self.loadInsumos()
         self.rotines = Rotines_Manager(self.iface, self)
         self.fme_server_frame.setHidden(True)
@@ -320,45 +315,34 @@ class Tools(QtGui.QDialog, GUI):
     def updateToolsByDbCombo(self, idx):
         menu = Menu_functions(self.iface, self.data, self)
         if idx > 0:
-            postgresql = Postgresql(self.iface)
-            dbname = self.getDbName()
-            try:
-                postgresql.connectPsycopg2(dbname)
-            except psycopg2.OperationalError:
-                QtGui.QMessageBox.critical(
-                    self,
-                    u"Erro", 
-                    u"Usuário e/ou senha incorretos!"
-                )
-                return
             self.toolsTabWidget.setTabEnabled(0, True)
             self.toolsTabWidget.setTabEnabled(2, True)
             self.toolsTabWidget.setTabEnabled(4, True)
             self.toolsTabWidget.setCurrentIndex(0)
+            self.postgresql.connectPsycopg2(self.getDbName())
             self.loadListWidget(
                 self.allLayersList,
-                postgresql.dbJson['listOfLayers']  
+                self.postgresql.dbJson['listOfLayers']  
             )
             self.loadCombo(
                 self.loadWithCombo,
-                postgresql.getStylesItems()
+                self.postgresql.getStylesItems()
             )
             self.loadCombo(
                 self.workspaceCombo,
-                postgresql.getWorkspaceItems(),
+                self.postgresql.getWorkspaceItems(),
                 u'Todas as unidades'
             )
             self.loadCombo(
                 self.filterCombo,
-                postgresql.getFilterOption(),
+                self.postgresql.getFilterOption(),
                 u'<Opções>'
             )
-            profileData = postgresql.getProfilesData()
-            self.loadProfileGroupBox(profileData)
-            self.profileData = profileData
+            self.profiles = self.getProfilesDataFormated()
+            self.loadProfileGroupBox()
             menu.exportDataMenuOnProject()
             self.rules = Rules(self.iface)
-            rulesData = postgresql.getRulesData()
+            rulesData = self.postgresql.getRulesData()
             self.rules.createRules(rulesData)
             self.loadRulesGroupBox(rulesData)
         else:
@@ -377,6 +361,24 @@ class Tools(QtGui.QDialog, GUI):
             self.cleanRulesGroupBox()
             menu.exportDataMenuOnProject() 
 
+    def getProfilesDataFormated(self):
+        profilesData = self.postgresql.getProfilesData()
+        profiles = {}
+        if self.data:
+            for profile in self.data["dados"]["atividade"]["menus"]:
+                for i in profilesData:
+                    if profile == profileData[i][u"nome_do_perfil"]:
+                        profiles[profilesData[i]['nome_do_perfil']] = [
+                            profilesData[i]['perfil'], 
+                            profilesData[i]['orderMenu']
+                        ]
+        else:
+            for i in profilesData:
+                profiles[profilesData[i]['nome_do_perfil']] = [
+                    profilesData[i]['perfil'], 
+                    profilesData[i]['orderMenu']
+                ]
+        return profiles
         
     def updateToolsByWorkCombo(self, idx):
         menu = Menu_functions(self.iface,  self.data, self)
@@ -543,7 +545,14 @@ class Tools(QtGui.QDialog, GUI):
                 "dbname" : self.data["dados"]["atividade"]["banco_dados"]["nome"]
             })
         else:
-            postgresql.connectPsycopg2(self.getDbName())
+            try:
+                postgresql.connectPsycopg2(self.getDbName()) if self.getDbName() else ""
+            except psycopg2.OperationalError:
+                QtGui.QMessageBox.critical(
+                    self,
+                    u"Erro", 
+                    u"Usuário e/ou senha incorretos!"
+                )
         return postgresql
 
     @QtCore.pyqtSlot(bool)
@@ -551,15 +560,13 @@ class Tools(QtGui.QDialog, GUI):
         itemsSelected = self.getLayersSelected()
         if itemsSelected:
             self.loadLayersProgressBar.setMaximum(len(itemsSelected))
-            postgresql = self.getPostgresConnection()
             loadLayers = LoadLayers(self.iface, self.data)
             loadLayers.rules = self.rules
-            self.rules.cleanRules( self.getDbName())
             loadLayers.updateProgressBar.connect(
                 self.updateProgressBar
             )
             loadLayers.setFilterSelected(self.filterCombo.currentText())
-            loadLayers.setFilters(postgresql.getFilterData())
+            loadLayers.setFilters(self.postgresql.getFilterData())
             loadLayers.loadAllLayersSelected({
                 'activeProgressBar' : True,
                 'layersSelected' : itemsSelected,
@@ -570,7 +577,7 @@ class Tools(QtGui.QDialog, GUI):
                 'workspace' : self.getWorkspace(),
                 'styleName' : self.getStyleName(),
                 'selectedRulesType' : self.getRulesSelected(),
-                'dbJson' : postgresql.dbJson,
+                'dbJson' : self.postgresql.dbJson,
             })
             self.resetProgressbar(itemsSelected)
     
@@ -707,21 +714,18 @@ class Tools(QtGui.QDialog, GUI):
     def validateFiltersOptions(self):
         ok = []
         workspace = self.getWorkspace()
-        postgresql = self.getPostgresConnection()
         return []
    
     def validateStyles(self):
         ok = []
-        postgresql = self.getPostgresConnection()
         for style in self.data["dados"]["atividade"]["estilos"]:
-            if style in postgresql.getStylesItems():
+            if style in self.postgresql.getStylesItems():
                 ok.append(style)
         return ok 
 
     def validateRules(self):
         ok = {}
-        postgresql = self.getPostgresConnection()
-        rulesData = postgresql.getRulesData()
+        rulesData = self.postgresql.getRulesData()
         for rule in self.data["dados"]["atividade"]["regras"]:
             for i in rulesData:
                 if rule == rulesData[i][u"tipo_estilo"]:
@@ -729,21 +733,10 @@ class Tools(QtGui.QDialog, GUI):
         self.rules = Rules(self.iface)
         self.rules.createRules(ok)
         return ok  
-
-    def validateProfileMenu(self):
-        ok = {}
-        postgresql = self.getPostgresConnection()
-        profileData = postgresql.getProfilesData()
-        for profile in self.data["dados"]["atividade"]["menus"]:
-            for i in profileData:
-                if profile == profileData[i][u"nome_do_perfil"]:
-                        ok[i] = profileData[i]
-        return ok  
  
     def validateLayers(self):
         ok = []
-        postgresql = self.getPostgresConnection()
-        layersDb = postgresql.dbJson['listOfLayers']
+        layersDb = self.postgresql.dbJson['listOfLayers']
         for layerName in [ item["nome"] for item in self.data["dados"]["atividade"]["camadas"]]:
             if layerName in layersDb:
                 ok.append(layerName)

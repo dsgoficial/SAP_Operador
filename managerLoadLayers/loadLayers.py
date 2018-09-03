@@ -88,6 +88,7 @@ class LoadLayers(QtCore.QObject):
         else:
             groupDbName = aliasdb+"-"+userData['workspace']
             groupDb = self.addGroupDb(groupDbName)
+        self.rules.cleanRules(groupDbName)
         for nameGeom in reversed(sorted(layersSelectedFormated)):
             for nameCatLayer in sorted(layersSelectedFormated[nameGeom]):
                 for layerName in sorted(layersSelectedFormated[nameGeom][nameCatLayer]):
@@ -237,14 +238,21 @@ class LoadLayers(QtCore.QObject):
             groupLayer.addLayer(vl)
             self.loadLayer(data)
 
-    def loadLayer(self, data):
-        # adiciona a camada no qgis        
+    def loadLayer(self, data):   
         self.loadStyleOnLayer(data)
         self.loadValueMap(data)
+        self.addDefaultValues(data)
         self.loadFormCustom(data)
         self.addFieldGeom(data)
         self.addVariablesOnLayer(data)
         self.addRule(data)
+
+    def addDefaultValues(self, data):
+        if self.loginData:
+            vl = data[u'vectorLayer']
+            idx = vl.fieldNameIndex( 'ultimo_usuario' )
+            if idx > 0:
+                vl.setDefaultValueExpression(idx, "'{0}'".format(self.loginData['dados']['usuario_id']))
 
     def loadValueMap(self, data):
         vlayer = data[u'vectorLayer']

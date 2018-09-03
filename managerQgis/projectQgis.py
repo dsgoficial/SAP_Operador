@@ -21,7 +21,9 @@ class ProjectQgis:
         data = core.QgsExpressionContextUtils.projectScope().variable(
             varName
         )
-        if isJson and not(data):
+        if isJson and not(data) and varName == 'loginData':
+            return 'e30='
+        elif isJson and not(data):
             return '{}'
         return data
 
