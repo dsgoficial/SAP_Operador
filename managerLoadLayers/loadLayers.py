@@ -65,12 +65,18 @@ class LoadLayers(QtCore.QObject):
         return host, port, dbname, user, passwd
 
     def loadRasterLayer(self, path, originalName, newName):
+        pathFile = path
         if platform.system() == u"Linux":
             pathFile = path.replace(u"\\", u"/")
-        else:
-            pathFile = path
         layer = core.QgsRasterLayer(u"{0}/{1}".format(pathFile, originalName), newName)
-        core.QgsMapLayerRegistry.instance().addMapLayer(layer)
+        if layer.isValid():
+            core.QgsMapLayerRegistry.instance().addMapLayer(layer)
+            return
+        QtGui.QMessageBox.critical(
+            self.iface.mainWindow(),
+            u"Erro", 
+            u"Não foi possível carregar arquivo. Formato não reconhecido!"
+        )
        
     def loadAllLayersSelected(self, userData):
         # carrega as camadas escolhidas no qgis

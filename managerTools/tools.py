@@ -367,7 +367,7 @@ class Tools(QtGui.QDialog, GUI):
         if self.data:
             for profile in self.data["dados"]["atividade"]["menus"]:
                 for i in profilesData:
-                    if profile == profileData[i][u"nome_do_perfil"]:
+                    if profile == profilesData[i][u"nome_do_perfil"]:
                         profiles[profilesData[i]['nome_do_perfil']] = [
                             profilesData[i]['perfil'], 
                             profilesData[i]['orderMenu']
