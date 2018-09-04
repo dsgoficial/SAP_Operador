@@ -25,6 +25,8 @@ class Rotines_Local(QtCore.QObject):
                 layer = param['camada']
                 flag_layer = param['camada_apontamento']
                 v_layer = self.getLayerByName(param['camada'])
+                if not(v_layer):
+                    return
                 f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
                 count_flags += self.run_not_simple_geometry(flag_layer, layer, f_ids)
         elif u"outOfBoundsAngles" in self.data:
@@ -32,6 +34,8 @@ class Rotines_Local(QtCore.QObject):
                 layer = param['camada']
                 flag_layer = param['camada_apontamento']
                 v_layer = self.getLayerByName(param['camada'])
+                if not(v_layer):
+                    return
                 geom_type = v_layer.geometryType()
                 f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
                 angle = param[u'angle']
@@ -41,6 +45,8 @@ class Rotines_Local(QtCore.QObject):
                 layer = param['camada']
                 flag_layer = param['camada_apontamento']
                 v_layer = self.getLayerByName(param['camada'])
+                if not(v_layer):
+                    return
                 f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
                 count_flags += self.run_invalid_geometry(flag_layer, layer, f_ids)
         self.tool_interface.rotinesProgressBar.setValue(0)
@@ -59,6 +65,11 @@ class Rotines_Local(QtCore.QObject):
             if test:
                 self.iface.setActiveLayer(layer)
                 return self.iface.activeLayer()
+        QtGui.QMessageBox.critical(
+            self.iface.mainWindow(),
+            u"Erro", 
+            u"Camada não carregada!"
+        )
         return False
 
     def run_invalid_geometry(self, flag_layer, layer, f_ids):
@@ -141,7 +152,7 @@ class Rotines_Local(QtCore.QObject):
                     flag_layer, u'Ângulo fora do limite', layer, f_ids, angle
             )
         elif geom_type == core.QGis.Polygon:
-            sql = """
+            SQL = u"""
             WITH result AS (
                 SELECT 
                     points.id, 
@@ -168,10 +179,10 @@ class Rotines_Local(QtCore.QObject):
                     WHERE ST_NPoints(linestrings.geom) > 2 
                 ) AS points
             )
-            INSERT INTO edgv."{0}"(id, geom, observacao) 
+            INSERT INTO edgv."{0}"(geom, observacao) 
             SELECT 
                 DISTINCT 
-                st_asewkt((ST_MULTI(ST_SetSRID(ST_Buffer(anchor, 1)), st_srid(anchor)))) as geom, 
+                st_asewkt(ST_MULTI(ST_SetSRID(ST_Buffer(anchor, 1), ST_Srid(anchor)))) as geom, 
                 '{1}' as obs
             FROM result 
             WHERE (result.angle % 360) < {4} OR result.angle > (360.0 - ({4} % 360.0)) returning *;""".format( 
