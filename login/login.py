@@ -23,7 +23,7 @@ class Login(QtGui.QDialog, GUI):
         self.setupUi(self)
         self.iface = iface
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.11.2</b>")
+        self.version_lb.setText(u"<b>versão : 2.11.3</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -151,7 +151,7 @@ class Login(QtGui.QDialog, GUI):
         }
         header = {'authorization' : token}
         url = u"{0}/distribuicao/finaliza".format(server)
-        response = self.POST(server, url, postData, header)
+        response = Network().POST(server, url, postData, header)
         return response.status_code
 
     def checkLogin(self, server, user, password):
@@ -175,3 +175,5 @@ class Login(QtGui.QDialog, GUI):
             except:
                 return False, 1
         return False, 2
+
+    
