@@ -457,7 +457,7 @@
         </property>
         
         </widget>
-        </item><item row="13" column="0">
+        </item><item row="12" column="0">
         <widget class="QLabel" name="label_area_otf">
         <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
@@ -482,7 +482,7 @@
         </property>
         </widget>
         </item>
-        <item row="13" column="1">
+        <item row="12" column="1">
         <widget class="QLineEdit" name="area_otf">
         <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
