@@ -8,6 +8,7 @@ from managerLoadLayers.loadLayers import LoadLayers
 from menu.menu_functions import Menu_functions
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
+#from microcontrol.summary import Summary
 
 
 class Main:
@@ -43,6 +44,9 @@ class Main:
             self.login.showTools.connect(
                 self.showTools
             )
+            #self.login.showTools.connect(
+            #    self.start_microcontrol
+            #)
             self.login.exec_()
     
     def finishActivity(self):
@@ -69,15 +73,18 @@ class Main:
                 self.menu_functions.closeMenuClassification()
                 self.login.loginRemote(user, password, server)  
 
-    def showTools(self, data):
-        self.data = data
+    def showTools(self, dataLogin):
+        self.data = dataLogin
         self.tools = Tools(self.iface)
         self.menu_functions.tools = self.tools
         self.menu_functions.data = self.data
         self.tools.menu_functions = self.menu_functions
-        self.tools.data = data
+        self.tools.data = dataLogin
         self.tools.parent = self
-        self.tools.show()    
+        self.tools.show()
+
+    #def start_microcontrol(self, dataLogin):
+    #    self.summ = Summary(self.iface, dataLogin)    
 
     def removeActionFromQgis(self):
         self.iface.digitizeToolBar().removeAction(self.action)

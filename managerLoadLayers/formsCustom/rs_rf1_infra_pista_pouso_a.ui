@@ -1,0 +1,1005 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <ui version="4.0">
+        <class>Dialog</class>
+        <widget class="QDialog" name="Dialog">
+        <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>680</width>
+            <height>600</height>
+        </rect>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>680</width>
+            <height>600</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>700000</width>
+            <height>6000000</height>
+        </size>
+        </property>
+        <property name="windowTitle">
+        <string>Dialog</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="0">
+            <widget class="QDialogButtonBox" name="buttonBox">
+            <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="standardButtons">
+            <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+            </property>
+            </widget>
+        </item>
+        <item row="0" column="0">
+            <widget class="QTabWidget" name="tabWidget">
+            <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+            </sizepolicy>
+            </property>
+            <property name="currentIndex">
+            <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab">
+            <attribute name="title">
+            <string>Atributos</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+                <widget class="QSplitter" name="splitter">
+                <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+                </property>
+                <widget class="QWidget" name="">
+                <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                    <widget class="QPushButton" name="logBtn">
+                    <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                    </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                    <size>
+                    <width>0</width>
+                    <height>30</height>
+                    </size>
+                    </property>
+                    <property name="maximumSize">
+                    <size>
+                    <width>16777215</width>
+                    <height>30</height>
+                    </size>
+                    </property>
+                    <property name="text">
+                    <string>Observações</string>
+                    </property>
+                    </widget>
+                </item>
+                <item>
+                    <layout class="QGridLayout" name="gridLayout_2">
+                    <item row="1" column="0">
+        <widget class="QLabel" name="label_nome">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>nome</string>
+        </property>
+        </widget>
+        </item>
+        <item row="1" column="1">
+        <widget class="QLineEdit" name="nome">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        
+        </widget>
+        </item><item row="2" column="0">
+        <widget class="QLabel" name="label_tipo">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>tipo</string>
+        </property>
+        </widget>
+        </item>
+        <item row="2" column="1">
+        <widget class="QComboBox" name="tipo">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="3" column="0">
+        <widget class="QLabel" name="label_revestimento">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>revestimento</string>
+        </property>
+        </widget>
+        </item>
+        <item row="3" column="1">
+        <widget class="QComboBox" name="revestimento">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="4" column="0">
+        <widget class="QLabel" name="label_uso_pista">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>uso_pista</string>
+        </property>
+        </widget>
+        </item>
+        <item row="4" column="1">
+        <widget class="QComboBox" name="uso_pista">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="5" column="0">
+        <widget class="QLabel" name="label_situacao_fisica">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>situacao_fisica</string>
+        </property>
+        </widget>
+        </item>
+        <item row="5" column="1">
+        <widget class="QComboBox" name="situacao_fisica">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="6" column="0">
+        <widget class="QLabel" name="label_homologacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>homologacao</string>
+        </property>
+        </widget>
+        </item>
+        <item row="6" column="1">
+        <widget class="QComboBox" name="homologacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="7" column="0">
+        <widget class="QLabel" name="label_largura">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>largura</string>
+        </property>
+        </widget>
+        </item>
+        <item row="7" column="1">
+        <widget class="QLineEdit" name="largura">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        
+        </widget>
+        </item><item row="8" column="0">
+        <widget class="QLabel" name="label_extensao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>extensao</string>
+        </property>
+        </widget>
+        </item>
+        <item row="8" column="1">
+        <widget class="QLineEdit" name="extensao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        
+        </widget>
+        </item><item row="9" column="0">
+        <widget class="QLabel" name="label_tipo_comprovacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>tipo_comprovacao</string>
+        </property>
+        </widget>
+        </item>
+        <item row="9" column="1">
+        <widget class="QComboBox" name="tipo_comprovacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="10" column="0">
+        <widget class="QLabel" name="label_tipo_insumo">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>tipo_insumo</string>
+        </property>
+        </widget>
+        </item>
+        <item row="10" column="1">
+        <widget class="QComboBox" name="tipo_insumo">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        </widget>
+        </item><item row="11" column="0">
+        <widget class="QLabel" name="label_observacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>observacao</string>
+        </property>
+        </widget>
+        </item>
+        <item row="11" column="1">
+        <widget class="QLineEdit" name="observacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        
+        </widget>
+        </item><item row="15" column="0">
+        <widget class="QLabel" name="label_nome_abrev">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>nome_abrev</string>
+        </property>
+        </widget>
+        </item>
+        <item row="15" column="1">
+        <widget class="QLineEdit" name="nome_abrev">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        
+        </widget>
+        </item><item row="18" column="0">
+        <widget class="QLabel" name="label_area_otf">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>area_otf</string>
+        </property>
+        </widget>
+        </item>
+        <item row="18" column="1">
+        <widget class="QLineEdit" name="area_otf">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        
+        </widget>
+        </item>                    
+                    </layout>
+                </item>
+                </layout>
+                </widget>
+                <widget class="QWidget" name="verticalLayoutWidget_2">
+                <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                    <widget class="QFrame" name="logFrame">
+                    <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_4">
+                    <item>
+                    <widget class="QTextBrowser" name="Browser">
+                        <property name="sizePolicy">
+                        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                        </sizepolicy>
+                        </property>
+                        <property name="minimumSize">
+                        <size>
+                        <width>0</width>
+                        <height>0</height>
+                        </size>
+                        </property>
+                        <property name="maximumSize">
+                        <size>
+                        <width>16777215</width>
+                        <height>16777215</height>
+                        </size>
+                        </property>
+                    </widget>
+                    </item>
+                    </layout>
+                    </widget>
+                </item>
+                </layout>
+                </widget>
+                </widget>
+            </item>
+            </layout>
+            </widget>
+            <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+            <string>Controle</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_4">
+                <item row="0" column="0">
+        <widget class="QLabel" name="label_id">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>id</string>
+        </property>
+        </widget>
+        </item>
+        <item row="0" column="1">
+        <widget class="QLineEdit" name="id">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+        </widget>
+        </item><item row="1" column="0">
+        <widget class="QLabel" name="label_data_modificacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>data_modificacao</string>
+        </property>
+        </widget>
+        </item>
+        <item row="1" column="1">
+        <widget class="QLineEdit" name="data_modificacao">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+        </widget>
+        </item><item row="2" column="0">
+        <widget class="QLabel" name="label_controle_id">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>controle_id</string>
+        </property>
+        </widget>
+        </item>
+        <item row="2" column="1">
+        <widget class="QLineEdit" name="controle_id">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+        </widget>
+        </item><item row="3" column="0">
+        <widget class="QLabel" name="label_ultimo_usuario">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>0</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>ultimo_usuario</string>
+        </property>
+        </widget>
+        </item>
+        <item row="3" column="1">
+        <widget class="QLineEdit" name="ultimo_usuario">
+        <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+        </sizepolicy>
+        </property>
+        <property name="minimumSize">
+        <size>
+            <width>175</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="maximumSize">
+        <size>
+            <width>16777215</width>
+            <height>30</height>
+        </size>
+        </property>
+        <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+        </widget>
+        </item>
+                </layout>
+            </item>
+            <item row="1" column="0">
+                <spacer name="verticalSpacer">
+                <property name="orientation">
+                <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                <size>
+                <width>20</width>
+                <height>337</height>
+                </size>
+                </property>
+                </spacer>
+            </item>
+            </layout>
+            </widget>
+            </widget>
+        </item>
+        </layout>
+        </widget>
+        <tabstops>
+        <tabstop>tabWidget</tabstop>
+        <tabstop>buttonBox</tabstop>
+        </tabstops>
+        <resources/>
+        <connections>
+        <connection>
+        <sender>buttonBox</sender>
+        <signal>accepted()</signal>
+        <receiver>Dialog</receiver>
+        <slot>accept()</slot>
+        <hints>
+            <hint type="sourcelabel">
+            <x>248</x>
+            <y>254</y>
+            </hint>
+            <hint type="destinationlabel">
+            <x>157</x>
+            <y>274</y>
+            </hint>
+        </hints>
+        </connection>
+        <connection>
+        <sender>buttonBox</sender>
+        <signal>rejected()</signal>
+        <receiver>Dialog</receiver>
+        <slot>reject()</slot>
+        <hints>
+            <hint type="sourcelabel">
+            <x>316</x>
+            <y>260</y>
+            </hint>
+            <hint type="destinationlabel">
+            <x>286</x>
+            <y>274</y>
+            </hint>
+        </hints>
+        </connection>
+        </connections>
+        </ui>
+        
