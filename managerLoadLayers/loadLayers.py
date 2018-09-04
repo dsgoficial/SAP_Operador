@@ -94,7 +94,7 @@ class LoadLayers(QtCore.QObject):
         else:
             groupDbName = aliasdb+"-"+userData['workspace']
             groupDb = self.addGroupDb(groupDbName)
-        self.rules.cleanRules(groupDbName)
+        self.rules.cleanRules(groupDbName) if self.rules else ""
         for nameGeom in reversed(sorted(layersSelectedFormated)):
             for nameCatLayer in sorted(layersSelectedFormated[nameGeom]):
                 for layerName in sorted(layersSelectedFormated[nameGeom][nameCatLayer]):
