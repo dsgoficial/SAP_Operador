@@ -114,7 +114,8 @@ class LoadLayers(QtCore.QObject):
                         u'user' : user,
                         u'fieldsData' : jsonDb[aliasdb][nameGeom][nameCatLayer][layerName],
                         u'passwd' : passwd,
-                        u'selectedRulesType' : userData[u'selectedRulesType']                  
+                        u'selectedRulesType' : userData[u'selectedRulesType'],
+                        u'only_geom' : userData[u'only_geom'] if userData.has_key(u'only_geom') else False           
                     }
                     data[u'groupGeom'] = self.addGroupGeom(data)
                     data[u'groupLayer'] = self.addGroupLayer(data)
@@ -239,7 +240,11 @@ class LoadLayers(QtCore.QObject):
         data[u'vectorLayer'] = vlayer
         data[u'workspaceData'] = workspace
         groupLayer = data[u'groupLayer']
-        if vlayer:
+        if vlayer and data['only_geom'] and vlayer.allFeatureIds():
+            vl = core.QgsMapLayerRegistry.instance().addMapLayer(vlayer, False)
+            groupLayer.addLayer(vl)
+            self.loadLayer(data)
+        elif vlayer and not(data['only_geom']):
             vl = core.QgsMapLayerRegistry.instance().addMapLayer(vlayer, False)
             groupLayer.addLayer(vl)
             self.loadLayer(data)

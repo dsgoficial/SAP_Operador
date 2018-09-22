@@ -578,6 +578,7 @@ class Tools(QtGui.QDialog, GUI):
                 'styleName' : self.getStyleName(),
                 'selectedRulesType' : self.getRulesSelected(),
                 'dbJson' : self.postgresql.dbJson,
+                'only_geom' : self.only_geom_ckb.isChecked(),
             })
             self.resetProgressbar(itemsSelected)
     
