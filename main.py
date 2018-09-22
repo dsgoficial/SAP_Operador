@@ -8,7 +8,7 @@ from managerLoadLayers.loadLayers import LoadLayers
 from menu.menu_functions import Menu_functions
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
-from microcontrol.summary import Summary
+#from microcontrol.summary import Summary
 
 
 class Main:
@@ -38,9 +38,9 @@ class Main:
             self.login.showTools.connect(
                 self.showTools
             )
-            self.login.showTools.connect(
-                self.start_microcontrol
-            )
+            #self.login.showTools.connect(
+            #    self.start_microcontrol
+            #)
             self.login.exec_()
     
     def finishActivity(self):
@@ -77,8 +77,8 @@ class Main:
         self.tools.parent = self
         self.tools.show()
 
-    def start_microcontrol(self, dataLogin):
-        self.summ = Summary(self.iface, dataLogin)    
+    #def start_microcontrol(self, dataLogin):
+    #    self.summ = Summary(self.iface, dataLogin)    
 
     def removeActionFromQgis(self):
         self.iface.digitizeToolBar().removeAction(self.action)

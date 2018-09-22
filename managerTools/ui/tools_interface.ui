@@ -107,7 +107,7 @@
    <item>
     <widget class="QTabWidget" name="toolsTabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -195,6 +195,13 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="only_geom_ckb">
+           <property name="text">
+            <string>Apenas com geometria</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="loadButton">
