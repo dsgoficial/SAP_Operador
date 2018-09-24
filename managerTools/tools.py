@@ -676,10 +676,26 @@ class Tools(QtGui.QDialog, GUI):
     
     @QtCore.pyqtSlot(bool)
     def on_finishActivityButton_clicked(self):
-        finish_dlg = FinishActivity(self.data)
-        finish_dlg.finish.connect(self.parent.finishActivity)
-        finish_dlg.exec_()
+        if self.validate_finish_active():
+            finish_dlg = FinishActivity(self.data)
+            finish_dlg.finish.connect(self.parent.finishActivity)
+            finish_dlg.exec_()
 
+    def validate_finish_active(self):
+        for lyr in core.QgsMapLayerRegistry.instance().mapLayers().values():
+            test = (
+                lyr.type() == core.QgsMapLayer.VectorLayer
+                and
+                lyr.editBuffer() and lyr.isModified()
+            )
+            if test:
+                QtGui.QMessageBox.critical(
+                    self,
+                    u"Erro", 
+                    u'<p style="color:red;">Salve todas as camadas antes de finalizar o projeto!</p>'
+                )
+                return False
+        return True
     
     def removeAllActivity(self):
         activityArea = self.activityArea.layout()
