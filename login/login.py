@@ -23,7 +23,7 @@ class Login(QtGui.QDialog, GUI):
         self.setupUi(self)
         self.iface = iface
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.11.3</b>")
+        self.version_lb.setText(u"<b>versão : 2.13.0</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
