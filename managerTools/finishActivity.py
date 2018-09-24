@@ -30,5 +30,4 @@ class FinishActivity(QtGui.QDialog, GUI):
             self.ok_btn.setEnabled(False)
 
     def finishActivity(self):
-        self.accept()
         self.finish.emit()
