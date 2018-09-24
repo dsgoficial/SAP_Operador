@@ -10,7 +10,6 @@ class LoadLayers(QtCore.QObject):
     updateProgressBar = QtCore.pyqtSignal()
     
     def __init__(self, iface, loginData):
-        # construtor
         super(LoadLayers, self).__init__()
         self.iface = iface
         self.filters = {}
@@ -56,7 +55,6 @@ class LoadLayers(QtCore.QObject):
         return self.filterSelected
    
     def createConnection(self, data):
-        # defini a conexão do banco escolhido para carregar as camadas
         host = data[u"host"]
         dbname = data[u"dbname"]
         user = data[u"user"]
@@ -79,7 +77,6 @@ class LoadLayers(QtCore.QObject):
         )
        
     def loadAllLayersSelected(self, userData):
-        # carrega as camadas escolhidas no qgis
         aliasdb = userData[u'dbAlias']
         layersSelected = userData[u'layersSelected']
         layersSelectedFormated = userData[u'layersSelectedFormated']
