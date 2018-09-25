@@ -27,6 +27,13 @@ class ProjectQgis:
             return '{}'
         return data
 
+    def getVariableLayer(self, varname):
+        layer = self.iface.activeLayer()
+        data = core.QgsExpressionContextUtils().layerScope(layer).variable(
+            varname
+        )
+        return data
+
     def configShortcut(self):
         self.iface.mapCanvas().keyPressed.connect(self.runShortcut)
         s = QSettings()
