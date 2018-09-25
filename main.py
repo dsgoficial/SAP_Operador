@@ -9,6 +9,8 @@ from menu.menu_functions import Menu_functions
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
 from trackLayers.track import Track
+from validate.addFeatures import AddFeatures
+from validate.geometryChanged import GeometryChanged
 
 
 class Main:
@@ -16,10 +18,11 @@ class Main:
         self.iface = iface
         self.action = None
         self.tools = None
-        self.data = None
+        self.data = {}
         self.menu_functions = None
         self.projectQgis = None
         self.track_lyrs = None
+        self.validate_add_feat = None
         
     def addActionOnQgis(self):
         pathIcon = ":/plugins/Ferramentas_Producao/icons/buttonIcon.png"
@@ -80,11 +83,16 @@ class Main:
         self.tools.show()
 
     def track_layers(self):
-        if self.track_lyrs:
-            if self.data:
-                self.track_lyrs.dataLogin = self.data
-        else:
-            self.track_lyrs = Track(self.iface, self.data)      
+        if not(self.track_lyrs):
+            self.track_lyrs = Track(self.iface)
+            self.init_validates_feat()
+
+    def init_validates_feat(self):
+        self.validate_add_feat = AddFeatures(self.iface)
+        self.track_lyrs.layerModified.connect(self.validate_add_feat.validate)
+        self.validate_geom_change = GeometryChanged(self.iface)
+        self.track_lyrs.layerModified.connect(self.validate_geom_change.validate)
+        
 
     def removeActionFromQgis(self):
         self.iface.digitizeToolBar().removeAction(self.action)

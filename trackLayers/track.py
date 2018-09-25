@@ -9,12 +9,11 @@ class Track(QtCore.QObject):
 
     layerModified = QtCore.pyqtSignal()
 
-    def __init__(self, iface, dataLogin=False):
+    def __init__(self, iface):
         super(Track, self).__init__()
-        self.dataLogin = dataLogin
         self.iface = iface
-        self.track_list = self.iface.legendInterface().layers()
-        self.connect_track_layers()
+        self.track_list = []
+        self.update_track_list()
         self.start_update_track_list()
 
     def start_update_track_list(self):
@@ -22,8 +21,12 @@ class Track(QtCore.QObject):
     
     def update_track_list(self):
         self.disconnect_track_layer()
-        self.track_list = self.iface.legendInterface().layers()
+        self.track_list = [
+            l for l in self.iface.legendInterface().layers() 
+            if l.type() == core.QgsMapLayer.VectorLayer
+        ]        
         self.connect_track_layers()
+        
 
     def disconnect_track_layer(self):
         for layer in self.track_list:
@@ -34,7 +37,7 @@ class Track(QtCore.QObject):
 
     def connect_track_layers(self):
         for layer in self.track_list:
-            layer.layerModified.connect(self.layer_modified) 
-
-    def layer_modified(self):
-        self.layerModified.emit()
+            layer.layerModified.connect(
+                self.layerModified.emit
+            ) 
+      
