@@ -8,7 +8,7 @@ from managerLoadLayers.loadLayers import LoadLayers
 from menu.menu_functions import Menu_functions
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
-#from microcontrol.summary import Summary
+from trackLayers.track import Track
 
 
 class Main:
@@ -19,6 +19,7 @@ class Main:
         self.data = None
         self.menu_functions = None
         self.projectQgis = None
+        self.track_lyrs = None
         
     def addActionOnQgis(self):
         pathIcon = ":/plugins/Ferramentas_Producao/icons/buttonIcon.png"
@@ -70,6 +71,7 @@ class Main:
     def showTools(self, dataLogin):
         self.data = dataLogin
         self.tools = Tools(self.iface)
+        self.track_layers()
         self.menu_functions.tools = self.tools
         self.menu_functions.data = self.data
         self.tools.menu_functions = self.menu_functions
@@ -77,8 +79,12 @@ class Main:
         self.tools.parent = self
         self.tools.show()
 
-    #def start_microcontrol(self, dataLogin):
-    #    self.summ = Summary(self.iface, dataLogin)    
+    def track_layers(self):
+        if self.track_lyrs:
+            if self.data:
+                self.track_lyrs.dataLogin = self.data
+        else:
+            self.track_lyrs = Track(self.iface, self.data)      
 
     def removeActionFromQgis(self):
         self.iface.digitizeToolBar().removeAction(self.action)
@@ -92,6 +98,7 @@ class Main:
         loadLayers = LoadLayers(self.iface, {})
         loadLayers.reloadFormsCustom()
         self.menu_functions.showMenuClassification()
+        self.track_layers()
 
     def initGui(self):
         self.addActionOnQgis()
@@ -101,6 +108,7 @@ class Main:
         self.menu_functions = Menu_functions(self.iface, self.data) 
         self.projectQgis = ProjectQgis(self.iface)
         self.projectQgis.configShortcut()
+        
                 
     def unload(self):
         self.removeActionFromQgis()

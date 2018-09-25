@@ -4,6 +4,8 @@ from qgis import core, gui
 from generatorCustomForm import GeneratorCustomForm
 from generatorCustomInitCode import GeneratorCustomInitCode
 import os, json, sys, platform, copy
+sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
+from managerQgis.projectQgis import ProjectQgis
 
 class LoadLayers(QtCore.QObject):
 
@@ -205,6 +207,7 @@ class LoadLayers(QtCore.QObject):
                 workspace = self.loginData["dados"]["atividade"]["geom"]
             else:
                 workspace = data[u'workspaces'][data[u'workspaceName']]
+            #ProjectQgis(self.iface).setProjectVariable('moldura_ewkt', workspace)
             where = self.getFilterWhere(workspace, data['layerName'], workspaceName)
             return where, workspace
         return '', ''
