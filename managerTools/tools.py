@@ -43,6 +43,8 @@ class Tools(QtGui.QDialog, GUI):
         self.profiles = None
         self.postgresql = None
         self.statisticRulesButton.setEnabled(False)
+        self.exportProfileToFileButton.setVisible(False)
+        self.importProfileFromFileButton.setVisible(False)
 
     def getDbName(self):
         if self.data:
@@ -638,13 +640,13 @@ class Tools(QtGui.QDialog, GUI):
         self.menu_functions.closeMenuClassification()
         self.menu_functions.showMenuClassification()
 
-    @QtCore.pyqtSlot(bool)
+    ''' @QtCore.pyqtSlot(bool)
     def on_exportProfileToFileButton_clicked(self):
         self.menu_functions.showFormSaveProfileOnFile()
 
     @QtCore.pyqtSlot(bool)
     def on_importProfileFromFileButton_clicked(self):
-        self.menu_functions.showFormLoadProfileOnFile()
+        self.menu_functions.showFormLoadProfileOnFile() '''
 
     @QtCore.pyqtSlot(bool)
     def on_addTabButton_clicked(self):
