@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 from qgis import core, gui
 import resources
 from login.login import Login
-from managerTools.tools import Tools
+from mainInterface.tools import Tools
 from managerLoadLayers.loadLayers import LoadLayers
 from menu.menu_functions import Menu_functions
 from managerQgis.projectQgis import ProjectQgis
