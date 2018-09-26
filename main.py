@@ -7,6 +7,7 @@ from managerTools.tools import Tools
 from managerLoadLayers.loadLayers import LoadLayers
 from menu.menu_functions import Menu_functions
 from managerQgis.projectQgis import ProjectQgis
+from managerQgis.messageSave import MessageSave
 from managerNetwork.network import Network
 from trackLayers.track import Track
 from validate.addFeatures import AddFeatures
@@ -23,6 +24,7 @@ class Main:
         self.projectQgis = None
         self.track_lyrs = None
         self.validate_add_feat = None
+        self.msg_save = MessageSave(self.iface)
         
     def addActionOnQgis(self):
         pathIcon = ":/plugins/Ferramentas_Producao/icons/buttonIcon.png"
@@ -42,9 +44,6 @@ class Main:
             self.login.showTools.connect(
                 self.showTools
             )
-            #self.login.showTools.connect(
-            #    self.start_microcontrol
-            #)
             self.login.exec_()
     
     def finishActivity(self):
@@ -75,6 +74,7 @@ class Main:
         self.data = dataLogin
         self.tools = Tools(self.iface)
         self.track_layers()
+        self.msg_save.start() if not(self.msg_save.isRunning) else ''
         self.menu_functions.tools = self.tools
         self.menu_functions.data = self.data
         self.tools.menu_functions = self.menu_functions
@@ -107,6 +107,7 @@ class Main:
         loadLayers.reloadFormsCustom()
         self.menu_functions.showMenuClassification()
         self.track_layers()
+        self.msg_save.start() if not(self.msg_save.isRunning) else ''
 
     def initGui(self):
         self.addActionOnQgis()
