@@ -12,9 +12,10 @@ class GeometryChanged(QtCore.QObject):
         self.iface = iface
 
     def validate(self):
-        geom_change = self.iface.activeLayer().editBuffer().changedGeometries()
-        if geom_change:
-            self.test_geom_in_moldura(geom_change)
+        if self.iface.activeLayer():
+            geom_change = self.iface.activeLayer().editBuffer().changedGeometries()
+            if geom_change:
+                self.test_geom_in_moldura(geom_change)
 
     def test_geom_in_moldura(self, geom_change):
         variable_name = u'area_trabalho_poligono'

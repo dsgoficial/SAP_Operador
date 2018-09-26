@@ -12,9 +12,10 @@ class AddFeatures(QtCore.QObject):
         self.iface = iface
 
     def validate(self):
-        features_added = self.iface.activeLayer().editBuffer().addedFeatures()
-        if features_added:
-            self.test_add_in_moldura(features_added)
+        if self.iface.activeLayer():
+            features_added = self.iface.activeLayer().editBuffer().addedFeatures()
+            if features_added:
+                self.test_add_in_moldura(features_added)
 
     def test_add_in_moldura(self, features_added):
         variable_name = u'area_trabalho_poligono'
