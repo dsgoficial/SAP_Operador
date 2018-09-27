@@ -175,22 +175,20 @@ class Tools(QtGui.QDialog, GUI):
         pathDest = unicode(QtGui.QFileDialog.getExistingDirectory(self, "Selecionar pasta de destino:")).encode('utf-8')
         if pathOrigin and pathDest:
             result =  Network(self).download(pathOrigin, pathDest)
+            msg =u'Erro ao salvar arquivo!'
             if result:
-                QtGui.QMessageBox.information(
-                    self,
-                    u"Aviso", 
-                    u"Arquivo salvo!"
-                )
                 originalName = pathOrigin.split(u"\\")[-1]
                 extensao = pathOrigin.split(u".")[-1]
-                if extensao == 'ecw':
+                if extensao in ['tiff', 'ecw']:
                     loadLayers = LoadLayers(self.iface, self.data)
-                    loadLayers.loadRasterLayer(pathDest, originalName, bt.text())
-                    return
-            QtGui.QMessageBox.critical(
+                    r = loadLayers.loadRasterLayer(pathDest, originalName, bt.text())
+                    msg = u"Arquivo salvo, mas não foi possível carregar arquivo!" if not(r) else u'Arquivo carregado!'
+                else:
+                    msg = u"Arquivo salvo. Carregue manualmente o arquivo da pasta!"
+            QtGui.QMessageBox.information(
                     self,
-                    u"Erro", 
-                    u"Arquivo não foi salvo!"
+                    u"Aviso", 
+                    msg
             )
 
     def createCheckBox(self, name, parent):

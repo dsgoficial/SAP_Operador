@@ -71,12 +71,7 @@ class LoadLayers(QtCore.QObject):
         layer = core.QgsRasterLayer(u"{0}/{1}".format(pathFile, originalName), newName)
         if layer.isValid():
             core.QgsMapLayerRegistry.instance().addMapLayer(layer)
-            return
-        QtGui.QMessageBox.critical(
-            self.iface.mainWindow(),
-            u"Erro", 
-            u"Não foi possível carregar arquivo. Formato não reconhecido!"
-        )
+            return True
        
     def loadAllLayersSelected(self, userData):
         aliasdb = userData[u'dbAlias']
