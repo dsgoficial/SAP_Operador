@@ -67,74 +67,72 @@ class Login(QtGui.QDialog, GUI):
         self.showTools.emit({})
 
     def loginRemote(self, user=False, password=False, server=False):
-        if not(server):
+        if (server and user and password) or (self.serverLineEdit.text() and self.nameLineEdit.text() and self.passwordLineEdit.text()):
             server = self.serverLineEdit.text()
-        if not(user):
             user = self.nameLineEdit.text()
-        if not(password):
             password = self.passwordLineEdit.text()
-        data, status_code = self.checkLogin(server, user, password)
-        if (status_code == 500):
-            QtGui.QMessageBox.critical(
-                self,
-                u"Erro", 
-                u"Status : <p>Erro no servidor!</p>"
-            )
-        elif (status_code in [401, 403]):
-            QtGui.QMessageBox.critical(
-                self,
-                u"Erro", 
-                u"Status : <p>Usuário ou senha incorretos!</p>"
-            )
-        elif (status_code == 1):
-            QtGui.QMessageBox.critical(
-                self,
-                u"Erro", 
-                u"Status : <p>Erro no POST!</p>"
-            )
-        elif (status_code == 2):
-            QtGui.QMessageBox.critical(
-                self,
-                u"Erro", 
-                u"Status : <p>Erro de conexão. verifique se o IP do servidor está correto!</p>"
-            )
-        elif "dados" in data:
-            data[u"connectionType"] = u"remote"
-            data[u"user"] = user
-            data[u"password"] = password
-            data["server"] = server
-            data[u"ok"] = True
-            self.projectQgis.setProjectVariable('usuario', user)
-            self.projectQgis.setProjectVariable('senha', password)
-            self.accept()
-            self.showTools.emit(data)
-            return data
-        elif not("dados" in data):
-            result = QtGui.QMessageBox().question(
-                self,
-                u"AVISO!", 
-                u"Deseja iniciar a próxima atividade?",
-                buttons=QtGui.QMessageBox.No|QtGui.QMessageBox.Ok
-            )
-            if result == 1024:
-                data = self.initActivity(server, data['token'])
-                if "dados" in data:
-                    data[u"connectionType"] = u"remote"
-                    data[u"user"] = user
-                    data[u"password"] = password
-                    data["server"] = server
-                    data[u"ok"] = True
-                    self.projectQgis.setProjectVariable('usuario', user)
-                    self.projectQgis.setProjectVariable('senha', password)
-                    self.accept()
-                    self.showTools.emit(data)
-                    return data
-                QtGui.QMessageBox.information(
+            data, status_code = self.checkLogin(server, user, password)
+            if (status_code == 500):
+                QtGui.QMessageBox.critical(
                     self,
-                    u"Aviso!", 
-                    u"Status : <p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
+                    u"Erro", 
+                    u"Status : <p>Erro no servidor!</p>"
                 )
-                
+            elif (status_code in [401, 403]):
+                QtGui.QMessageBox.critical(
+                    self,
+                    u"Erro", 
+                    u"Status : <p>Usuário ou senha incorretos!</p>"
+                )
+            elif (status_code == 1):
+                QtGui.QMessageBox.critical(
+                    self,
+                    u"Erro", 
+                    u"Status : <p>Erro no POST!</p>"
+                )
+            elif (status_code == 2):
+                QtGui.QMessageBox.critical(
+                    self,
+                    u"Erro", 
+                    u"Status : <p>Erro de conexão. verifique se o IP do servidor está correto!</p>"
+                )
+            elif "dados" in data:
+                data[u"connectionType"] = u"remote"
+                data[u"user"] = user
+                data[u"password"] = password
+                data["server"] = server
+                data[u"ok"] = True
+                self.projectQgis.setProjectVariable('usuario', user)
+                self.projectQgis.setProjectVariable('senha', password)
+                self.accept()
+                self.showTools.emit(data)
+                return data
+            elif not("dados" in data):
+                result = QtGui.QMessageBox().question(
+                    self,
+                    u"AVISO!", 
+                    u"Deseja iniciar a próxima atividade?",
+                    buttons=QtGui.QMessageBox.No|QtGui.QMessageBox.Ok
+                )
+                if result == 1024:
+                    data = self.initActivity(server, data['token'])
+                    if "dados" in data:
+                        data[u"connectionType"] = u"remote"
+                        data[u"user"] = user
+                        data[u"password"] = password
+                        data["server"] = server
+                        data[u"ok"] = True
+                        self.projectQgis.setProjectVariable('usuario', user)
+                        self.projectQgis.setProjectVariable('senha', password)
+                        self.accept()
+                        self.showTools.emit(data)
+                        return data
+                    QtGui.QMessageBox.information(
+                        self,
+                        u"Aviso!", 
+                        u"Status : <p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
+                    )
+                    
     def initActivity(self, server, token):
         header = {'authorization' : token}
         url = u"{0}/distribuicao/inicia".format(server)
