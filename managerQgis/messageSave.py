@@ -14,26 +14,28 @@ class MessageSave(QtCore.QObject):
         super(MessageSave, self).__init__(parent)
         self.iface = iface
         self.isRunning = False
+        self.msg = QtGui.QMessageBox()
+        self.msg.setIcon(QtGui.QMessageBox.Information)
+        self.msg.setText(u"<p style='color:red'>Salve suas edições! (CTRL+S)</p>")
+        self.msg.setWindowTitle(u"Aviso!")
+        self.msg.setStandardButtons(QtGui.QMessageBox.Ok)
 
     
          
     def show_message(self):
-        for lyr in core.QgsMapLayerRegistry.instance().mapLayers().values():
-            test = (
-                lyr.type() == core.QgsMapLayer.VectorLayer
-                and
-                lyr.isModified()
-            )
-            if test:
-                QtGui.QMessageBox.information(
-                    self.iface.mainWindow(),
-                    u"Aviso!", 
-                    u"<p style='color:red'>Salve suas edições! (CTRL+S)</p>"
+        if not(self.msg.isVisible()):
+            for lyr in core.QgsMapLayerRegistry.instance().mapLayers().values():
+                test = (
+                    lyr.type() == core.QgsMapLayer.VectorLayer
+                    and
+                    lyr.isModified()
                 )
-                return
+                if test:
+                    self.msg.exec_()
+                    return
 
     def start(self):
-        self.worker = MessageTime(10*60)
+        self.worker = MessageTime(5)#(10*60)
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread)
         self.worker.finish.connect(self.show_message)
