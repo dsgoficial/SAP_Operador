@@ -35,7 +35,7 @@ class MessageSave(QtCore.QObject):
                     return
 
     def start(self):
-        self.worker = MessageTime(5)#(10*60)
+        self.worker = MessageTime(5*60)#(10*60)
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread)
         self.worker.finish.connect(self.show_message)
