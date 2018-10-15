@@ -219,7 +219,7 @@ class Tools(QtGui.QDialog, GUI):
             u'<Opções>',
         )       
         self.toolsTabWidget.setTabEnabled(0, False)
-        #self.toolsTabWidget.setTabEnabled(1, False)
+        self.toolsTabWidget.setTabEnabled(1, False)
         self.toolsTabWidget.setTabEnabled(4, False)
         self.toolsTabWidget.setTabEnabled(6, False)
         self.toolsTabWidget.setTabEnabled(5, False)
