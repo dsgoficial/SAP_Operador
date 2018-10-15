@@ -35,5 +35,5 @@ class AddFeatures(QtCore.QObject):
                         </p>
                         '''.format(active_lyr.name())
                     )
-                    active_lyr.deleteFeature(feat.id())                 
+                    active_lyr.undoStack().undo()                  
         self.iface.mapCanvas().refresh()
