@@ -4,7 +4,7 @@
 name=Ferramenta de Produção
 qgisMinimumVersion=2.0
 description=Ferramentas para Produção do 1CGEO
-version=version Version 2.16.3
+version=version Version 2.16.4
 author=jossan
 email=me@hotmail.com
 ; end of mandatory metadata
