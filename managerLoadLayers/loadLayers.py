@@ -106,7 +106,7 @@ class LoadLayers(QtCore.QObject):
                         u'port' : port,
                         u'dbname' : dbname,
                         u'user' : user,
-                        u'fieldsData' : jsonDb[aliasdb][nameGeom][nameCatLayer][layerName],
+                        u'fieldsData' : jsonDb[dbname][nameGeom][nameCatLayer][layerName],
                         u'passwd' : passwd,
                         u'selectedRulesType' : userData[u'selectedRulesType'],
                         u'only_geom' : userData[u'only_geom'] if userData.has_key(u'only_geom') else False           
@@ -210,9 +210,9 @@ class LoadLayers(QtCore.QObject):
     def getURIString(self, data, where):
         layerName = data['layerName']
         return u'''dbname=\'{0}\' host={1} port={2} \
-            user=\'{3}\' password=\'{4}\' table="edgv"."{5}" (geom) sql={6}'''\
+            user=\'{3}\' password=\'{4}\' table="{7}"."{5}" (geom) sql={6}'''\
             .format(data['dbname'], data['host'], data['port'], 
-            data['user'], data['passwd'], layerName, where)
+            data['user'], data['passwd'], layerName, where, data[u'fieldsData']['schema'])
 
     def getLayer(self, data):
         layerName = data[u'layerName']
@@ -294,7 +294,8 @@ class LoadLayers(QtCore.QObject):
             vectorLayer.loadDefaultStyle()
             layerName = vectorLayer.name()
             styles = data[u'styles']
-            loadStyles = [u'%s_%s'%(style, layerName)] 
+            sep = '/' if '/' in styles.keys()[0] else '_'
+            loadStyles = [u'{}{}{}'.format(style, sep, layerName)] 
             for styleName in loadStyles:
                 if styles and (styleName in styles):
                     idStyle = str(styles[styleName])
@@ -379,7 +380,7 @@ class LoadLayers(QtCore.QObject):
         return formFile
         
     def createCustomForm(self, formFile,  data):     
-        dbData = data['userData']['dbJson'][data['dbAlias']]
+        dbData = data['userData']['dbJson'][data['dbname']]
         layerData = dbData[data['nameGeom']][data['nameCatLayer']][data['layerName']]
         fieldsSorted = self.sortFieldsLayer(layerData.keys())
         customForm = GeneratorCustomForm()
@@ -394,7 +395,7 @@ class LoadLayers(QtCore.QObject):
                 'formName' : formFile.name
             }, ensure_ascii=False)
         )
-        
+         
     def getPathUiForm(self, data):
         dbName = data['dbname']
         layerName = data['layerName']
@@ -433,7 +434,7 @@ class LoadLayers(QtCore.QObject):
 
     def createCustomInitCode(self, data):
         rules = self.getRulesSelected(data)
-        dbData = data['userData']['dbJson'][data['dbAlias']]
+        dbData = data['userData']['dbJson'][data['dbname']]
         layerData = dbData[data['nameGeom']][data['nameCatLayer']][data['layerName']]
         if 'filter' in layerData:
             customInitCode = GeneratorCustomInitCode()

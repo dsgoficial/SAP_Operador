@@ -4,6 +4,8 @@ from qgis import core, gui
 import sys, os, json, copy, psycopg2
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from database.postgresql import Postgresql
+from database.postgresql_v2 import Postgresql_v2
+
 from menu.menu_functions import Menu_functions
 from managerLoadLayers.loadLayers import LoadLayers
 from login.login import Login
@@ -202,7 +204,7 @@ class Tools(QtGui.QDialog, GUI):
         return radioButton
     
     def showEvent(self, e):
-        self.postgresql = self.getPostgresConnection()
+        self.postgresql = self.loadPostgresDatabase()
         if self.data:
             self.configModeRemote()
         else:
@@ -228,7 +230,7 @@ class Tools(QtGui.QDialog, GUI):
         self.dataBaseCombo.setVisible(True)
         self.dataBaseLabel.setVisible(True) 
         
-    def configModeRemote(self):
+    def configModeRemote(self):#######################
         self.dataBaseCombo.setVisible(False)
         self.dataBaseLabel.setVisible(False)
         self.workspaceCombo.setVisible(False)
@@ -241,7 +243,6 @@ class Tools(QtGui.QDialog, GUI):
         self.toolsTabWidget.setCurrentIndex(6)
         self.toolsTabWidget.setTabEnabled(1, True)
         self.toolsTabWidget.setTabEnabled(2, True)
-        #self.toolsTabWidget.setTabEnabled(5, False) if system_name() == 'Linux' else ""
         self.toolsTabWidget.setTabEnabled(4, False)
         if self.data["dados"][u"perfil"] >= 3:
             self.toolsTabWidget.setTabEnabled(4, True)
@@ -532,18 +533,10 @@ class Tools(QtGui.QDialog, GUI):
         ]
         return itemsSelected
 
-    def getPostgresConnection(self):
-        postgresql = Postgresql(self.iface)
+    def loadPostgresDatabase(self):
+        postgresql = Postgresql_v2(self.iface)
         if self.data:
-            postgresql.modeRemote = True
-            postgresql.geom = self.data["dados"]["atividade"]["geom"]
-            postgresql.connectPsycopg2WithLoginData({
-                "user" : self.data["user"],
-                "password" : self.data["password"],
-                "host" : self.data["dados"]["atividade"]["banco_dados"]["servidor"],
-                "port" : self.data["dados"]["atividade"]["banco_dados"]["porta"],
-                "dbname" : self.data["dados"]["atividade"]["banco_dados"]["nome"]
-            })
+            postgresql.connectPsycopg2WithLoginData(self.data)
         else:
             try:
                 postgresql.connectPsycopg2(self.getDbName()) if self.getDbName() else ""
@@ -551,7 +544,7 @@ class Tools(QtGui.QDialog, GUI):
                 QtGui.QMessageBox.critical(
                     self,
                     u"Erro", 
-                    u"Usuário e/ou senha incorretos!"
+                    u"Usuário ou senha incorretos!"
                 )
         return postgresql
 
@@ -734,12 +727,9 @@ class Tools(QtGui.QDialog, GUI):
         return []
    
     def validateStyles(self):
-        ok = []
-        for style in self.data["dados"]["atividade"]["estilos"]:
-            if style in self.postgresql.getStylesItems():
-                ok.append(style)
-        return ok 
-
+        styles_name = self.data["dados"]["atividade"]["estilos"]
+        return self.postgresql.getStylesItems(styles_name)
+    
     def validateRules(self):
         ok = {}
         rulesData = self.postgresql.getRulesData()
@@ -752,10 +742,5 @@ class Tools(QtGui.QDialog, GUI):
         return ok  
  
     def validateLayers(self):
-        ok = []
-        layersDb = self.postgresql.dbJson['listOfLayers']
-        for layerName in [ item["nome"] for item in self.data["dados"]["atividade"]["camadas"]]:
-            if layerName in layersDb:
-                ok.append(layerName)
-        return ok  
+        return self.postgresql.dbJson['listOfLayers']
    
