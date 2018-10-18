@@ -42,9 +42,7 @@ class Postgresql_v2(object):
     def getConnectionData(self):
         dbAlias = self.dbAlias
         settings  = QtCore.QSettings()
-        if self.connectionLoginData:
-            connection = self.connectionLoginData
-        elif settings.value(u'PostgreSQL/connections/%s/database'%(dbAlias)):
+        if settings.value(u'PostgreSQL/connections/%s/database'%(dbAlias)):
             connection = {
                 'aliasDb' : dbAlias,
                 'dbname':settings.value(u'PostgreSQL/connections/%s/database'%(dbAlias)),
@@ -53,6 +51,8 @@ class Postgresql_v2(object):
                 'password':settings.value(u'PostgreSQL/connections/%s/password'%(dbAlias)),
                 'port':settings.value(u'PostgreSQL/connections/%s/port'%(dbAlias)),
             }
+        elif self.connectionLoginData:
+            connection = self.connectionLoginData
         else:
             connection = json.loads(self.decrypt('123456', ProjectQgis(self.iface).getVariableProject('loginData', isJson=True)))
         return connection
@@ -323,6 +323,8 @@ class Postgresql_v2(object):
         else:
             layers_data = self.getAllLayersByName()
             layers_name = [ data['layer'] for data in layers_data]
+            print layers_name
+            print len(layers_name)
         jsonDb = self.getTemplateJsonDb()
         dbname = jsonDb['dataConnection']['dbname']
         tablesWithFilterColumn = self.getAllTablesByColumnName('filter')

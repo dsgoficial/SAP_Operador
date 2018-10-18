@@ -80,8 +80,7 @@ class LoadLayers(QtCore.QObject):
         jsonDb = userData[u'dbJson']
         host, port, dbname, user, passwd = self.createConnection(
             jsonDb[u'dataConnection']
-        )
-        
+        ) 
         if self.loginData:
             groupDbName = userData[u'workspace']
             groupDb = self.addGroupDb(groupDbName)
@@ -117,7 +116,18 @@ class LoadLayers(QtCore.QObject):
                     if userData[u'activeProgressBar']:
                         self.updateProgressBar.emit()
         self.createTmpMoldura(data)
+        self.clean_groups_empyt(groupDbName)
         self.collapseAllTree(groupDbName)
+    
+    def clean_groups_empyt(self, groupDbName):
+        root = core.QgsProject.instance().layerTreeRoot()
+        result = root.findGroup(groupDbName)
+        if result:
+            for a in result.children():
+                for b in a.children():
+                    if len(b.children()) == 0 and a.name() != u"MOLDURA":
+                        a.removeChildNode(b)
+
 
     def createTmpMoldura(self, data):
         if self.loginData:
@@ -130,7 +140,7 @@ class LoadLayers(QtCore.QObject):
                 'estilo_moldura.qml'
             )
             temp.loadNamedStyle(qml_path)
-            group = data["groupDb"].addGroup("layersTmp")
+            group = data["groupDb"].addGroup("MOLDURA")
             layerTmp = core.QgsMapLayerRegistry.instance().addMapLayer(temp, False)
             group.addLayer(layerTmp)
         
@@ -146,7 +156,6 @@ class LoadLayers(QtCore.QObject):
                     g4.setExpanded(False)
                                      
     def addGroupDb(self, groupName ):
-        # adiciona grupo do banco ou retorna existente
         root = core.QgsProject.instance().layerTreeRoot()
         result = root.findGroup(groupName)
         if result:
@@ -156,7 +165,6 @@ class LoadLayers(QtCore.QObject):
             return newGroup     
 
     def addGroupGeom(self, data):
-        # adiciona grupo de geometria ou retorna existente
         nameGeom = data[u'nameGeom']
         groupDb = data[u'groupDb']
         result = groupDb.findGroup(nameGeom)
@@ -167,7 +175,6 @@ class LoadLayers(QtCore.QObject):
             return groupGeom
 
     def addGroupLayer(self, data):
-        # adiciona grupo de camada ou retorna existente
         nameCatLayer = data[u'nameCatLayer']
         groupGeom = data[u'groupGeom']
         result = groupGeom.findGroup(nameCatLayer)

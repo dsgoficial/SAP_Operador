@@ -72,8 +72,8 @@ class Tools(QtGui.QDialog, GUI):
         listWidget.addItems(values)
 
     def cleanTabLoadLayers(self):
-        self.allLayersList.addItems([])
-        self.selectionList.addItems([])
+        self.allLayersList.clear()
+        self.selectionList.clear()
         self.searchMainLineEdit.clear()
         self.searchSelectionLineEdit.clear()
     
@@ -230,7 +230,7 @@ class Tools(QtGui.QDialog, GUI):
         self.dataBaseCombo.setVisible(True)
         self.dataBaseLabel.setVisible(True) 
         
-    def configModeRemote(self):#######################
+    def configModeRemote(self):
         self.dataBaseCombo.setVisible(False)
         self.dataBaseLabel.setVisible(False)
         self.workspaceCombo.setVisible(False)
@@ -353,14 +353,14 @@ class Tools(QtGui.QDialog, GUI):
             self.listRulesGroupBox.setVisible(False)
             self.toolsTabWidget.setTabEnabled(4, False)
             self.listProfilesGroupBox.setVisible(False)
+            self.toolsTabWidget.setCurrentIndex(3)
             self.loadCombo(self.loadWithCombo, [])
             self.loadCombo(self.workspaceCombo, [])
             self.loadCombo(self.filterCombo, [])
-            self.toolsTabWidget.setCurrentIndex(3)
             self.cleanProfilesGroupBox()
             self.rulesWebView.setHtml('')
             self.cleanRulesGroupBox()
-            menu.exportDataMenuOnProject() 
+            menu.exportDataMenuOnProject()
 
     def getProfilesDataFormated(self):
         profilesData = self.postgresql.getProfilesData()
