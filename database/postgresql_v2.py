@@ -56,7 +56,6 @@ class Postgresql_v2(object):
         return connection
 
     def connectPsycopg2WithLoginData(self, loginData):
-        # conexão via psycopg2
         self.dbAlias = loginData["dados"]["atividade"]["banco_dados"]["nome"]
         self.modeRemote = True
         self.geom = loginData["dados"]["atividade"]["geom"]
