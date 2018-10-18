@@ -42,13 +42,7 @@ class Menu_functions(QtCore.QObject):
         if self.data:
             postgresql.modeRemote = True
             postgresql.geom = self.data["dados"]["atividade"]["geom"]
-            postgresql.connectPsycopg2WithLoginData({
-                "user" : self.data["user"],
-                "password" : self.data["password"],
-                "host" : self.data["dados"]["atividade"]["banco_dados"]["servidor"],
-                "port" : self.data["dados"]["atividade"]["banco_dados"]["porta"],
-                "dbname" : self.data["dados"]["atividade"]["banco_dados"]["nome"]
-            })
+            postgresql.connectPsycopg2WithLoginData(self.data)
         else:
             dbName = self.getDbName()         
             postgresql.connectPsycopg2(dbName)
