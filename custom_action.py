@@ -14,5 +14,5 @@ class ActionTest(QtGui.QAction):
         )
         self.iface = iface
 
-    def api_backdoor(self):
-        print  'hop'
+    def get_api(self):
+        pass
