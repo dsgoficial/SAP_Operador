@@ -13,7 +13,7 @@ class Rotines_Local(QtCore.QObject):
         super(Rotines_Local, self).__init__()
         self.iface = iface
         self.data = data
-        self.postgres = tool_interface.getPostgresConnection()
+        self.postgres = tool_interface.loadPostgresDatabase()
         self.tool_interface = tool_interface
 
     def run(self):

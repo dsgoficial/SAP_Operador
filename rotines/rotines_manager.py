@@ -67,7 +67,7 @@ class Rotines_Manager(QtCore.QObject):
     def start_rotine_fme(self):
         if not(self.isActiveRotine):
             self.tool_interface.rotinesProgressBar.setRange(0,0)
-            pg_con = self.tool_interface.getPostgresConnection()
+            pg_con = self.tool_interface.loadPostgresDatabase()
             workspace = self.tool_interface.getWorkspace()
             loginData = self.tool_interface.data
             geomUnit = "'{0}'".format(
