@@ -3,7 +3,6 @@ from PyQt4 import QtCore, QtGui, uic, QtGui, QtWebKit
 from qgis import core, gui
 import sys, os, json, copy, psycopg2
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
-from database.postgresql import Postgresql
 from database.postgresql_v2 import Postgresql_v2
 
 from menu.menu_functions import Menu_functions
