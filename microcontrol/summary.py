@@ -46,17 +46,21 @@ class Summary(QtCore.QObject):
                     committedAttributeValuesChanges
 
     def features_removed(self, fid, deletedFeatureIds):
-        print fid, deletedFeatureIds
-    
+        #print fid, deletedFeatureIds
+        pass
+
     def features_added(self, fid, addedFeatures):
-        print fid, addedFeatures
+        #print fid, addedFeatures
+        pass
 
     def features_geom_changes(self, fid, changedGeometries):
-        print fid, changedGeometries
-    
-    def features_attr_changes(self, fid, changedAttributesValues):
-        print fid, changedAttributesValues
+        #print fid, changedGeometries
+        pass
 
+    def features_attr_changes(self, fid, changedAttributesValues):
+        #print fid, changedAttributesValues
+        pass
+        
     def summary_changes(self):
         pass
 

@@ -31,11 +31,9 @@ class Postgresql_v2(object):
         return aliasesDb
 
     def encrypt(self, key, plaintext):
-        #cipher = XOR.new(key)
         return base64.b64encode(plaintext)
 
     def decrypt(self, key, ciphertext):
-        #cipher = XOR.new(key)
         return base64.b64decode(ciphertext)
 
 
@@ -323,8 +321,6 @@ class Postgresql_v2(object):
         else:
             layers_data = self.getAllLayersByName()
             layers_name = [ data['layer'] for data in layers_data]
-            print layers_name
-            print len(layers_name)
         jsonDb = self.getTemplateJsonDb()
         dbname = jsonDb['dataConnection']['dbname']
         tablesWithFilterColumn = self.getAllTablesByColumnName('filter')
