@@ -23,7 +23,7 @@ class Login(QtGui.QDialog, GUI):
         self.setupUi(self)
         self.iface = iface
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.17.4</b>")
+        self.version_lb.setText(u"<b>versão : 2.17.5</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -128,8 +128,8 @@ class Login(QtGui.QDialog, GUI):
                         data[u"password"] = password
                         data["server"] = server
                         data[u"ok"] = True
-                        self.projectQgis.setProjectVariable('usuario', user)
-                        self.projectQgis.setProjectVariable('senha', password)
+                        self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
+                        self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
                         self.accept()
                         self.showTools.emit(data)
                         return data
