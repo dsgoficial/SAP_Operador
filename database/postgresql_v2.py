@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 
 class Postgresql_v2(object):
-    def __init__(self, iface):
+    def __init__(self, iface=False):
         # contrutor
         super(Postgresql_v2, self).__init__()
         self.iface = iface
