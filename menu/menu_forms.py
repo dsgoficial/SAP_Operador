@@ -1,5 +1,7 @@
 #! -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
+import os, sys
+from database.postgresql_v2 import Postgresql_v2
 
 
 class Menu_forms(QtGui.QDialog):
@@ -204,7 +206,10 @@ class Menu_forms(QtGui.QDialog):
         layerName = cbLayer.currentText()
         groupGeom = groups[layerName.split('_')[-1]]
         groupLayer = layerName.split('_')[0]
-        fields = self.dbJson[self.dbname]\
+        postgres = Postgresql_v2()
+        postgres.dbAlias = self.dbname
+        dbname = postgres.getConnectionData()['dbname']
+        fields = self.dbJson[dbname]\
             [groupGeom][groupLayer][layerName]
         for field in fields:
             if not(field in ['loadFormUi', 
