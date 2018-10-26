@@ -35,3 +35,8 @@ class Project(QtCore.QObject):
                 if different_projects:
                     core.QgsMapLayerRegistry.instance().removeAllMapLayers()
                     core.QgsProject.instance().layerTreeRoot().removeAllChildren()
+                    QtGui.QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        u"Aviso", 
+                        u"<p>Esse projeto não pode ser acessado. Carregue um novo projeto.</p>"
+                    )
