@@ -12,6 +12,7 @@ from managerNetwork.network import Network
 from trackLayers.track import Track
 from validate.addFeatures import AddFeatures
 from validate.geometryChanged import GeometryChanged
+from validate.project import Project
 from custom_action import ActionTest
 
 
@@ -105,6 +106,8 @@ class Main:
         loadLayers.cleanDirectoryUI()
 
     def loadProject(self):
+        prj = Project(self.iface)
+        prj.validate()
         loadLayers = LoadLayers(self.iface, {})
         loadLayers.reloadFormsCustom()
         self.menu_functions.showMenuClassification()

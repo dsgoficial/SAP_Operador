@@ -103,15 +103,7 @@ class Login(QtGui.QDialog, GUI):
                     u"Status : <p>Erro de conexão. verifique se o IP do servidor está correto!</p>"
                 )
             elif "dados" in data:
-                data[u"connectionType"] = u"remote"
-                data[u"user"] = user
-                data[u"password"] = password
-                data["server"] = server
-                data[u"ok"] = True
-                self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
-                self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
-                self.accept()
-                self.showTools.emit(data)
+                self.init_tools(data, user, password, server)
                 return data
             elif not("dados" in data):
                 result = QtGui.QMessageBox().question(
@@ -123,21 +115,26 @@ class Login(QtGui.QDialog, GUI):
                 if result == 1024:
                     data = self.initActivity(server, data['token'])
                     if "dados" in data:
-                        data[u"connectionType"] = u"remote"
-                        data[u"user"] = user
-                        data[u"password"] = password
-                        data["server"] = server
-                        data[u"ok"] = True
-                        self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
-                        self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
-                        self.accept()
-                        self.showTools.emit(data)
+                        self.init_tools(data, user, password, server)
                         return data
                     QtGui.QMessageBox.information(
                         self,
                         u"Aviso!", 
                         u"Status : <p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
                     )
+    
+    def init_tools(self, data, user, password, server):
+        data[u"connectionType"] = u"remote"
+        data[u"user"] = user
+        data[u"password"] = password
+        data["server"] = server
+        data[u"ok"] = True
+        data_encode =  data['dados']['atividade']['nome'].encode('utf-8')
+        self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
+        self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
+        self.projectQgis.setProjectVariable('atividade', self.encrypt('123456', data_encode))
+        self.accept()
+        self.showTools.emit(data)
                     
     def initActivity(self, server, token):
         header = {'authorization' : token}
