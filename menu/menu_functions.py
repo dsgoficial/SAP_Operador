@@ -87,11 +87,11 @@ class Menu_functions(QtCore.QObject):
     def showMenuClassification(self):
         self.exportDataMenuOnProject()
         self.menu_interface.tabWidget.cleanAllTabWidget()
-        self.menu_interface.loadMenu(
+        result = self.menu_interface.loadMenu(
             self.getOrderMenu(),
             self.getProfileMenu() 
         )
-        self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.menu_interface )
+        self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.menu_interface ) if result else ''
 
     def startClassification(self, button, activeReclass):
         postgresql = self.getPostgresql()
