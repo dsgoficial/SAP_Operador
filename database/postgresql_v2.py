@@ -198,33 +198,6 @@ class Postgresql_v2(object):
             self.updateProfileOnDb(data)
         else:
             self.insertProfileOnDb(data)
-
-    def getFilterOption(self):
-        filterData = self.getFilterData()
-        filterOption = []
-        for x in filterData:
-            filterOption.append(filterData[x]['tipo_filtro'])
-        return filterOption
-
-    def getFilterData(self):
-        if self.getTableFromDb(u'layer_filter'):
-            postgresCursor = self.connectionPsycopg2.cursor()
-            postgresCursor.execute('''
-                SELECT
-                id,
-                camada,
-                tipo_filtro,
-                filtro
-                FROM public.layer_filter ;
-            ''')
-            query = postgresCursor.fetchall()
-            filterData =  {row[0] : {
-                'camada' : row[1],
-                'tipo_filtro' : row[2],
-                'filtro' : row[3]
-            } for row in query}
-            return filterData
-        return {}
             
     def getTableFromDb(self, tableName):
         postgresCursor = self.connectionPsycopg2.cursor()

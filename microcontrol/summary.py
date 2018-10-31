@@ -43,23 +43,44 @@ class Summary(QtCore.QObject):
                     committedFeaturesRemoved 
                     committedGeometriesChanges 
                     committedFeaturesAdded 
-                    committedAttributeValuesChanges
+                    
+    
+    def count_points(self, geom):
+        if geom.type() == 2:#polygon
+            count = 0
+            if geom.isMultipart():
+                parts = geom.asMultiPolygon()
+            else:
+                parts = [ geom.asPolygon() ]
+            for part in parts:
+                for ring in part:
+                    count += len(ring) - 1
+            return count 
+        elif geom.type() == 1:#line
+            count = 0
+            if geom.isMultipart():
+                parts = geom.asMultiPolyline()
+            else:
+                parts = [ geom.asPolyline() ]
+            for part in parts:
+                count += len(part)
+            return count
+        else:
+            return 1
 
     def features_removed(self, fid, deletedFeatureIds):
-        #print fid, deletedFeatureIds
+        #print fid[:15], len(deletedFeatureIds)
         pass
 
     def features_added(self, fid, addedFeatures):
-        #print fid, addedFeatures
+        #print fid[:15], addedFeatures[0].id() , self.count_points(addedFeatures[0].geometry()), addedFeatures[0].geometry().length()
         pass
 
     def features_geom_changes(self, fid, changedGeometries):
-        #print fid, changedGeometries
+        #print fid, len(changedGeometries.keys())
         pass
 
-    def features_attr_changes(self, fid, changedAttributesValues):
-        #print fid, changedAttributesValues
-        pass
+    
         
     def summary_changes(self):
         pass
@@ -68,4 +89,4 @@ class Summary(QtCore.QObject):
         committedFeaturesRemoved (id, geom_removed)
         committedGeometriesChanges (id, geom_changed)
         committedFeaturesAdded (id, geom_added)
-        committedAttributeValuesChanges(id, )'''
+        '''
