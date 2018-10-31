@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>989</width>
-    <height>631</height>
+    <width>826</width>
+    <height>593</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -59,20 +59,6 @@
      </item>
      <item>
       <widget class="QComboBox" name="loadWithCombo"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_14">
-     <item>
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Filtro :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="filterCombo"/>
      </item>
     </layout>
    </item>
@@ -269,7 +255,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>947</width>
+            <width>784</width>
             <height>189</height>
            </rect>
           </property>
@@ -547,7 +533,7 @@ p, li { white-space: pre-wrap; }
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>681</width>
+                 <width>518</width>
                  <height>301</height>
                 </rect>
                </property>
@@ -576,7 +562,7 @@ p, li { white-space: pre-wrap; }
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>947</width>
+            <width>784</width>
             <height>359</height>
            </rect>
           </property>
@@ -601,7 +587,7 @@ p, li { white-space: pre-wrap; }
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>947</width>
+            <width>784</width>
             <height>323</height>
            </rect>
           </property>
