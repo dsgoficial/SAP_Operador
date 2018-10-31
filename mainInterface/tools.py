@@ -619,14 +619,6 @@ class Tools(QtGui.QDialog, GUI):
         self.menu_functions.closeMenuClassification()
         self.menu_functions.showMenuClassification()
 
-    ''' @QtCore.pyqtSlot(bool)
-    def on_exportProfileToFileButton_clicked(self):
-        self.menu_functions.showFormSaveProfileOnFile()
-
-    @QtCore.pyqtSlot(bool)
-    def on_importProfileFromFileButton_clicked(self):
-        self.menu_functions.showFormLoadProfileOnFile() '''
-
     @QtCore.pyqtSlot(bool)
     def on_addTabButton_clicked(self):
         self.menu_functions.showFormAddTabMenu()
