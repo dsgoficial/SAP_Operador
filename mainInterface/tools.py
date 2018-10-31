@@ -554,9 +554,6 @@ class Tools(QtGui.QDialog, GUI):
             loadLayers.loadAllLayersSelected({
                 'activeProgressBar' : True,
                 'layersSelected' : itemsSelected,
-                'layersSelectedFormated' : self.formatSelectedItems(
-                    itemsSelected
-                ),
                 'dbAlias' : self.getDbName(), 
                 'workspace' : self.getWorkspace(),
                 'styleName' : self.getStyleName(),
