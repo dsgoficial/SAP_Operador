@@ -205,14 +205,6 @@ class Menu_functions(QtCore.QObject):
         )
         self.menu_forms.createSaveProfileOnDbForm()
         self.updateCurrentForm()
-    
-    def showFormLoadProfileOnFile(self):
-        self.menu_forms = Menu_forms()
-        self.menu_forms.ok.connect(
-            self.loadProfileFromFile        
-        )
-        self.menu_forms.createLoadProfileFromFileForm()
-        self.updateCurrentForm()
 
     def loadProfileFromFile(self, formValues, fields):
         fileOrigin = open(formValues[u'*Selecion o arquivo com o perfil:'], "r") 
@@ -226,18 +218,6 @@ class Menu_functions(QtCore.QObject):
             u"Aviso:", 
             u"Perfil carregado!"
         )
-
-    def showFormSaveProfileOnFile(self):
-        profileData = self.tools.profiles
-        if profileData:
-            profiles = [ profileData[i]['nome_do_perfil'] for i in profileData]
-            profileSelected = str(self.tools.getProfileNameSelected())
-            self.menu_forms = Menu_forms()
-            self.menu_forms.ok.connect(
-                self.saveProfileOnFile        
-            )
-            self.menu_forms.createSaveProfileOnFileForm(profiles, profileSelected)
-            self.updateCurrentForm()
 
     def validateValuesForm(self, formValues):
         for key in formValues:

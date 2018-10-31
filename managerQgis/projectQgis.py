@@ -10,6 +10,7 @@ class ProjectQgis:
 
     def __init__(self, iface):
         self.iface = iface
+        self.qsettings = QSettings()
 
     def setProjectVariable(self, varName, value):
         core.QgsExpressionContextUtils.setProjectVariable(
@@ -34,22 +35,25 @@ class ProjectQgis:
         return data
 
     def configShortcut(self):
-        s = QSettings()
         #s.setValue("Qgis/newProjectDefault", u'true')
         self.cleanShortcut()
         variables = self.getVariables()
         for variable in variables:
-            s.setValue(variable, variables[variable])
+            self.qsettings.setValue(variable, variables[variable])
         
     def cleanShortcut(self):
-        'Metodo para limpar os atalhos que seram usados e ja existem no qgis para evitar conflitos'
-        s = QSettings()
-        for variableQgis in s.allKeys():
+        for variableQgis in self.qsettings.allKeys():
             if (u'shortcuts' in variableQgis):
-                s.setValue(variableQgis, u'')
+                self.qsettings.setValue(variableQgis, u'')
 
     def delFeature(self):
         self.iface.activeLayer().deleteSelectedFeatures()
+
+    def qsettings_insert(self, key, value):
+        self.qsettings.setValue(key, value)
+    
+    def qsettings_select(self, key):
+        return self.qsettings.value(key)
 
     def getVariables(self):
         'Definicao de todas as configuracoes em portugues e ingles'
