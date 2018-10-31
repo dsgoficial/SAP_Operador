@@ -76,7 +76,6 @@ class LoadLayers(QtCore.QObject):
     def loadAllLayersSelected(self, userData):
         aliasdb = userData[u'dbAlias']
         layersSelected = userData[u'layersSelected']
-        layersSelectedFormated = userData[u'layersSelectedFormated']
         jsonDb = userData[u'dbJson']
         host, port, dbname, user, passwd = self.createConnection(
             jsonDb[u'dataConnection']
@@ -88,33 +87,34 @@ class LoadLayers(QtCore.QObject):
             groupDbName = aliasdb+"-"+userData['workspace']
             groupDb = self.addGroupDb(groupDbName)
         self.rules.cleanRules(groupDbName) if self.rules else ""
-        for nameGeom in reversed(sorted(layersSelectedFormated)):
-            for nameCatLayer in sorted(layersSelectedFormated[nameGeom]):
-                for layerName in sorted(layersSelectedFormated[nameGeom][nameCatLayer]):
-                    data = {
-                        u'layerName' : layerName,
-                        u'dbAlias' : aliasdb,
-                        u'nameGeom' : nameGeom,
-                        u'nameCatLayer' : nameCatLayer,
-                        u'styles' : jsonDb[u'styles'],
-                        u'workspaces' : jsonDb[u'workspaces'],
-                        u'groupDb' : groupDb,
-                        u'workspaceName' : userData['workspace'], 
-                        u'userData' : userData,
-                        u'host' : host,
-                        u'port' : port,
-                        u'dbname' : dbname,
-                        u'user' : user,
-                        u'fieldsData' : jsonDb[dbname][nameGeom][nameCatLayer][layerName],
-                        u'passwd' : passwd,
-                        u'selectedRulesType' : userData[u'selectedRulesType'],
-                        u'only_geom' : userData[u'only_geom'] if userData.has_key(u'only_geom') else False           
-                    }
-                    data[u'groupGeom'] = self.addGroupGeom(data)
-                    data[u'groupLayer'] = self.addGroupLayer(data)
-                    self.addLayer(data)
-                    if userData[u'activeProgressBar']:
-                        self.updateProgressBar.emit()
+        for nameGeom in reversed(sorted(jsonDb[dbname])):
+            for nameCatLayer in sorted(jsonDb[dbname][nameGeom]):
+                for layerName in sorted(layersSelected):
+                    if layerName in jsonDb[dbname][nameGeom][nameCatLayer]:
+                        data = {
+                            u'layerName' : layerName,
+                            u'dbAlias' : aliasdb,
+                            u'nameGeom' : nameGeom,
+                            u'nameCatLayer' : nameCatLayer,
+                            u'styles' : jsonDb[u'styles'],
+                            u'workspaces' : jsonDb[u'workspaces'],
+                            u'groupDb' : groupDb,
+                            u'workspaceName' : userData['workspace'], 
+                            u'userData' : userData,
+                            u'host' : host,
+                            u'port' : port,
+                            u'dbname' : dbname,
+                            u'user' : user,
+                            u'fieldsData' : jsonDb[dbname][nameGeom][nameCatLayer][layerName],
+                            u'passwd' : passwd,
+                            u'selectedRulesType' : userData[u'selectedRulesType'],
+                            u'only_geom' : userData[u'only_geom'] if userData.has_key(u'only_geom') else False           
+                        }
+                        data[u'groupGeom'] = self.addGroupGeom(data)
+                        data[u'groupLayer'] = self.addGroupLayer(data)
+                        self.addLayer(data)
+                        if userData[u'activeProgressBar']:
+                            self.updateProgressBar.emit()
         self.createTmpMoldura(data)
         self.clean_groups_empyt(groupDbName)
         self.collapseAllTree(groupDbName)
@@ -296,7 +296,7 @@ class LoadLayers(QtCore.QObject):
     def loadStyleOnLayer(self, data):
         # carrega o estilo escolhido
         style = data[u'userData'][u'styleName']
-        if style != u'<Opções>':
+        if style and style != u'<Opções>':
             vectorLayer = data[u'vectorLayer']
             vectorLayer.loadDefaultStyle()
             layerName = vectorLayer.name()

@@ -97,15 +97,17 @@ class Postgresql_v2(object):
         
     def getWorkspaceItems(self):
         lyr_data = self.getTableFromDb('aux_moldura_a')
-        postgresCursor = self.connectionPsycopg2.cursor()
-        postgresCursor.execute('''
-            SELECT
-            mi
-            FROM {}.{};'''.format(lyr_data['schema'], lyr_data['layer'])
-        )
-        query = postgresCursor.fetchall()
-        workspace = list(set([item[0] for item in query]))
-        return workspace
+        if lyr_data:
+            postgresCursor = self.connectionPsycopg2.cursor()
+            postgresCursor.execute('''
+                SELECT
+                mi
+                FROM {}.{};'''.format(lyr_data['schema'], lyr_data['layer'])
+            )
+            query = postgresCursor.fetchall()
+            workspace = list(set([item[0] for item in query]))
+            return workspace
+        return []
 
     def getStylesItems(self, styles_name=False):
         if self.getTableFromDb('layer_styles'):
@@ -300,10 +302,12 @@ class Postgresql_v2(object):
         for lyr_data in layers_data:
             layer_name = lyr_data['layer']
             constraint = self.getContrainsCodes(layer_name)
-            geom = self.getGroupGeomOfLayer(layer_name)
-            group = self.getGroupClassOfLayer(layer_name)
-            check_layer = ( (True if geom else False) and (True if group else False) )
-            if check_layer:
+            geom = self.getGroupGeomOfLayer(lyr_data['geom_type'])
+            if geom:
+                group = self.getGroupClassOfLayer(layer_name) 
+                group = group if group else lyr_data['schema']
+                if not(geom in jsonDb[dbname]):
+                    jsonDb[dbname][geom] = {}
                 if not(group in jsonDb[dbname][geom]):
                     jsonDb[dbname][geom][group] = {}
                 jsonDb[dbname][geom][group][layer_name] = {}
@@ -358,46 +362,43 @@ class Postgresql_v2(object):
 
     def loadWorkspaces(self):
         lyr_data = self.getTableFromDb('aux_moldura_a')
-        postgresCursor = self.connectionPsycopg2.cursor()
-        postgresCursor.execute(u'''  SELECT
-                                    mi, st_asewkt(geom)
-                                    FROM
-                                    {}.{};
-                                      '''.format(lyr_data['schema'], lyr_data['layer']))
-        query = postgresCursor.fetchall()
-        items = {item : value for item, value in query}
-        return items
+        if lyr_data:
+            postgresCursor = self.connectionPsycopg2.cursor()
+            postgresCursor.execute(u'''  SELECT
+                                        mi, st_asewkt(geom)
+                                        FROM
+                                        {}.{};
+                                        '''.format(lyr_data['schema'], lyr_data['layer']))
+            query = postgresCursor.fetchall()
+            items = {item : value for item, value in query}
+            return items
 
     def getAllLayersByName(self, layers_name=False):
         postgresCursor = self.connectionPsycopg2.cursor()
         if layers_name:
             list_names = ", ".join([ "'%{}%'".format(name) for name in layers_name])
-            sql = '''select f_table_schema, f_table_name from geometry_columns
+            sql = '''select f_table_schema, f_table_name, type from geometry_columns
                 where f_table_name like any(array[{}]);'''.format(list_names)
         else:
-            sql = "select f_table_schema, f_table_name from geometry_columns;"
+            sql = "select f_table_schema, f_table_name, type from geometry_columns;"
         postgresCursor.execute(sql)
         query = postgresCursor.fetchall()
-        layers = [ {'schema' : item[0] , 'layer' : item[1]} for item in query ]
+        layers = [ {'schema' : item[0] , 'layer' : item[1], 'geom_type' : item[2]} for item in query ]
         return layers
 
-    def getGroupGeomOfLayer(self, layerName):
-        try:
-            test = {'a' : 'AREA', 
-                    'c' : 'PONTO',
-                    'p' : 'PONTO', 
-                    'd' : 'LINHA',
-                    'l' : 'LINHA',}
-            return test[layerName.split("_")[-1]]
-        except:
-            return
+    def getGroupGeomOfLayer(self, geom_type):
+        if 'point' in geom_type.lower():
+            return u'PONT0'
+        elif 'line' in geom_type.lower():
+            return u'LINHA'
+        elif 'polygon' in geom_type.lower():
+            return u'AREA'
 
     def getGroupClassOfLayer(self, layerName):
         # retorna a categoria da camada
-        try:
-            return layerName.split('_')[0]
-        except:
-            return
+        r = layerName.split('_')
+        if len(r) > 1:
+            return r[0]
 
     def loadValueMapOfField(self, data):
         domains = data['domains']  

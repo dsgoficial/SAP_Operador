@@ -5,7 +5,6 @@ from PyQt4.QtCore import QSettings, Qt
 from PyQt4.QtGui import QToolBar, QPushButton
 import sys, os
 sys.path.append(os.path.dirname(__file__))
-import pyautogui
 
 class ProjectQgis:
 
@@ -35,7 +34,6 @@ class ProjectQgis:
         return data
 
     def configShortcut(self):
-        self.iface.mapCanvas().keyPressed.connect(self.runShortcut)
         s = QSettings()
         #s.setValue("Qgis/newProjectDefault", u'true')
         self.cleanShortcut()
@@ -50,17 +48,6 @@ class ProjectQgis:
             if (u'shortcuts' in variableQgis):
                 s.setValue(variableQgis, u'')
 
-    def runShortcut(self, e):
-        'Metodo para filtrar botoes que nao estao no configurador de atalho nativo do qgis'
-        if (
-            e and 
-            Qt and 
-            not(e.modifiers() == Qt.ControlModifier) and 
-            (e.key() == Qt.Key_F) and 
-            (self.iface.actionNodeTool().isChecked())
-        ):
-            pyautogui.press('backspace')
-    
     def delFeature(self):
         self.iface.activeLayer().deleteSelectedFeatures()
 
