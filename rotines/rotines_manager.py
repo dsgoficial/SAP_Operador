@@ -98,13 +98,13 @@ class Rotines_Manager(QtCore.QObject):
     def get_post_data(self, rotine_data, geomUnit, db_data):
         postData = {}
         for parameter in rotine_data['parameters']:
-            if 'dbarea_' in parameter:
+            if 'dbarea' in parameter:
                 postData[parameter] = geomUnit
-            elif 'dbname_' in parameter:
+            elif 'dbname' in parameter:
                 postData[parameter] = db_data['dbname']
-            elif 'dbport_' in parameter:
+            elif 'dbport' in parameter:
                 postData[parameter] = db_data['port']
-            elif 'dbhost_' in parameter:
+            elif 'dbhost' in parameter:
                 postData[parameter] = db_data['host']
             else:
                 postData[parameter] = ''
