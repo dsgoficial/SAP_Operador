@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui, uic
-import sys, os
+from PyQt4.QtCore import QSettings
+import json, sys, os, copy, base64
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
@@ -23,19 +24,30 @@ class Login(QtGui.QDialog, GUI):
         self.setupUi(self)
         self.iface = iface
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.16.3</b>")
+        self.version_lb.setText(u"<b>versão : 2.18.1</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
     
+    def encrypt(self, key, plaintext):
+        return base64.b64encode(plaintext)
+
+    def decrypt(self, key, ciphertext):
+        return base64.b64decode(ciphertext)
+
     def loadFields(self):
-        self.serverLineEdit.setText("http://10.25.163.42:3013")
         self.projectQgis = ProjectQgis(self.iface)
-        usuario = self.projectQgis.getVariableProject('usuario')
-        senha = self.projectQgis.getVariableProject('senha')
-        if usuario and senha:
-            self.nameLineEdit.setText(usuario)
-            self.passwordLineEdit.setText(senha)
+        settings = QSettings()
+        settings.beginGroup('SAP/server')
+        server = settings.value('server')
+        settings.endGroup()
+        if server:
+            self.serverLineEdit.setText(server)
+        user = self.projectQgis.getVariableProject('usuario')
+        password = self.projectQgis.getVariableProject('senha')
+        if user and password:
+            self.nameLineEdit.setText(self.decrypt('123456', user))
+            self.passwordLineEdit.setText(self.decrypt('123456', password))
    
     def connectionType(self, value):
         if value == 0:
@@ -97,15 +109,7 @@ class Login(QtGui.QDialog, GUI):
                     u"Status : <p>Erro de conexão. verifique se o IP do servidor está correto!</p>"
                 )
             elif "dados" in data:
-                data[u"connectionType"] = u"remote"
-                data[u"user"] = user
-                data[u"password"] = password
-                data["server"] = server
-                data[u"ok"] = True
-                self.projectQgis.setProjectVariable('usuario', user)
-                self.projectQgis.setProjectVariable('senha', password)
-                self.accept()
-                self.showTools.emit(data)
+                self.init_tools(data, user, password, server)
                 return data
             elif not("dados" in data):
                 result = QtGui.QMessageBox().question(
@@ -117,21 +121,30 @@ class Login(QtGui.QDialog, GUI):
                 if result == 1024:
                     data = self.initActivity(server, data['token'])
                     if "dados" in data:
-                        data[u"connectionType"] = u"remote"
-                        data[u"user"] = user
-                        data[u"password"] = password
-                        data["server"] = server
-                        data[u"ok"] = True
-                        self.projectQgis.setProjectVariable('usuario', user)
-                        self.projectQgis.setProjectVariable('senha', password)
-                        self.accept()
-                        self.showTools.emit(data)
+                        self.init_tools(data, user, password, server)
                         return data
                     QtGui.QMessageBox.information(
                         self,
                         u"Aviso!", 
                         u"Status : <p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
                     )
+    
+    def init_tools(self, data, user, password, server):
+        data[u"connectionType"] = u"remote"
+        data[u"user"] = user
+        data[u"password"] = password
+        data["server"] = server
+        data[u"ok"] = True
+        data_encode =  data['dados']['atividade']['nome'].encode('utf-8')
+        settings = QSettings()
+        settings.beginGroup('SAP/server')
+        settings.setValue('server', server)
+        settings.endGroup()
+        self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
+        self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
+        self.projectQgis.setProjectVariable('atividade', self.encrypt('123456', data_encode))
+        self.accept()
+        self.showTools.emit(data)
                     
     def initActivity(self, server, token):
         header = {'authorization' : token}
