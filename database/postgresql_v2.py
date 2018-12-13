@@ -8,10 +8,10 @@ import json, sys, os, copy, base64
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 
-class Postgresql(object):
-    def __init__(self, iface):
+class Postgresql_v2(object):
+    def __init__(self, iface=False):
         # contrutor
-        super(Postgresql, self).__init__()
+        super(Postgresql_v2, self).__init__()
         self.iface = iface
         self.connectionLoginData = None 
         self.connectionPsycopg2 = None
@@ -31,16 +31,13 @@ class Postgresql(object):
         return aliasesDb
 
     def encrypt(self, key, plaintext):
-        #cipher = XOR.new(key)
         return base64.b64encode(plaintext)
 
     def decrypt(self, key, ciphertext):
-        #cipher = XOR.new(key)
         return base64.b64decode(ciphertext)
 
 
     def getConnectionData(self):
-        #retorna um dicionário com os dados de conexão do banco
         dbAlias = self.dbAlias
         settings  = QtCore.QSettings()
         if settings.value(u'PostgreSQL/connections/%s/database'%(dbAlias)):
@@ -59,32 +56,32 @@ class Postgresql(object):
         return connection
 
     def connectPsycopg2WithLoginData(self, loginData):
-        # conexão via psycopg2
-        self.dbAlias = loginData['dbname']
+        self.dbAlias = loginData["dados"]["atividade"]["banco_dados"]["nome"]
+        self.modeRemote = True
+        self.geom = loginData["dados"]["atividade"]["geom"]
+        self.connectionLoginData = {
+            "user" : loginData["user"],
+            "password" : loginData["password"],
+            "host" : loginData["dados"]["atividade"]["banco_dados"]["servidor"],
+            "port" : loginData["dados"]["atividade"]["banco_dados"]["porta"],
+            "dbname" : self.dbAlias
+        }
         conn = psycopg2.connect(
             """dbname='%s' user='%s' host='%s' port='%s' password='%s'"""%( 
-                loginData['dbname'], 
-                loginData['user'], 
-                loginData['host'],
-                loginData['port'], 
-                loginData['password']
+                self.connectionLoginData['dbname'], 
+                self.connectionLoginData['user'], 
+                self.connectionLoginData['host'],
+                self.connectionLoginData['port'], 
+                self.connectionLoginData['password']
             )
         )
-        self.connectionLoginData = {
-                'aliasDb' : loginData['dbname'],
-                'dbname': loginData['dbname'],
-                'user': loginData['user'],
-                'host': loginData['host'],
-                'password': loginData['password'],
-                'port': loginData['port']
-        }
         ProjectQgis(self.iface).setProjectVariable(
             'loginData', 
             self.encrypt('123456', json.dumps(copy.deepcopy(self.connectionLoginData)))
         )
         conn.set_session(autocommit=True)
         self.connectionPsycopg2 = conn
-        self.loadCacheDataBase()
+        self.createDataBaseJSON(loginData)
 
     def connectPsycopg2(self, dbAlias):
         # conexão via psycopg2
@@ -96,37 +93,37 @@ class Postgresql(object):
         )
         conn.set_session(autocommit=True)
         self.connectionPsycopg2 = conn
-        self.loadCacheDataBase()
-
-    def loadCacheDataBase(self):
-        # carrega os dados do banco no JSON e adicona em uma variável global
         self.createDataBaseJSON()
         
     def getWorkspaceItems(self):
+        lyr_data = self.getTableFromDb('aux_moldura_a')
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute('''
             SELECT
             mi
-            FROM edgv.aux_moldura_a;
-        ''')
+            FROM {}.{};'''.format(lyr_data['schema'], lyr_data['layer'])
+        )
         query = postgresCursor.fetchall()
         workspace = list(set([item[0] for item in query]))
         return workspace
 
-    def getStylesItems(self):
-        postgresCursor = self.connectionPsycopg2.cursor()
-        postgresCursor.execute('''
-            SELECT
-            stylename
-            FROM layer_styles;
-        ''')
-        query = postgresCursor.fetchall()
-        styles = list(set([item[0].split('_')[0] for item in query]))
-        return styles
+    def getStylesItems(self, styles_name=False):
+        if self.getTableFromDb('layer_styles'):
+            if styles_name:
+                styles = ", ".join([ "'%{}%'".format(name) for name in styles_name])
+                sql = '''SELECT stylename FROM layer_styles where stylename like any(array[{}]);'''.format(styles)
+            else:
+                sql = '''SELECT stylename FROM layer_styles;'''
+            postgresCursor = self.connectionPsycopg2.cursor()
+            postgresCursor.execute(sql)
+            query = postgresCursor.fetchall()
+            sep = '/' if '/' in query[0][0] else '_'
+            styles = list(set([item[0].split(sep)[0] for item in query]))
+            return styles
+        return []
 
     def getRulesData(self):
-        # retorna um dicionário com todas as regras
-        if self.checkIfExistsTable('layer_rules'):
+        if self.getTableFromDb('layer_rules'):
             postgresCursor = self.connectionPsycopg2.cursor()
             postgresCursor.execute('''
                 SELECT
@@ -164,7 +161,7 @@ class Postgresql(object):
 
     def getProfilesData(self):
         #retorna um dicionário com todos os perfis do menu de aquisição
-        if self.checkIfExistsTable('menu_profile'):
+        if self.getTableFromDb('menu_profile'):
             postgresCursor = self.connectionPsycopg2.cursor()
             postgresCursor.execute('''
                 SELECT
@@ -186,21 +183,16 @@ class Postgresql(object):
         return {}
               
     def getTable(self, tableName):
-        # retorna um dicionário com todos os dados de uma determinada tabela
+        layer_data = self.getTableFromDb(tableName)
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute(
-            '''
-            SELECT
-            *
-            FROM dominios.%s;
-            '''%(tableName))
+            '''SELECT * FROM {}.{};'''.format(layer_data['schema'], layer_data['layer'])
+        )
         query = postgresCursor.fetchall()
         return query
 
     def saveProfile(self, data):
-        #Método chamado para salvar perfil
-        #no banco de dados
-        if not self.checkIfExistsTable('menu_profile'):
+        if not self.getTableFromDb('menu_profile'):
             self.createProfileTable()
         if self.checkIfExistsProfile(data['profileName']):
             self.updateProfileOnDb(data)
@@ -215,7 +207,7 @@ class Postgresql(object):
         return filterOption
 
     def getFilterData(self):
-        if self.checkIfExistsTable(u'layer_filter'):
+        if self.getTableFromDb(u'layer_filter'):
             postgresCursor = self.connectionPsycopg2.cursor()
             postgresCursor.execute('''
                 SELECT
@@ -234,24 +226,18 @@ class Postgresql(object):
             return filterData
         return {}
             
-    def checkIfExistsTable(self, tableName):
-        #Método para verificar se uma determinada
-        #tabela existe no banco de dados
+    def getTableFromDb(self, tableName):
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute(
             '''
-            SELECT
-            relname
-            FROM pg_class
-            WHERE relname = '{0}';
+            SELECT table_schema, table_name FROM information_schema.tables where table_name = '{}';
             '''.format(tableName))
         query = postgresCursor.fetchall()
-        result = list(set([item[0] for item in query]))
-        return result
+        if query:
+            return { 'schema' : query[0][0], 'layer' : query[0][1] }
+        return {}
 
     def checkIfExistsProfile(self, profileName):
-        #Método para verificar se um determinado
-        #perfil de menu existe no banco de dados
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute(
             '''
@@ -282,8 +268,6 @@ class Postgresql(object):
         )
 
     def updateProfileOnDb(self, data):
-        #Método para atualizar um perfil de menu
-        #existente
         profileName = data['profileName']
         profile = data['profile']
         orderMenu = data['orderMenu']
@@ -329,35 +313,41 @@ class Postgresql(object):
             )
         )
     
-    def createDataBaseJSON(self):
-        # cria um JSON com os dados necessarios para o plugin
-        dbname = self.getConnectionData()['aliasDb']
-        jsonDb = self.getJsonDb()
+    def createDataBaseJSON(self, loginData=False):
+        if loginData:
+            layers_name = [data['nome'] for data in loginData['dados']['atividade']['camadas']]
+            layers_data = self.getAllLayersByName(layers_name)
+        else:
+            layers_data = self.getAllLayersByName()
+            layers_name = [ data['layer'] for data in layers_data]
+        jsonDb = self.getTemplateJsonDb()
+        dbname = jsonDb['dataConnection']['dbname']
         tablesWithFilterColumn = self.getAllTablesByColumnName('filter')
-        for layer in self.getAllLayersNames():
-            constraint = self.getContrainsCodes(layer)
-            jsonDb['listOfLayers'].append(layer)
-            geom = self.getGroupGeomOfLayer(layer)
-            group = self.getGroupClassOfLayer(layer)
-            checkGeom = True if geom else False
-            checkGroup = True if group else False
-            if checkGeom and checkGroup:
+        jsonDb['listOfLayers'] = layers_name
+        for lyr_data in layers_data:
+            layer_name = lyr_data['layer']
+            constraint = self.getContrainsCodes(layer_name)
+            geom = self.getGroupGeomOfLayer(layer_name)
+            group = self.getGroupClassOfLayer(layer_name)
+            check_layer = ( (True if geom else False) and (True if group else False) )
+            if check_layer:
                 if not(group in jsonDb[dbname][geom]):
                     jsonDb[dbname][geom][group] = {}
-                jsonDb[dbname][geom][group][layer] = {}
-                fields = self.getFieldsOfLayer(layer)
-                domains = self.getDomainsOfLayer(layer)
+                jsonDb[dbname][geom][group][layer_name] = {}
+                jsonDb[dbname][geom][group][layer_name]['schema'] = lyr_data['schema']
+                fields = self.getFieldsOfLayer(lyr_data)
+                domains = self.getDomainsOfLayer(lyr_data)
                 for field in list(set(domains.keys() + fields)):
-                    jsonDb[dbname][geom][group][layer][field] = {}
-                    if field in domains and  domains[field] in tablesWithFilterColumn:
+                    jsonDb[dbname][geom][group][layer_name][field] = {}
+                    if tablesWithFilterColumn and (field in domains) and  (domains[field] in tablesWithFilterColumn):
                         table = self.getTable(domains[field])
-                        jsonDb[dbname][geom][group][layer]['filter'] = table
+                        jsonDb[dbname][geom][group][layer_name]['filter'] = table
                     data = {
                         'domains' : domains,
                         'dbname' : dbname,
                         'geom'  : geom,
                         'group' : group,
-                        'layer' : layer,
+                        'layer' : layer_name,
                         'field' : field,
                         'jsonDb' : jsonDb,
                         'constraint' : constraint 
@@ -365,10 +355,9 @@ class Postgresql(object):
                     self.loadValueMapOfField(data)
         self.dbJson = jsonDb
     
-    def getJsonDb(self):
-        # criar o formato inicial do JSON para ser usado
+    def getTemplateJsonDb(self):
         dataBase = {
-            self.getConnectionData()['aliasDb'] : {
+            self.getConnectionData()['dbname'] : {
                 'PONTO' : {},
                 'LINHA' : {},
                 'AREA'  : {},
@@ -382,8 +371,7 @@ class Postgresql(object):
         return dataBase
 
     def loadStyles(self):
-        # retorna todos os estilos da tabela layer_styles com seus ids
-        try:
+        if self.getTableFromDb('layer_styles'):
             postgresCursor = self.connectionPsycopg2.cursor()
             postgresCursor.execute('''  SELECT
                                         stylename, id
@@ -393,35 +381,34 @@ class Postgresql(object):
             query = postgresCursor.fetchall()
             items = {item : value for item, value in query}
             return items
-        except:
-            return
+        return {}
 
     def loadWorkspaces(self):
-        # retorna todas as áreas de trabalho 
+        lyr_data = self.getTableFromDb('aux_moldura_a')
         postgresCursor = self.connectionPsycopg2.cursor()
-        postgresCursor.execute('''  SELECT
+        postgresCursor.execute(u'''  SELECT
                                     mi, st_asewkt(geom)
                                     FROM
-                                    edgv.aux_moldura_a;
-                                      ''')
+                                    {}.{};
+                                      '''.format(lyr_data['schema'], lyr_data['layer']))
         query = postgresCursor.fetchall()
         items = {item : value for item, value in query}
         return items
 
-    def getAllLayersNames(self):
-        # retorna todos os nomes das camadas do schema edgv
+    def getAllLayersByName(self, layers_name=False):
         postgresCursor = self.connectionPsycopg2.cursor()
-        postgresCursor.execute('''  select 
-                                    f_table_name 
-                                    from geometry_columns 
-                                    where f_table_schema ~ 'edgv'
-                                      ''')
+        if layers_name:
+            list_names = ", ".join([ "'%{}%'".format(name) for name in layers_name])
+            sql = '''select f_table_schema, f_table_name from geometry_columns
+                where f_table_name like any(array[{}]);'''.format(list_names)
+        else:
+            sql = "select f_table_schema, f_table_name from geometry_columns;"
+        postgresCursor.execute(sql)
         query = postgresCursor.fetchall()
-        layers = [item[0] for item in query]
+        layers = [ {'schema' : item[0] , 'layer' : item[1]} for item in query ]
         return layers
 
     def getGroupGeomOfLayer(self, layerName):
-        # retorna o grupo de Geometria da camada pelo nome 
         try:
             test = {'a' : 'AREA', 
                     'c' : 'PONTO',
@@ -440,8 +427,6 @@ class Postgresql(object):
             return
 
     def loadValueMapOfField(self, data):
-        # adiciona o mapa de valores do campo
-        #tablesFilter = data['tablesFilter']  
         domains = data['domains']  
         dbname = data['dbname'] 
         geom = data['geom'] 
@@ -459,11 +444,11 @@ class Postgresql(object):
             jsonDb[dbname][geom][group][layer][field]['ValueMap'] = values 
     
     def getValueMapOfDomain(self, domainName, code_list=False):
-        # retorna o mapa de valores do dominio
+        layer_data = self.getTableFromDb(domainName)
         if code_list:
-            select = '''SELECT code, code_name FROM dominios.{0} WHERE code IN ({1});'''.format(domainName, code_list)
+            select = '''SELECT code, code_name FROM {}.{} WHERE code IN ({});'''.format(layer_data['schema'], domainName, code_list)
         else:
-            select = '''SELECT code, code_name FROM dominios.{0};'''.format(domainName)
+            select = '''SELECT code, code_name FROM {}.{};'''.format(layer_data['schema'], domainName)
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute( select )
         query = postgresCursor.fetchall()
@@ -472,7 +457,6 @@ class Postgresql(object):
         return inv_data
     
     def getContrainsCodes(self, layerName):
-        #NOVO
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute('''
             SELECT d.column_name, c.consrc 
@@ -500,8 +484,10 @@ class Postgresql(object):
             codes[field] = ",".join(code_list)
         return codes
       
-    def getDomainsOfLayer(self, layerName):
+    def getDomainsOfLayer(self, data_layer):
         # retorna os nomes dos dominios da camada
+        layer_name = data_layer['layer']
+        layer_schema = data_layer['schema']
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute('''
             SELECT pg_get_constraintdef(c.oid) AS cdef
@@ -509,8 +495,8 @@ class Postgresql(object):
             JOIN pg_namespace n
             ON n.oid = c.connamespace
             WHERE contype IN ('f')
-            AND n.nspname = 'edgv'
-            AND conrelid::regclass::text IN ('edgv.%s');''' % (layerName))
+            AND n.nspname = '{0}'
+            AND conrelid::regclass::text IN ('{0}.{1}');'''.format(layer_schema, layer_name))
         query = postgresCursor.fetchall()
         domains = { 
             item[0].split('(')[1].split(')')[0].replace(' ','') : \
@@ -519,15 +505,16 @@ class Postgresql(object):
             }
         return domains
 
-    def getFieldsOfLayer(self, layerName):
-        # retorna uma lista com todos os campos da camada
+    def getFieldsOfLayer(self, data_layer):
+        layer_name = data_layer['layer']
+        layer_schema = data_layer['schema']
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute("""SELECT column_name
                                 FROM information_schema.columns
-                                WHERE table_schema = 'edgv'
-                                AND table_name   = '%s'
+                                WHERE table_schema = '{}'
+                                AND table_name   = '{}'
                                 AND column_name !~ 'geom' AND column_name !~ 'id'
-                               """%(layerName))
+                               """.format(layer_schema, layer_name))
         query = postgresCursor.fetchall()
         listOfFields = [item[0] for item in query]
         return listOfFields
@@ -536,11 +523,8 @@ class Postgresql(object):
         # retorna uma lista com todos os campos da camada
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute(u""" 
-                                SELECT 
-                                srid 
-                                FROM 
-                                geometry_columns where f_table_name ~ 'aux_moldura_a'
-                               """)
+            select srid from geometry_columns where f_table_name like '%moldura%';
+        """)
         query = postgresCursor.fetchall()
         srid = {'srid' : item[0] for item in query}
         return srid

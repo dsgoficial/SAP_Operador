@@ -72,6 +72,7 @@ class Menu_interface(QtGui.QDockWidget):
                             buttonData = profile[tabName][buttonName]
                             self.createButton(buttonData)
             self.addTabSearch(profile)
+            return True
 
     def addTabSearch(self, profile):
         self.tabWidget.addTabs(u'**Pesquisa**')

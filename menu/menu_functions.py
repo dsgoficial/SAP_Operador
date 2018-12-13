@@ -3,7 +3,7 @@ from PyQt4 import QtGui, QtCore
 from qgis import core
 import sys, json, copy, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
-from database.postgresql import Postgresql
+from database.postgresql_v2 import Postgresql_v2
 from managerQgis.projectQgis import ProjectQgis
 from menu_interface import Menu_interface
 from menu_forms import Menu_forms
@@ -38,17 +38,11 @@ class Menu_functions(QtCore.QObject):
         return ProjectQgis(self.iface).getVariableProject('workspace') 
 
     def getPostgresql(self):
-        postgresql = Postgresql(self.iface)
+        postgresql = Postgresql_v2(self.iface)
         if self.data:
             postgresql.modeRemote = True
             postgresql.geom = self.data["dados"]["atividade"]["geom"]
-            postgresql.connectPsycopg2WithLoginData({
-                "user" : self.data["user"],
-                "password" : self.data["password"],
-                "host" : self.data["dados"]["atividade"]["banco_dados"]["servidor"],
-                "port" : self.data["dados"]["atividade"]["banco_dados"]["porta"],
-                "dbname" : self.data["dados"]["atividade"]["banco_dados"]["nome"]
-            })
+            postgresql.connectPsycopg2WithLoginData(self.data)
         else:
             dbName = self.getDbName()         
             postgresql.connectPsycopg2(dbName)
@@ -93,11 +87,11 @@ class Menu_functions(QtCore.QObject):
     def showMenuClassification(self):
         self.exportDataMenuOnProject()
         self.menu_interface.tabWidget.cleanAllTabWidget()
-        self.menu_interface.loadMenu(
+        result = self.menu_interface.loadMenu(
             self.getOrderMenu(),
             self.getProfileMenu() 
         )
-        self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.menu_interface )
+        self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.menu_interface ) if result else ''
 
     def startClassification(self, button, activeReclass):
         postgresql = self.getPostgresql()

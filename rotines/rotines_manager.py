@@ -25,6 +25,7 @@ class Rotines_Manager(QtCore.QObject):
         )
 
     def get_server_fme(self):
+        cat = None
         if self.tool_interface.data and self.tool_interface.data['dados']['atividade']['fme']:
             self.server = self.tool_interface.data['dados']['atividade']['fme']['servidor']
             cat = self.tool_interface.data['dados']['atividade']['fme']['categoria']
@@ -66,12 +67,12 @@ class Rotines_Manager(QtCore.QObject):
     def start_rotine_fme(self):
         if not(self.isActiveRotine):
             self.tool_interface.rotinesProgressBar.setRange(0,0)
-            pg_con = self.tool_interface.getPostgresConnection()
+            pg_con = self.tool_interface.loadPostgresDatabase()
             workspace = self.tool_interface.getWorkspace()
             loginData = self.tool_interface.data
-            geomUnit = (
-                "'{0}'".format(loginData["dados"]["atividade"]["geom"]) if loginData else pg_con.dbJson['workspaces'][workspace] 
-            )
+            geomUnit = "'{0}'".format(
+                loginData["dados"]["atividade"]["geom"] if loginData else pg_con.dbJson['workspaces'][workspace]
+            ) 
             postJson  = self.get_post_data(self.rotine_data, geomUnit, pg_con.dbJson['dataConnection'])
             rotineId =  self.rotine_data['id']
             postData = { 'parameters' : postJson}
