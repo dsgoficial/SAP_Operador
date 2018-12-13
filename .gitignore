@@ -3,3 +3,4 @@
 managerLoadLayer/formsCustom/*.ui
 *.pyc
 .pyc
+.DS_Store
