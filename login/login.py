@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui, uic
+from PyQt4.QtCore import QSettings
 import json, sys, os, copy, base64
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
@@ -23,7 +24,7 @@ class Login(QtGui.QDialog, GUI):
         self.setupUi(self)
         self.iface = iface
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.18.0</b>")
+        self.version_lb.setText(u"<b>versão : 2.18.1</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -35,8 +36,13 @@ class Login(QtGui.QDialog, GUI):
         return base64.b64decode(ciphertext)
 
     def loadFields(self):
-        self.serverLineEdit.setText("http://10.25.163.42:3013")
         self.projectQgis = ProjectQgis(self.iface)
+        settings = QSettings()
+        settings.beginGroup('SAP/server')
+        server = settings.value('server')
+        settings.endGroup()
+        if server:
+            self.serverLineEdit.setText(server)
         user = self.projectQgis.getVariableProject('usuario')
         password = self.projectQgis.getVariableProject('senha')
         if user and password:
@@ -130,6 +136,10 @@ class Login(QtGui.QDialog, GUI):
         data["server"] = server
         data[u"ok"] = True
         data_encode =  data['dados']['atividade']['nome'].encode('utf-8')
+        settings = QSettings()
+        settings.beginGroup('SAP/server')
+        settings.setValue('server', server)
+        settings.endGroup()
         self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
         self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
         self.projectQgis.setProjectVariable('atividade', self.encrypt('123456', data_encode))
