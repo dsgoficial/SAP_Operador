@@ -1,5 +1,0 @@
-*.log
-*.sql
-managerLoadLayer/formsCustom/*.ui
-*.pyc
-.pyc
