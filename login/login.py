@@ -180,11 +180,10 @@ class Login(QtGui.QDialog, GUI):
                     url = u"{0}/distribuicao/verifica".format(server)
                     response = Network().GET(server, url, header)
                     data = response.json()
+                    print data
                     data['token'] = token
                     return data, response.status_code
                 return False, response.status_code
             except:
                 return False, 1
         return False, 2
-
-    
