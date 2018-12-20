@@ -13,7 +13,7 @@ class AddFeatures(QtCore.QObject):
 
     def validate(self):
         if self.iface.activeLayer():
-            features_added = self.iface.activeLayer().editBuffer().addedFeatures()
+            features_added = self.iface.activeLayer().editBuffer().addedFeatures() if self.iface.activeLayer().editBuffer() else False
             if features_added:
                 self.test_add_in_moldura(features_added)
 

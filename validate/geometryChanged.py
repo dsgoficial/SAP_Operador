@@ -13,7 +13,7 @@ class GeometryChanged(QtCore.QObject):
 
     def validate(self):
         if self.iface.activeLayer():
-            geom_change = self.iface.activeLayer().editBuffer().changedGeometries()
+            geom_change = self.iface.activeLayer().editBuffer().changedGeometries() if self.iface.activeLayer().editBuffer() else False
             if geom_change:
                 self.test_geom_in_moldura(geom_change)
 
