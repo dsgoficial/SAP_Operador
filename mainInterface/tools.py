@@ -234,6 +234,7 @@ class Tools(QtGui.QDialog, GUI):
         self.dataBaseLabel.setVisible(False)
         self.workspaceCombo.setVisible(False)
         self.workspaceLabel.setVisible(False)
+        self.only_geom_ckb.setVisible(False)
         self.loadCombo(
             self.loadWithCombo,
             self.validateStyles()
@@ -333,11 +334,6 @@ class Tools(QtGui.QDialog, GUI):
                 self.postgresql.getWorkspaceItems(),
                 u'Todas as unidades'
             )
-            self.loadCombo(
-                self.filterCombo,
-                self.postgresql.getFilterOption(),
-                u'<Opções>'
-            )
             self.profiles = self.getProfilesDataFormated()
             self.loadProfileGroupBox()
             menu.exportDataMenuOnProject()
@@ -355,7 +351,6 @@ class Tools(QtGui.QDialog, GUI):
             self.toolsTabWidget.setCurrentIndex(3)
             self.loadCombo(self.loadWithCombo, [])
             self.loadCombo(self.workspaceCombo, [])
-            self.loadCombo(self.filterCombo, [])
             self.cleanProfilesGroupBox()
             self.rulesWebView.setHtml('')
             self.cleanRulesGroupBox()
@@ -557,7 +552,6 @@ class Tools(QtGui.QDialog, GUI):
             loadLayers.updateProgressBar.connect(
                 self.updateProgressBar
             )
-            loadLayers.setFilterSelected(self.filterCombo.currentText())
             loadLayers.setFilters(self.postgresql.getFilterData())
             loadLayers.loadAllLayersSelected({
                 'activeProgressBar' : True,
