@@ -15,7 +15,6 @@ class LoadLayers(QtCore.QObject):
         super(LoadLayers, self).__init__()
         self.iface = iface
         self.filters = {}
-        self.filterSelected = None
         self.rules = {}
         self.loginData = loginData
             
@@ -49,12 +48,6 @@ class LoadLayers(QtCore.QObject):
 
     def getFilters(self):
         return self.filters
-
-    def setFilterSelected(self, d):
-        self.filterSelected = d 
-
-    def getFilterSelected(self):
-        return self.filterSelected
    
     def createConnection(self, data):
         host = data[u"host"]
@@ -130,7 +123,8 @@ class LoadLayers(QtCore.QObject):
 
 
     def createTmpMoldura(self, data):
-        if self.loginData:
+        root = core.QgsProject.instance().layerTreeRoot()
+        if self.loginData and not root.findGroup('MOLDURA'):
             srid = self.loginData["dados"]["atividade"]["geom"].split(";")[0].split("=")[1]
             wkt = self.loginData["dados"]["atividade"]["geom"].split(";")[1]
             temp = core.QgsVectorLayer("?query=SELECT geom_from_wkt('%s') as geometry&geometry=geometry:3:%s"%(wkt, srid), "moldura", "virtual")
@@ -184,22 +178,11 @@ class LoadLayers(QtCore.QObject):
             groupCatLayer = groupGeom.addGroup(nameCatLayer)
             return groupCatLayer
 
-    def getExtraFilter(self, layerName):
-        filterData = self.filters
-        filterType = self.filterSelected
-        extraFilter = ''
-        for x in filterData:
-            if filterType == filterData[x][u'tipo_filtro'] and layerName == filterData[x][u'camada']:
-                extraFilter+=u'AND {0}'.format(filterData[x][u'filtro'])
-        return extraFilter
-
-
     def getFilterWhere(self, workspace, layerName, workspaceName):
-        extraFilter = self.getExtraFilter(layerName)
         if layerName == u'aux_moldura_a':
-            filterWhere = ' '.join([u'''"mi" = \'%s\''''%(workspaceName), extraFilter]) 
+            filterWhere = u'''"mi" = \'%s\''''%(workspaceName)
         else: 
-            filterWhere = ' '.join([u'''st_intersects(geom, st_geomfromewkt('%s'))'''%(workspace), extraFilter])
+            filterWhere = u'''st_intersects(geom, st_geomfromewkt('%s'))'''%(workspace)
         return filterWhere
 
     def getClausuleWhereAndWorkspace(self, data):
@@ -296,9 +279,9 @@ class LoadLayers(QtCore.QObject):
     def loadStyleOnLayer(self, data):
         # carrega o estilo escolhido
         style = data[u'userData'][u'styleName']
+        vectorLayer = data[u'vectorLayer']
+        vectorLayer.loadDefaultStyle()
         if style != u'<Opções>':
-            vectorLayer = data[u'vectorLayer']
-            vectorLayer.loadDefaultStyle()
             layerName = vectorLayer.name()
             styles = data[u'styles']
             sep = '/' if '/' in styles.keys()[0] else '_'
