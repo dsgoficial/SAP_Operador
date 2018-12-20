@@ -234,6 +234,7 @@ class Tools(QtGui.QDialog, GUI):
         self.dataBaseLabel.setVisible(False)
         self.workspaceCombo.setVisible(False)
         self.workspaceLabel.setVisible(False)
+        self.only_geom_ckb.setVisible(False)
         self.loadCombo(
             self.loadWithCombo,
             self.validateStyles()

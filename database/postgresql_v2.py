@@ -119,9 +119,10 @@ class Postgresql_v2(object):
             postgresCursor = self.connectionPsycopg2.cursor()
             postgresCursor.execute(sql)
             query = postgresCursor.fetchall()
-            sep = '/' if '/' in query[0][0] else '_'
-            styles = list(set([item[0].split(sep)[0] for item in query]))
-            return styles
+            if query[0]:
+                sep = '/' if '/' in query[0][0] else '_'
+                styles = list(set([item[0].split(sep)[0] for item in query]))
+                return styles
         return []
 
     def getRulesData(self):
