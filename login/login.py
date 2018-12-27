@@ -184,6 +184,7 @@ class Login(QtGui.QDialog, GUI):
                     data['token'] = token
                     return data, response.status_code
                 return False, response.status_code
-            except:
+            except Exception as e:
+                print e
                 return False, 1
         return False, 2
