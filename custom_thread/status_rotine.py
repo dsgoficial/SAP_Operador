@@ -15,8 +15,9 @@ class Status_rotine(QtCore.QObject):
      
     def getStatus(self):
         try:
-            os.environ['NO_PROXY'] =  self.server
-            response = requests.get(self.url)
+            session = requests.Session()
+            session.trust_env = False
+            response = session.get(self.url)
             return response.json()['data'] #['status'] 1 -- rodando, 2 -- executado, 3 -- erro
         except:
             data = {'status': 'erro', 'log':'Erro no plugin!'}

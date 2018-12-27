@@ -12,21 +12,24 @@ class Network:
 
     def server_on(self, server):
         try:
-            os.environ[u"NO_PROXY"] = server
-            requests.get(server, timeout=8)
+            session = requests.Session()
+            session.trust_env = False
+            session.get(server, timeout=8)
             return True
         except: 
             return False
     
     def POST(self, host, url, post_data={}, header={}):
-        os.environ[u"NO_PROXY"] = host
-        response = requests.post(url, json=post_data, headers=header)
+        session = requests.Session()
+        session.trust_env = False
+        response = session.post(url, json=post_data, headers=header)
         return response
 
     def GET(self, host, url, header={}):
         try:
-            os.environ['NO_PROXY'] = host
-            response = requests.get(url,  headers=header)
+            session = requests.Session()
+            session.trust_env = False
+            response = session.get(url,  headers=header)
             return response
         except requests.exceptions.InvalidURL:
             return 1
