@@ -3,7 +3,7 @@ from PyQt4 import QtCore
 from qgis import core, gui
 from platform   import system as system_name
 from auth_smb import Auth_Smb
-import os, requests, sys, re, subprocess
+import os, requests, sys, re, subprocess, json
 
 
 class Network:
@@ -20,9 +20,10 @@ class Network:
             return False
     
     def POST(self, host, url, post_data={}, header={}):
+        header['content-type'] = 'application/json'
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, json=post_data, headers=header)
+        response = session.post(url, data=json.dumps(post_data), headers=header)
         return response
 
     def GET(self, host, url, header={}):
