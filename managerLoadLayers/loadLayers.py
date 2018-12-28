@@ -108,11 +108,11 @@ class LoadLayers(QtCore.QObject):
                         self.addLayer(data)
                         if userData[u'activeProgressBar']:
                             self.updateProgressBar.emit()
-        self.createTmpMoldura(data)
-        self.clean_groups_empyt(groupDbName)
+        self.createTmpMoldura(groupDb)
+        self.clean_groups_empty(groupDbName)
         self.collapseAllTree(groupDbName)
     
-    def clean_groups_empyt(self, groupDbName):
+    def clean_groups_empty(self, groupDbName):
         root = core.QgsProject.instance().layerTreeRoot()
         result = root.findGroup(groupDbName)
         if result:
@@ -122,7 +122,7 @@ class LoadLayers(QtCore.QObject):
                         a.removeChildNode(b)
 
 
-    def createTmpMoldura(self, data):
+    def createTmpMoldura(self, groupDb):
         root = core.QgsProject.instance().layerTreeRoot()
         if self.loginData and not root.findGroup('MOLDURA'):
             srid = self.loginData["dados"]["atividade"]["geom"].split(";")[0].split("=")[1]
@@ -134,7 +134,7 @@ class LoadLayers(QtCore.QObject):
                 'estilo_moldura.qml'
             )
             temp.loadNamedStyle(qml_path)
-            group = data["groupDb"].addGroup("MOLDURA")
+            group = groupDb.addGroup("MOLDURA")
             layerTmp = core.QgsMapLayerRegistry.instance().addMapLayer(temp, False)
             group.addLayer(layerTmp)
         
@@ -284,7 +284,7 @@ class LoadLayers(QtCore.QObject):
         if style != u'<Opções>':
             layerName = vectorLayer.name()
             styles = data[u'styles']
-            sep = '/' if '/' in styles.keys()[0] else '_'
+            sep = '/' if styles.keys() and '/' in styles.keys()[0] else '_'
             loadStyles = [u'{}{}{}'.format(style, sep, layerName)] 
             for styleName in loadStyles:
                 if styles and (styleName in styles):

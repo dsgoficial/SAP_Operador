@@ -709,7 +709,7 @@ class Tools(QtGui.QDialog, GUI):
    
     def validateStyles(self):
         styles_name = self.data["dados"]["atividade"]["estilos"]
-        return self.postgresql.getStylesItems(styles_name)
+        return self.postgresql.getStylesItems(styles_name, True)
     
     def validateRules(self):
         ok = {}
