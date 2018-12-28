@@ -109,20 +109,16 @@ class Postgresql_v2(object):
             return workspace
         return []
 
-    def getStylesItems(self, styles_name=False):
+    def getStylesItems(self, styles_name=[], filter = False):
         if self.getTableFromDb('layer_styles'):
-            if styles_name:
-                styles = ", ".join([ "'%{}%'".format(name) for name in styles_name])
-                sql = '''SELECT stylename FROM layer_styles where stylename like any(array[{}]);'''.format(styles)
-            else:
-                sql = '''SELECT stylename FROM layer_styles;'''
+            sql = '''SELECT DISTINCT CASE WHEN stylename LIKE '%/%' THEN split_part(stylename, '/', 1) ELSE split_part(stylename, '_', 1) END FROM public.layer_styles;'''
             postgresCursor = self.connectionPsycopg2.cursor()
             postgresCursor.execute(sql)
             query = postgresCursor.fetchall()
-            if query[0]:
-                sep = '/' if '/' in query[0][0] else '_'
-                styles = list(set([item[0].split(sep)[0] for item in query]))
-                return styles
+            query = [item[0] for item in query]
+            if filter:
+                query = [item for item in query if item in styles_name]
+            return query
         return []
 
     def getRulesData(self):
