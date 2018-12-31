@@ -22,24 +22,13 @@ class Project(QtCore.QObject):
         settings.beginGroup('SAP/server')
         server = settings.value('server')
         if user and password and task and server:
-            QtGui.QMessageBox.critical(
-                self.iface.mainWindow(),
-                u"Aviso", 
-                u"aqui 1"
-            )
             lg = Login(self.iface)
             data, status_code = lg.checkLogin(server, user, password)
-            if data and "dados" in data:
-                if data['dados']['atividade']['nome'] != current_task:
-                    QtGui.QMessageBox.critical(
-                        self.iface.mainWindow(),
-                        u"Aviso", 
-                        u"aqui 2"
-                    )
-                    core.QgsMapLayerRegistry.instance().removeAllMapLayers()
-                    core.QgsProject.instance().layerTreeRoot().removeAllChildren()
-                    QtGui.QMessageBox.critical(
-                        self.iface.mainWindow(),
-                        u"Aviso", 
-                        u"<p>Esse projeto não pode ser acessado. Carregue um novo projeto.</p>"
-                    )
+            if not data or "dados" not in data or data['dados']['atividade']['nome'] != task:
+                core.QgsMapLayerRegistry.instance().removeAllMapLayers()
+                core.QgsProject.instance().layerTreeRoot().removeAllChildren()
+                QtGui.QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    u"Aviso", 
+                    u"<p>Esse projeto não pode ser acessado. Carregue um novo projeto.</p>"
+                )
