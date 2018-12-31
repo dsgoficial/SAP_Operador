@@ -4,7 +4,7 @@ import json
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import QSettings
 from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsDataSourceURI, QgsPoint, QGis, QgsGeometry, QgsProject, QgsField, QgsRelation, QgsCoordinateReferenceSystem
-import json, sys, os, copy, base64
+import json, sys, os, copy
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 
@@ -19,6 +19,8 @@ class Postgresql_v2(object):
         self.dbAlias = None
         self.modeRemote = None
         self.geom = None
+        self.projectQgis = ProjectQgis(self.iface)
+
 
     def getAliasNamesDb(self):
         # retorna uma lista com os apelidos de cada banco postgres validado
@@ -29,13 +31,6 @@ class Postgresql_v2(object):
         aliasesDb = list(set([a.split("/")[-2] for a in infoDataBases \
                             if a.split("/")[-2] != u'connections']))
         return aliasesDb
-
-    def encrypt(self, key, plaintext):
-        return base64.b64encode(plaintext)
-
-    def decrypt(self, key, ciphertext):
-        return base64.b64decode(ciphertext)
-
 
     def getConnectionData(self):
         dbAlias = self.dbAlias
@@ -52,7 +47,11 @@ class Postgresql_v2(object):
         elif self.connectionLoginData:
             connection = self.connectionLoginData
         else:
-            connection = json.loads(self.decrypt('123456', ProjectQgis(self.iface).getVariableProject('loginData', isJson=True)))
+            loginData = self.projectQgis.getVariableProjectEncrypted('loginData')
+            if loginData:
+                connection = json.loads(loginData)
+            else:
+                connection = {}
         return connection
 
     def connectPsycopg2WithLoginData(self, loginData):
@@ -75,9 +74,9 @@ class Postgresql_v2(object):
                 self.connectionLoginData['password']
             )
         )
-        ProjectQgis(self.iface).setProjectVariable(
+        self.projectQgis.setProjectVariable(
             'loginData', 
-            self.encrypt('123456', json.dumps(copy.deepcopy(self.connectionLoginData)))
+            json.dumps(copy.deepcopy(self.connectionLoginData))
         )
         conn.set_session(autocommit=True)
         self.connectionPsycopg2 = conn

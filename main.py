@@ -29,12 +29,6 @@ class Main:
         self.msg_save = MessageSave(self.iface)
         
     def addActionOnQgis(self):
-        ''' pathIcon = ":/plugins/Ferramentas_Producao/icons/buttonIcon.png"
-        self.action = QtGui.QAction(
-            QtGui.QIcon(pathIcon), 
-            u"Ferramentas de Produção", 
-            self.iface.mainWindow()
-        ) '''
         self.action = ActionTest(self.iface)
         self.iface.digitizeToolBar().addAction(self.action)
         self.action.triggered.connect(

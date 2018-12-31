@@ -192,7 +192,6 @@ class LoadLayers(QtCore.QObject):
                 workspace = self.loginData["dados"]["atividade"]["geom"]
             else:
                 workspace = data[u'workspaces'][data[u'workspaceName']]
-            #ProjectQgis(self.iface).setProjectVariable('moldura_ewkt', workspace)
             where = self.getFilterWhere(workspace, data['layerName'], workspaceName)
             return where, workspace
         return '', ''

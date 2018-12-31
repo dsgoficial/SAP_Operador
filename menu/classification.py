@@ -26,7 +26,8 @@ class Classification(QtCore.QObject):
         self.menuData = None 
         self.currentButtonMenu = None 
         self.currentLayer = None
-        self.reclassificationData = None 
+        self.reclassificationData = None
+        self.projectQgis = ProjectQgis(self.iface)
 
     def startSignals(self):
         iface = self.iface
@@ -244,7 +245,7 @@ class Classification(QtCore.QObject):
                     value  = fields[field]
                     if re.match('^\@value\(".+"\)$', value):
                         variable = value.split('"')[-2]
-                        value = ProjectQgis(self.iface).getVariableProject(variable)
+                        value = self.projectQgis.getVariableProject(variable)
                     lyr.changeAttributeValue(
                         f.id(), 
                         indx , 
@@ -279,7 +280,7 @@ class Classification(QtCore.QObject):
                         value  = fields[field]
                         if re.match('^\@value\(".+"\)$', value):
                             variable = value.split('"')[-2]
-                            value = ProjectQgis(self.iface).getVariableProject(variable)
+                            value = self.projectQgis.getVariableProject(variable)
                         lyr.changeAttributeValue(
                             f.id(), 
                             indx , 
@@ -351,7 +352,7 @@ class Classification(QtCore.QObject):
                         value  = fields[field]
                         if re.match('^\@value\(".+"\)$', value):
                             variable = value.split('"')[-2]
-                            value = ProjectQgis(self.iface).getVariableProject(variable)
+                            value = self.projectQgis.getVariableProject(variable)
                         attrDialog.attributeForm().changeAttribute(
                                 field , value         
                             )
@@ -387,7 +388,7 @@ class Classification(QtCore.QObject):
                         value  = fields[field]
                         if re.match('^\@value\(".+"\)$', value):
                             variable = value.split('"')[-2]
-                            value = ProjectQgis(self.iface).getVariableProject(variable)
+                            value = self.projectQgis.getVariableProject(variable)
                         lyr.changeAttributeValue(
                             f.id(), 
                             indx , 

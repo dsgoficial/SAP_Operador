@@ -3,7 +3,8 @@ from qgis import gui, core
 from qgis.core import QgsProject
 from PyQt4.QtCore import QSettings, Qt
 from PyQt4.QtGui import QToolBar, QPushButton
-import sys, os
+import sys, os, base64
+
 sys.path.append(os.path.dirname(__file__))
 
 class ProjectQgis:
@@ -12,20 +13,30 @@ class ProjectQgis:
         self.iface = iface
         self.qsettings = QSettings()
 
+    def encrypt(self, plaintext):
+        return base64.b64encode(plaintext)
+
+    def decrypt(self, ciphertext):
+        return base64.b64decode(ciphertext)
+
     def setProjectVariable(self, varName, value):
         core.QgsExpressionContextUtils.setProjectVariable(
             varName, value
         )
 
+    def setProjectVariableEncrypted(self, varName, value):
+        self.setProjectVariable(varName, self.encrypt(value))
+
     def getVariableProject(self, varName, isJson=False):
-        data = core.QgsExpressionContextUtils.projectScope().variable(
+        return core.QgsExpressionContextUtils.projectScope().variable(
             varName
         )
-        if isJson and not(data) and varName == 'loginData':
-            return 'e30='
-        elif isJson and not(data):
-            return '{}'
-        return data
+
+    def getVariableProjectEncrypted(self, varName):
+        data = self.getVariableProject(varName)
+        if data:
+            return self.decrypt(data)
+        return None
 
     def getVariableLayer(self, varname):
         layer = self.iface.activeLayer()
@@ -35,7 +46,6 @@ class ProjectQgis:
         return data
 
     def configShortcut(self):
-        #s.setValue("Qgis/newProjectDefault", u'true')
         self.cleanShortcut()
         variables = self.getVariables()
         for variable in variables:
