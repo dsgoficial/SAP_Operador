@@ -19,7 +19,7 @@ class AddFeatures(QtCore.QObject):
 
     def test_add_in_moldura(self, features_added):
         variable_name = u'area_trabalho_poligono'
-        ewkt = ProjectQgis(self.iface).getVariableLayer(variable_name)
+        ewkt = self.projectQgis.getVariableLayer(variable_name)
         if ewkt:
             wkt = ewkt.split(';')[1]
             geom = core.QgsGeometry.fromWkt(wkt)

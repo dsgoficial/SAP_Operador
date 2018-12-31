@@ -10,6 +10,7 @@ class GeometryChanged(QtCore.QObject):
     def __init__(self, iface, dataLogin=False):
         super(GeometryChanged, self).__init__()
         self.iface = iface
+        self.projectQgis = ProjectQgis(self.iface)
 
     def validate(self):
         if self.iface.activeLayer():
@@ -19,7 +20,7 @@ class GeometryChanged(QtCore.QObject):
 
     def test_geom_in_moldura(self, geom_change):
         variable_name = u'area_trabalho_poligono'
-        ewkt = ProjectQgis(self.iface).getVariableLayer(variable_name)
+        ewkt = self.projectQgis.getVariableLayer(variable_name)
         if ewkt:
             wkt = ewkt.split(';')[1]
             geom = core.QgsGeometry.fromWkt(wkt)

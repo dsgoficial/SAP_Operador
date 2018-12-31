@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import QSettings
 from qgis import core, gui, utils
-import json, sys, os, copy, base64
+import json, sys, os, copy
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 from login.login import Login
@@ -11,28 +12,30 @@ class Project(QtCore.QObject):
     def __init__(self, iface, dataLogin=False):
         super(Project, self).__init__()
         self.iface = iface
-
-    def encrypt(self, key, plaintext):
-        return base64.b64encode(plaintext)
-
-    def decrypt(self, key, ciphertext):
-        return base64.b64decode(ciphertext)
+        self.projectQgis = ProjectQgis(self.iface)
 
     def validate(self):
-        lg = Login(self.iface)
-        self.projectQgis = ProjectQgis(self.iface)
-        user = self.projectQgis.getVariableProject('usuario')
-        password = self.projectQgis.getVariableProject('senha')
-        task = self.projectQgis.getVariableProject('atividade')
-        server = lg.serverLineEdit.text()
+        user = self.projectQgis.getVariableProjectEncrypted('usuario')
+        password = self.projectQgis.getVariableProjectEncrypted('senha')
+        task = self.projectQgis.getVariableProjectEncrypted('atividade').decode('utf-8')
+        settings = QSettings()
+        settings.beginGroup('SAP/server')
+        server = settings.value('server')
         if user and password and task and server:
-            user = self.decrypt('123456', user)
-            password = self.decrypt('123456', password)
-            current_task = self.decrypt('123456', task)
+            QtGui.QMessageBox.critical(
+                self.iface.mainWindow(),
+                u"Aviso", 
+                u"aqui 1"
+            )
+            lg = Login(self.iface)
             data, status_code = lg.checkLogin(server, user, password)
             if data and "dados" in data:
-                different_projects = data['dados']['atividade']['nome'] != current_task.decode('utf-8')
-                if different_projects:
+                if data['dados']['atividade']['nome'] != current_task:
+                    QtGui.QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        u"Aviso", 
+                        u"aqui 2"
+                    )
                     core.QgsMapLayerRegistry.instance().removeAllMapLayers()
                     core.QgsProject.instance().layerTreeRoot().removeAllChildren()
                     QtGui.QMessageBox.critical(

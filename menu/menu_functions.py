@@ -17,25 +17,26 @@ class Menu_functions(QtCore.QObject):
         self.tools = tools
         self.menu_interface = Menu_interface(self.iface, self)
         self.menu_forms = None
+        self.projectQgis = ProjectQgis(self.iface)
 
     def getDbName(self):
         if self.data:  
             return self.data["dados"]["atividade"]["banco_dados"]["nome"]
         elif self.tools and self.tools.getDbName() and u"<Opções>" != self.tools.getDbName():
             return self.tools.getDbName() 
-        return ProjectQgis(self.iface).getVariableProject('dbname')
+        return self.projectQgis.getVariableProject('dbname')
 
     def getStyleName(self):
         if self.tools and self.tools.getStyleName():
             return self.tools.getStyleName() 
-        return ProjectQgis(self.iface).getVariableProject('stylename')
+        return self.projectQgis.getVariableProject('stylename')
 
     def getWorkspaceName(self):
         if self.data:          
             return self.data["dados"]["atividade"]["unidade_trabalho"]
         elif self.tools and self.tools.getWorkspace():
             return self.tools.getWorkspace() 
-        return ProjectQgis(self.iface).getVariableProject('workspace') 
+        return self.projectQgis.getVariableProject('workspace') 
 
     def getPostgresql(self):
         postgresql = Postgresql_v2(self.iface)
@@ -55,16 +56,15 @@ class Menu_functions(QtCore.QObject):
         if dbName and dbName != u"<Opções>" and styleName and workspaceName:
             profile = self.getProfileMenu()
             orderMenu = self.getOrderMenu()
-            projectQgis = ProjectQgis(self.iface)
-            projectQgis.setProjectVariable('dbname', dbName)
-            projectQgis.setProjectVariable('stylename', styleName)
-            projectQgis.setProjectVariable('workspace', workspaceName)
+            self.projectQgis.setProjectVariable('dbname', dbName)
+            self.projectQgis.setProjectVariable('stylename', styleName)
+            self.projectQgis.setProjectVariable('workspace', workspaceName)
             if profile:
-                projectQgis.setProjectVariable(
+                self.projectQgis.setProjectVariable(
                     'profile', 
                     json.dumps(copy.deepcopy(profile))
                 )
-                projectQgis.setProjectVariable(
+                self.projectQgis.setProjectVariable(
                     'orderMenu', 
                     json.dumps(copy.deepcopy(orderMenu))
                 )
@@ -73,13 +73,21 @@ class Menu_functions(QtCore.QObject):
 
     def getProfileMenu(self):
         if self.tools and self.tools.profile:
-            return self.tools.profile 
-        return json.loads(ProjectQgis(self.iface).getVariableProject('profile', isJson=True)) 
+            return self.tools.profile
+        profile = self.projectQgis.getVariableProject('profile')
+        if profile:
+            return json.loads(profile) 
+        else:
+            return {}
     
     def getOrderMenu(self):
         if self.tools and self.tools.orderMenu:
-            return self.tools.orderMenu 
-        return json.loads(ProjectQgis(self.iface).getVariableProject('orderMenu', isJson=True)) 
+            return self.tools.orderMenu
+        orderMenu = self.projectQgis.getVariableProject('orderMenu')
+        if orderMenu:
+            return json.loads(orderMenu) 
+        else:
+            return {}
 
     def closeMenuClassification(self):
         self.menu_interface.close()
@@ -112,33 +120,31 @@ class Menu_functions(QtCore.QObject):
         )
     
     def cleanMenuData(self):
-        projectQgis = ProjectQgis(self.iface)
         if self.tools:
             self.tools.profile = None 
             self.tools.orderMenu = None
-        projectQgis.setProjectVariable(
+        self.projectQgis.setProjectVariable(
             "orderMenu", 
             ""
         )
-        projectQgis.setProjectVariable(
+        self.projectQgis.setProjectVariable(
             "profile", 
             ""
         )
-        projectQgis.setProjectVariable(
+        self.projectQgis.setProjectVariable(
             "loginData", 
             ""
         )
 
     def updateMenuData(self, tabwidget, profile):
-        projectQgis = ProjectQgis(self.iface)
         orderMenu = tabwidget.getOrderMenu()
         self.tools.orderMenu = tabwidget.getOrderMenu()
-        projectQgis.setProjectVariable(
+        self.projectQgis.setProjectVariable(
             "orderMenu", 
             json.dumps(copy.deepcopy(orderMenu))
         )
         self.tools.profile = profile
-        projectQgis.setProjectVariable(
+        self.projectQgis.setProjectVariable(
             "profile", 
             json.dumps(copy.deepcopy(profile))
         )
@@ -297,7 +303,7 @@ class Menu_functions(QtCore.QObject):
         profile = self.getProfileMenu()
         del profile[unicode(tabName)][unicode(buttonNameOld)]
         profile[unicode(tabName)][unicode(buttonNameNew)] = button.buttonData 
-        ProjectQgis(self.iface).setProjectVariable(
+        self.projectQgis.setProjectVariable(
             "profile", 
             json.dumps(copy.deepcopy(profile), ensure_ascii=False).encode('utf8')
         )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import QSettings
-import json, sys, os, copy, base64
+import json, sys, os, copy
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
@@ -23,31 +23,25 @@ class Login(QtGui.QDialog, GUI):
         super(Login, self).__init__()
         self.setupUi(self)
         self.iface = iface
+        self.projectQgis = ProjectQgis(self.iface)
         self.loadFields()
         self.version_lb.setText(u"<b>versão : 2.18.6</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
-    
-    def encrypt(self, key, plaintext):
-        return base64.b64encode(plaintext)
-
-    def decrypt(self, key, ciphertext):
-        return base64.b64decode(ciphertext)
 
     def loadFields(self):
-        self.projectQgis = ProjectQgis(self.iface)
         settings = QSettings()
         settings.beginGroup('SAP/server')
         server = settings.value('server')
         settings.endGroup()
         if server:
             self.serverLineEdit.setText(server)
-        user = self.projectQgis.getVariableProject('usuario')
-        password = self.projectQgis.getVariableProject('senha')
+        user = self.projectQgis.getVariableProjectEncrypted('usuario')
+        password = self.projectQgis.getVariableProjectEncrypted('senha')
         if user and password:
-            self.nameLineEdit.setText(self.decrypt('123456', user))
-            self.passwordLineEdit.setText(self.decrypt('123456', password))
+            self.nameLineEdit.setText(user)
+            self.passwordLineEdit.setText(password)
    
     def connectionType(self, value):
         if value == 0:
@@ -140,9 +134,9 @@ class Login(QtGui.QDialog, GUI):
         settings.beginGroup('SAP/server')
         settings.setValue('server', server)
         settings.endGroup()
-        self.projectQgis.setProjectVariable('usuario', self.encrypt('123456', user))
-        self.projectQgis.setProjectVariable('senha', self.encrypt('123456', password))
-        self.projectQgis.setProjectVariable('atividade', self.encrypt('123456', data_encode))
+        self.projectQgis.setProjectVariableEncrypted('usuario', user)
+        self.projectQgis.setProjectVariableEncrypted('senha', password)
+        self.projectQgis.setProjectVariableEncrypted('atividade', data_encode)
         self.accept()
         self.showTools.emit(data)
                     
