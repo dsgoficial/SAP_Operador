@@ -10,6 +10,7 @@ class AddFeatures(QtCore.QObject):
     def __init__(self, iface, dataLogin=False):
         super(AddFeatures, self).__init__()
         self.iface = iface
+        self.projectQgis = ProjectQgis(self.iface)
 
     def validate(self):
         if self.iface.activeLayer():
