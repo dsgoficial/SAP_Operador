@@ -17,14 +17,20 @@ class Project(QtCore.QObject):
     def validate(self):
         user = self.projectQgis.getVariableProjectEncrypted('usuario')
         password = self.projectQgis.getVariableProjectEncrypted('senha')
-        task = self.projectQgis.getVariableProjectEncrypted('atividade').decode('utf-8')
-        settings = QSettings()
-        settings.beginGroup('SAP/server')
-        server = settings.value('server')
-        if user and password and task and server:
-            lg = Login(self.iface)
-            data, status_code = lg.checkLogin(server, user, password)
-            if not data or "dados" not in data or data['dados']['atividade']['nome'] != task:
+        task = self.projectQgis.getVariableProjectEncrypted('atividade')
+        if user and password and task:
+            settings = QSettings()
+            settings.beginGroup('SAP/server')
+            server = settings.value('server')
+            if server:
+                task = task.decode('utf-8')
+                lg = Login(self.iface)
+                data, status_code = lg.checkLogin(server, user, password)
+                if not data or "dados" not in data or data['dados']['atividade']['nome'] != task:
+                    error = True
+            else:
+                error = True
+            if error:
                 core.QgsMapLayerRegistry.instance().removeAllMapLayers()
                 core.QgsProject.instance().layerTreeRoot().removeAllChildren()
                 QtGui.QMessageBox.critical(
