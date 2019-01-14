@@ -22,6 +22,7 @@ class Project(QtCore.QObject):
             settings = QSettings()
             settings.beginGroup('SAP/server')
             server = settings.value('server')
+            error = False
             if server:
                 task = task.decode('utf-8')
                 lg = Login(self.iface)

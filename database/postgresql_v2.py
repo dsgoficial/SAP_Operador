@@ -384,7 +384,7 @@ class Postgresql_v2(object):
 
     def getGroupGeomOfLayer(self, geom_type):
         if 'point' in geom_type.lower():
-            return u'PONT0'
+            return u'PONTO'
         elif 'line' in geom_type.lower():
             return u'LINHA'
         elif 'polygon' in geom_type.lower():
