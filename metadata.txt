@@ -1,29 +1,10 @@
-; the next section is mandatory
 [general]
-; start of mandatory metadata
-name=Ferramenta de Produção
-qgisMinimumVersion=2.0
-description=Ferramentas para Produção do 1CGEO
-version=version Version 2.18.6
-author=jossan
-email=me@hotmail.com
+name=Ferramentas de Produção
+email=me@example.com
+author=Jossan
+qgisMinimumVersion=3.0
+description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
+version=version 3.0.0
+repository=https://github.com/1cgeo/Ferramentas_Producao
+icon=icons/1cgeo.png
 ; end of mandatory metadata
-
-; start of optional metadata
-
-; experimental flag
-experimental=false
-
-changelog=false
-  Ready for QGIS 2.18.22
-  fixed for use with QGIS > 2.0
-
-; tags are in comma separated value format, spaces are allowed
-tags=digitizing
-
-; these metadata can be empty
-; in a future version of the web application it will
-; be probably possible to create a project on redmine
-; if they are not filled
-
-
