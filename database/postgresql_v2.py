@@ -47,7 +47,7 @@ class Postgresql_v2(object):
         elif self.connectionLoginData:
             connection = self.connectionLoginData
         else:
-            loginData = self.projectQgis.getVariableProjectEncrypted('loginData')
+            loginData = self.projectQgis.getVariableProject('loginData')
             if loginData:
                 connection = json.loads(loginData)
             else:
