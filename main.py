@@ -42,10 +42,16 @@ class Main(QtCore.QObject):
     def load_qgis_project(self):
         self.validate.start()
                 
-    def show_tools_dialog(self):
-        self.login.action.setEnabled(False)
-        self.tools.show_dialog().enable_action.connect(
-            lambda : self.login.action.setEnabled(True)
-        )
+    def show_tools_dialog(self, activity_data):
+        if activity_data:
+            self.login.action.setEnabled(False)
+            self.tools.show_sap_dialog(activity_data).enable_action.connect(
+                lambda : self.login.action.setEnabled(True)
+            )
+        else:
+            self.login.action.setEnabled(False)
+            self.tools.show_local_dialog().enable_action.connect(
+                lambda : self.login.action.setEnabled(True)
+            )
 
 

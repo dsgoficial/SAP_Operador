@@ -15,8 +15,11 @@ class Postgresql(QtCore.QObject):
             pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
     def load_data(self):
-        with open(self.path_data, u"rb") as f:
-            return pickle.load(f)
+        try:
+            with open(self.path_data, u"rb") as f:
+                return pickle.load(f)
+        except FileNotFoundError:
+            return False
 
     def get_local_alias_db(self):
         conf = QtCore.QSettings().allKeys()

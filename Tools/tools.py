@@ -18,7 +18,16 @@ class Tools(QtCore.QObject):
     def __del__(self):
         LoadData(self.iface).clean_forms_custom()        
 
-    def show_dialog(self):
+    def show_local_dialog(self):
+        self.interface = ToolsDialog(self.iface)
+        self.interface.selected_option.connect(
+            self.load_frame
+        )
+        self.interface.show()
+        return self.interface
+
+    def show_sap_dialog(self, activity_data):
+        print(activity_data)
         self.interface = ToolsDialog(self.iface)
         self.interface.selected_option.connect(
             self.load_frame
