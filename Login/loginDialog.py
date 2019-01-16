@@ -49,6 +49,17 @@ class LoginDialog(QtWidgets.QDialog):
                 'password' : self.password_input.text()
             })
         else:
+            self.show_message("no data")
+    
+    def show_message(self, tag):
+        if "new activity" == tag:
+            html = u"<p>Deseja iniciar a próxima atividade?</p>"
+            result = msgBox.show(text=html, title=u"AVISO!", status="question", parent=self)
+            return result
+        elif "no activity" == tag:
+            html = u"<p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
+            msgBox.show(text=html, title=u"AVISO!", status="question", parent=self)
+        elif "no data" == tag:
             html = u'<p style="color:red">Todos os campos devem ser preenchidos!</p>'
             msgBox.show(text=html, title=u"Aviso", parent=self)
 

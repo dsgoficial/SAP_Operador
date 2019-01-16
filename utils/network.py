@@ -3,7 +3,9 @@ from PyQt5 import QtCore
 from qgis import gui, core
 from platform import system 
 import os, requests, sys, re, subprocess, json
-#import samba
+from utils import msgBox
+
+CONFIG = {}
 
 def server_on(server):
     try:
@@ -15,20 +17,39 @@ def server_on(server):
         return False
 
 def POST(host, url, post_data={}, header={}):
-    header['content-type'] = 'application/json'
-    session = requests.Session()
-    session.trust_env = False
-    response = session.post(url, data=json.dumps(post_data), headers=header)
-    return response
+    if server_on(host):
+        header['content-type'] = 'application/json'
+        session = requests.Session()
+        session.trust_env = False
+        response = session.post(url, data=json.dumps(post_data), headers=header)
+        return False if show_erro(response) else response
+    show_erro({"_erro" : u"Sem conexão com servidor."})
 
 def GET(host, url, header={}):
     try:
-        session = requests.Session()
-        session.trust_env = False
-        response = session.get(url, headers=header)
-        return response
+        if server_on(host):
+            session = requests.Session()
+            session.trust_env = False
+            response = session.get(url, headers=header)
+            return False if show_erro(response) else response
+        show_erro({"_erro" : u"Sem conexão com servidor."})
     except requests.exceptions.ConnectionError:
-        return {"_erro" : u"Erro de conexão."}
+        show_erro({"_erro" : u"Erro de conexão."})
     except requests.exceptions.InvalidURL:
-        return {"_erro" : u"Url inválida."}
+        show_erro({"_erro" : u"Url inválida."})
             
+def show_erro(response):
+    html = ""
+    if "_erro" in response:
+        html = u"<p>{}</p>".format(response['_erro'])
+    elif response.status_code in [500]:
+        html = u"<p>Erro no servidor</p>"
+    elif response.status_code in [401, 403]:
+        html = u"<p>Usuário ou senha incorretos!</p>"
+    if html:
+        if "parent" in CONFIG:
+            msgBox.show(text=html, title=u"Error", parent=CONFIG['parent'])
+        else:
+            msgBox.show(text=html, title=u"Error") 
+        return True
+    return False
