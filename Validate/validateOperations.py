@@ -21,7 +21,6 @@ class ValidateOperations(QtCore.QObject):
         self.finish_operations()
 
     def update_track_list(self):
-        print('hop')
         self.disconnect_layers()
         self.track_list = [
             l for l in self.iface.mapCanvas().layers()

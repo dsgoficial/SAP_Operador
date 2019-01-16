@@ -5,3 +5,4 @@ managerLoadLayers/formsCustom/*.ui
 .pyc
 .DS_Store
 .vscode
+.pickle
