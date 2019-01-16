@@ -4,7 +4,7 @@ from .loginAction import LoginAction
 from .loginDialog import LoginDialog
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import managerQgis
+from utils import managerQgis, network
 
 class Login(QtCore.QObject):
 
@@ -25,10 +25,27 @@ class Login(QtCore.QObject):
         managerQgis.save_qsettings_var('login/server', login_data['server'])
         managerQgis.save_project_var('user', login_data['user'])
         managerQgis.save_project_var('password', login_data['password'])
-        print(login_data)
+        self.logon_sap(login_data)
         #self.show_tools.emit()
         QtWidgets.QApplication.restoreOverrideCursor()
-    
+
+    def logon_sap(self, login_data):
+        post_data = {
+            u"usuario" : login_data['user'],
+            u"senha" : login_data['password']
+        }
+        server = login_data['server']
+        url = u"{0}/login".format(server)
+        response = network.POST(server, url, post_data)
+        if response.json()['sucess']:
+            token = response.json()['dados']['token']
+            header = {'authorization' : token}
+            url = u"{0}/distribuicao/verifica".format(server)
+            response = network.GET(server, url, header)
+            data = response.json()
+            data['token'] = token
+            print(data)
+            
     def login_local(self, login_data):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.interface.accept()
