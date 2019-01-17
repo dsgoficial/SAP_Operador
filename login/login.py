@@ -25,7 +25,7 @@ class Login(QtGui.QDialog, GUI):
         self.iface = iface
         self.projectQgis = ProjectQgis(self.iface)
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.18.6</b>")
+        self.version_lb.setText(u"<b>versão : 2.18.8</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -74,7 +74,8 @@ class Login(QtGui.QDialog, GUI):
 
     def loginRemote(self, user=False, password=False, server=False):
         if (server and user and password) or (self.serverLineEdit.text() and self.nameLineEdit.text() and self.passwordLineEdit.text()):
-            server = self.serverLineEdit.text()
+            server = self.serverLineEdit.text() 
+            server = server if not(server.endswith('/')) else server[:-1] 
             user = self.nameLineEdit.text()
             password = self.passwordLineEdit.text()
             data, status_code = self.checkLogin(server, user, password)
