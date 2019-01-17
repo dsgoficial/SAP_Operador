@@ -316,17 +316,21 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QWebView" name="rulesWebView" native="true">
+        <widget class="QLabel" name="rulesView">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="url" stdset="0">
-          <url>
-           <string>about:blank</string>
-          </url>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>400</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
          </property>
         </widget>
        </item>
@@ -625,13 +629,6 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QWebView</class>
-   <extends>QWidget</extends>
-   <header>QtWebKit/QWebView</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>dataBaseCombo</tabstop>
   <tabstop>workspaceCombo</tabstop>
@@ -645,7 +642,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>searchMainLineEdit</tabstop>
   <tabstop>searchSelectionLineEdit</tabstop>
   <tabstop>allLayersList</tabstop>
-  <tabstop>rulesWebView</tabstop>
   <tabstop>statisticRulesButton</tabstop>
   <tabstop>serverFMELineEdit</tabstop>
   <tabstop>reloadRotinesButton</tabstop>

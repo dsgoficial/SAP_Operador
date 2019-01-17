@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4 import QtCore, QtGui, uic, QtGui, QtWebKit
+from PyQt4 import QtCore, QtGui, uic, QtGui
 import os, sys
 #carrega o arquivo da interface .ui
 sys.path.append(os.path.dirname(__file__))

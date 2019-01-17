@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt4 import QtCore, QtGui, uic, QtGui, QtWebKit
+from PyQt4 import QtCore, QtGui, uic, QtGui
 from qgis import core, gui
 import sys, os, json, copy, psycopg2
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
@@ -352,7 +352,7 @@ class Tools(QtGui.QDialog, GUI):
             self.loadCombo(self.loadWithCombo, [])
             self.loadCombo(self.workspaceCombo, [])
             self.cleanProfilesGroupBox()
-            self.rulesWebView.setHtml('')
+            self.rulesView.setText('')
             self.cleanRulesGroupBox()
             menu.exportDataMenuOnProject()
 
@@ -604,14 +604,14 @@ class Tools(QtGui.QDialog, GUI):
         else:
             db_name = self.getDbName()+"-"+self.getWorkspace()
         if db_name:
-            self.rulesWebView.setHtml('')
+            self.rulesView.setText('')
             self.rulesProgressBar.setValue(50)
             statisticHtml = self.rules.getStatisticRules(
                 self.getRulesSelected(),
                 db_name
             )
             if statisticHtml:
-                self.rulesWebView.setHtml(statisticHtml)
+                self.rulesView.setText(statisticHtml)
             self.rulesProgressBar.setValue(100) 
             self.rulesProgressBar.setValue(0) 
    
