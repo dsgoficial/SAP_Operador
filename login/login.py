@@ -70,7 +70,11 @@ class Login(QtGui.QDialog, GUI):
 
     def loginLocal(self):
         self.accept()
-        self.showTools.emit({})
+        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.showTools.emit({})
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
 
     def loginRemote(self, user=False, password=False, server=False):
         if (server and user and password) or (self.serverLineEdit.text() and self.nameLineEdit.text() and self.passwordLineEdit.text()):
@@ -139,7 +143,11 @@ class Login(QtGui.QDialog, GUI):
         self.projectQgis.setProjectVariableEncrypted('senha', password)
         self.projectQgis.setProjectVariableEncrypted('atividade', data_encode)
         self.accept()
-        self.showTools.emit(data)
+        QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.showTools.emit(data)
+        finally:
+            QtGui.QApplication.restoreOverrideCursor()
                     
     def initActivity(self, server, token):
         header = {'authorization' : token}

@@ -109,15 +109,18 @@ class Postgresql_v2(object):
     def getWorkspaceItems(self):
         lyr_data = self.getTableFromDb('aux_moldura_a')
         if lyr_data:
-            postgresCursor = self.connectionPsycopg2.cursor()
-            postgresCursor.execute('''
-                SELECT
-                mi
-                FROM {}.{};'''.format(lyr_data['schema'], lyr_data['layer'])
-            )
-            query = postgresCursor.fetchall()
-            workspace = list(set([item[0] for item in query]))
-            return workspace
+            try:
+                postgresCursor = self.connectionPsycopg2.cursor()
+                postgresCursor.execute('''
+                    SELECT
+                    mi
+                    FROM {}.{};'''.format(lyr_data['schema'], lyr_data['layer'])
+                )
+                query = postgresCursor.fetchall()
+                workspace = list(set([item[0] for item in query]))
+                return workspace
+            except psycopg2.ProgrammingError as e :
+                return []
         return []
 
     def getStylesItems(self, styles_name=[], filter = False):
@@ -371,14 +374,17 @@ class Postgresql_v2(object):
     def loadWorkspaces(self):
         lyr_data = self.getTableFromDb('aux_moldura_a')
         if lyr_data:
-            postgresCursor = self.connectionPsycopg2.cursor()
-            postgresCursor.execute(u'''  SELECT
-                                        mi, st_asewkt(geom)
-                                        FROM
-                                        {}.{};
-                                        '''.format(lyr_data['schema'], lyr_data['layer']))
-            query = postgresCursor.fetchall()
-            items = {item : value for item, value in query}
+            try:
+                postgresCursor = self.connectionPsycopg2.cursor()
+                postgresCursor.execute(u'''  SELECT
+                                            mi, st_asewkt(geom)
+                                            FROM
+                                            {}.{};
+                                            '''.format(lyr_data['schema'], lyr_data['layer']))
+                query = postgresCursor.fetchall()
+                items = {item : value for item, value in query}
+            except psycopg2.ProgrammingError as e :
+                return {}
             return items
 
     def getAllLayersByName(self, layers_name=False):
