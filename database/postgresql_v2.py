@@ -7,6 +7,7 @@ from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsDataSourceURI, Qgs
 import json, sys, os, copy
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
+from managerNetwork.network import Network
 
 class Postgresql_v2(object):
     def __init__(self, iface=False):
@@ -24,12 +25,23 @@ class Postgresql_v2(object):
 
     def getAliasNamesDb(self):
         # retorna uma lista com os apelidos de cada banco postgres validado
-        settings  = QSettings().allKeys()
-        infoDataBases = [s for s in settings if 'PostgreSQL' == s.split("/")[0]
+        settings  = QtCore.QSettings()
+        settings_data  = settings.allKeys()
+        infoDataBases = [s for s in settings_data if 'PostgreSQL' == s.split("/")[0]
             and 'connections' == s.split("/")[1]
         ]
         aliasesDb = list(set([a.split("/")[-2] for a in infoDataBases \
                             if a.split("/")[-2] != u'connections']))
+        aliasesDb = [ a for a in aliasesDb if (
+            settings.value(u'PostgreSQL/connections/%s/port'%(a)) and 
+            settings.value(u'PostgreSQL/connections/%s/host'%(a)) and
+            Network().check_conn({
+                'host' : settings.value(u'PostgreSQL/connections/%s/host'%(a)),
+                'port' : settings.value(u'PostgreSQL/connections/%s/port'%(a))}) and
+            settings.value(u'PostgreSQL/connections/%s/username'%(a)) and
+            settings.value(u'PostgreSQL/connections/%s/password'%(a)) and
+            settings.value(u'PostgreSQL/connections/%s/database'%(a))
+        )]
         return aliasesDb
 
     def getConnectionData(self):

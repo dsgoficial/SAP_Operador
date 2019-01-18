@@ -3,7 +3,7 @@ from PyQt4 import QtCore
 from qgis import core, gui
 from platform   import system as system_name
 from auth_smb import Auth_Smb
-import os, requests, sys, re, subprocess, json
+import os, requests, sys, re, subprocess, json, socket
 
 
 class Network:
@@ -17,6 +17,18 @@ class Network:
             session.get(server, timeout=8)
             return True
         except: 
+            return False
+
+    def check_conn(self, data):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(2)
+            s.connect((
+                data['host'],
+                int(data['port'])
+            ))
+            return True
+        except Exception as e:
             return False
     
     def POST(self, host, url, post_data={}, header={}):
