@@ -112,26 +112,23 @@ class GeneratorCustomForm(object):
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_4">
                     <item>
-                    <widget class="QTextBrowser" name="Browser">
-                        <property name="sizePolicy">
-                        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                        </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                        <size>
-                        <width>0</width>
-                        <height>0</height>
-                        </size>
-                        </property>
-                        <property name="maximumSize">
-                        <size>
-                        <width>16777215</width>
-                        <height>16777215</height>
-                        </size>
-                        </property>
-                    </widget>
+                        <widget class="QLabel" name="log_text">
+                            <property name="sizePolicy">
+                            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                            </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                            <size>
+                            <width>250</width>
+                            <height>0</height>
+                            </size>
+                            </property>
+                            <property name="text">
+                            <string/>
+                            </property>
+                        </widget>
                     </item>
                     </layout>
                     </widget>

@@ -5,11 +5,11 @@ import re
 global a
 
 class ValidateForm:
-	def __init__(self, layer, formValues, logBrowser):
+	def __init__(self, layer, formValues, log_label):
 		self.layer = layer 
 		self.formValues = formValues
 		self.rules = {rules}
-		self.logBrowser = logBrowser
+		self.log_label = log_label
 		self.validateForm()
 		
 	def calculateExpression(self, exp):
@@ -49,7 +49,7 @@ class ValidateForm:
 								logText += u"<p>{0}</p>".format(exp["descricao"].decode(u"utf-8"))
 						except:
 							pass
-		self.logBrowser.setHtml(logText)
+		self.log_label.setText(logText)
 
 	def cleanRulesOnForm(self):
 		for field in self.formValues:
@@ -67,7 +67,8 @@ class ManagerForm(QtCore.QObject):
 		self.myDialog = dialog
 		self.lyr = layer
 		self.validadeForm = ""
-		self.logBrowser = dialog.findChild(QTextBrowser, "Browser")
+		self.log_label = dialog.findChild(QLabel, "log_text")
+		self.log_label.setWordWrap(True)
 		self.logFrame = dialog.findChild(QFrame, "logFrame")
 		self.logFrame.hide()
 		self.logBtn = dialog.findChild(QPushButton, "logBtn")
@@ -111,7 +112,7 @@ class ManagerForm(QtCore.QObject):
 			le.text(),
 		    le
 		]
-		self.validadeForm = ValidateForm(self.lyr, formValues, self.logBrowser)
+		self.validadeForm = ValidateForm(self.lyr, formValues, self.log_label)
 		
 	def filterTypeField(self):
 		value =  self.filterField.currentText()
