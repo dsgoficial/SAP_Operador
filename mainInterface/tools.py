@@ -36,6 +36,7 @@ class Tools(QtGui.QDialog, GUI):
         self.activitySpacerItem = None
         self.insumosSpacerItem = None
         self.rotinesSpacerItem = None
+        self.rulesView.setWordWrap(True)
         self.vLayoutMenuForm = QtGui.QVBoxLayout(self.areaUserForm)
         self.menu_functions = None
         self.rules = None
