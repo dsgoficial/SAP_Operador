@@ -64,11 +64,12 @@ class Rotines_Local(QtCore.QObject):
             )
             if test:
                 self.iface.setActiveLayer(layer)
-                return self.iface.activeLayer()
+                if self.iface.activeLayer().allFeatureIds():
+                    return self.iface.activeLayer()
         QtGui.QMessageBox.critical(
             self.iface.mainWindow(),
             u"Erro", 
-            u"Camada não carregada!"
+            u"Camada está vazia ou não foi carregada."
         )
         return False
 
