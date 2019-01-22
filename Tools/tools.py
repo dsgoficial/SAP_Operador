@@ -14,20 +14,12 @@ class Tools(QtCore.QObject):
         self.iface = iface
         self.tool_selected = None
         self.menu = menu
+        self.sap_mode = False
 
     def __del__(self):
         LoadData(self.iface).clean_forms_custom()        
 
-    def show_local_dialog(self):
-        self.interface = ToolsDialog(self.iface)
-        self.interface.selected_option.connect(
-            self.load_frame
-        )
-        self.interface.show()
-        return self.interface
-
-    def show_sap_dialog(self, activity_data):
-        print(activity_data)
+    def show_dialog(self):
         self.interface = ToolsDialog(self.iface)
         self.interface.selected_option.connect(
             self.load_frame
@@ -49,6 +41,7 @@ class Tools(QtCore.QObject):
             pass
         else:
             self.tool_selected = Rotines(self.iface) """
+        self.tool_selected.sap_mode = self.sap_mode
         self.interface.show_frame(
             self.tool_selected.get_frame()
         )

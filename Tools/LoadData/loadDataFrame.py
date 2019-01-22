@@ -14,12 +14,12 @@ class LoadDataFrame(QtWidgets.QFrame):
     database_load = QtCore.pyqtSignal(str)
     load_data = QtCore.pyqtSignal(dict)
 
-    def __init__(self, iface, frame_data):
+    def __init__(self, iface):
         super(LoadDataFrame, self).__init__()
         self.iface = iface
         self.db_selected = None
+        self.sap_mode = False
         uic.loadUi(self.dialog_path, self)
-        self.db_options.addItems(frame_data['dbs'])
         btns = [
             self.call_all_btn_1,
             self.call_all_btn_2,
@@ -46,6 +46,16 @@ class LoadDataFrame(QtWidgets.QFrame):
         ]
         for search in searchs:
             search.textEdited.connect(self.search_list)
+
+    def config_sap_mode(self):
+        self.sap_mode = True
+        self.db_options.setVisible(False)
+        self.db_label.setVisible(False)
+        self.workspace_options.setVisible(False)
+        self.workspace_label.setVisible(False)
+
+    def load_dbs_name(self, dbs_name):
+        self.db_options.addItems(dbs_name)
 
     def load(self, frame_data):
         self.rules_list.clear()
@@ -101,7 +111,7 @@ class LoadDataFrame(QtWidgets.QFrame):
         load_menu = self.load_menu.isChecked()
         total = len(layers+insumos)
         workspace_name = self.workspace_options.currentText()
-        if workspace_name and self.db_selected:
+        if self.sap_mode or (workspace_name and self.db_selected):
             cursorWait.start()
             self.progress_load.setMaximum(total) if total > 0 else ''
             self.load_data.emit({

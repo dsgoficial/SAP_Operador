@@ -6,6 +6,7 @@ from .classification import Classification
 from .reclassifyForm import ReclassifyForm
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
 from Tools.LoadData.loadData import LoadData
 
@@ -14,6 +15,7 @@ class Menu(QtCore.QObject):
     def __init__(self, iface):
         super(Menu, self).__init__()
         self.iface = iface
+        self.sap_mode = False
         self.menu_dock = None
         self.postgresql = Postgresql()
         self.classification = Classification(self.iface)
@@ -22,6 +24,7 @@ class Menu(QtCore.QObject):
         )
 
     def get_frame(self):
+        print(ManagerSAP().load_data())
         db_data = self.postgresql.load_data()
         profiles_name = [db_data['db_menu'][idx]['nome_do_perfil'] for idx in db_data['db_menu']] if db_data else []
         options_name = [u"...", u"<Novo Perfil>"] + sorted(profiles_name) if profiles_name else [""]
