@@ -1,6 +1,6 @@
 *.log
 *.sql
-managerLoadLayers/formsCustom/*.ui
+Tools/LoadData/forms/*.ui
 *.pyc
 .pyc
 .DS_Store
