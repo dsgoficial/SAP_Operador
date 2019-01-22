@@ -6,6 +6,7 @@ from .generatorCustomInitCode import GeneratorCustomInitCode
 import sys, os, copy, json
 from qgis import core, gui
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
 from Tools.Rules.rules import Rules
 
@@ -16,19 +17,59 @@ class LoadData(QtCore.QObject):
     def __init__(self, iface):
         super(LoadData, self).__init__()
         self.iface = iface
+        self.sap_mode = False
         self.postgresql = Postgresql()
         self.postgresql.set_connections_data()
         self.rules = None
         self.frame = None
-    
-    def get_frame(self):
-        frame_data = {
-            u"dbs" : [u"<Opções>"] + sorted(self.postgresql.get_dbs_name())
+
+    def config_sap_mode(self):
+        sap_data = ManagerSAP().load_data()
+        db_data = sap_data['dados']['atividade']['banco_dados']
+        db_name = db_data['nome']
+        config_conn = {
+            'db_name' : db_name,
+            'db_host' : db_data['servidor'],
+            'db_port' : db_data['porta'],
+            'db_user' : sap_data['user'],
+            'db_password' : sap_data['password'] 
         }
-        self.frame = LoadDataFrame(self.iface, frame_data)
-        self.frame.database_load.connect(
-            self.update_frame
-        )
+        self.postgresql.set_connections_data(config_conn)
+        db_json = self.postgresql.load_db_json(db_name)
+        layers_list = [ ]
+        for g in db_json['db_layers']:
+            for d in db_json['db_layers'][g]:
+                layers_list.append(d['layer_name'])
+        layers_sap = [ d['nome'] for d in sap_data['dados']['atividade']['camadas']]
+        layers_list = [ n for n in layers_sap if n in layers_list] 
+        rules_sap = sap_data['dados']['atividade']['regras']
+        rules_name = list(set([
+            db_json['db_rules'][i]['tipo_estilo'] for i in db_json['db_rules'] 
+        ])) if db_json['db_rules'] else []
+        rules_name = [ n for n in rules_sap if n in rules_name ]
+        styles_sap = sap_data['dados']['atividade']['estilos']
+        styles_name = list(set([ d.split('_')[0] for d in db_json['db_styles'].keys()]))
+        styles_name = [ n for n in styles_sap if n in styles_name ]
+        self.insumos_sap = sap_data['dados']['atividade']['insumos']
+        self.frame.load({
+            'rules' : sorted(rules_name),
+            'layers' : sorted(layers_list),
+            'styles' : sorted(styles_name),
+            'insumos' : sorted([ d['nome'] for d in self.insumos_sap]),
+            'workspaces' : []
+        })
+
+    def get_frame(self):
+        self.frame = LoadDataFrame(self.iface)
+        if self.sap_mode:
+            self.config_sap_mode()
+            self.frame.config_sap_mode()
+        else:
+            dbs = [u"<Opções>"] + sorted(self.postgresql.get_dbs_name())
+            self.frame.load_dbs_name(dbs)
+            self.frame.database_load.connect(
+                self.update_frame
+            )
         self.frame.load_data.connect(
             self.load_data
         )
@@ -55,6 +96,7 @@ class LoadData(QtCore.QObject):
         return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
 
     def load_data(self, settings_data):
+        print(settings_data)
         db_data = self.postgresql.load_data()
         db_data['settings_user'] = settings_data
         self.load_layers(settings_data, db_data) if settings_data['layers_name'] else ''
@@ -285,9 +327,18 @@ class LoadData(QtCore.QObject):
         return v_lyr
 
     def load_layer(self, settings_data, db_data, layer_data):
-        workspace_name = settings_data['workspace_name']
-        workspace_wkt = '' if workspace_name == u"Todas" else db_data['db_workspaces_wkt'][workspace_name]
-        filter_text = '' if workspace_wkt == '' else self.get_spatial_filter(layer_data['layer_name'], workspace_name, workspace_wkt)
+        workspace_name = settings_data['workspace_name'] if not(self.sap_mode) else (
+            ManagerSAP().load_data()['dados']['atividade']['unidade_trabalho']
+        )
+        if self.sap_mode:
+            workspace_wkt = ManagerSAP().load_data()['dados']['atividade']['geom']
+        else:
+            workspace_wkt = '' if workspace_name == u"Todas" else (
+                db_data['db_workspaces_wkt'][workspace_name]
+            )
+        filter_text = '' if workspace_wkt == '' else (
+            self.get_spatial_filter(layer_data['layer_name'], workspace_name, workspace_wkt)
+        )
         v_lyr = self.add_layer_on_canvas(settings_data, db_data, layer_data, filter_text)    
         self.add_layer_style(v_lyr, settings_data, db_data)
         self.add_layer_values_map(v_lyr, layer_data)
@@ -319,7 +370,12 @@ class LoadData(QtCore.QObject):
         layers_map = self.get_map_layers(layers_data)
         layers_name_selected = settings_data[u'layers_name']
         db_group = self.addGroup(
-            u"{}_{}".format(db_data['db_name'],settings_data['workspace_name'])
+            u"{}_{}".format(
+                db_data['db_name'],
+                settings_data['workspace_name'] if not(self.sap_mode) else (
+                    ManagerSAP().load_data()['dados']['atividade']['unidade_trabalho']
+                )
+            )
         )
         settings_data['db_group'] = db_group
         layers_vector = []
@@ -339,7 +395,11 @@ class LoadData(QtCore.QObject):
         return layers_vector
         
     def load_insumos(self, settings_data):
-        print(settings_data['insumos'])
-
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()
+            paths = [
+                d['caminho']
+                for d in sap_data['dados']['atividade']['insumos'] if d['nome'] in settings_data['insumos']
+            ]
         
         

@@ -18,10 +18,12 @@ class LoginDialog(QtWidgets.QDialog):
         super(LoginDialog, self).__init__()
         self.iface = iface
         uic.loadUi(self.dialog_path, self)
+        self.version_text.setText(u"<b>versão: 3.0.0</b>")
         
     @QtCore.pyqtSlot(int)
     def on_localhost_check_stateChanged(self, state):
         self.login_frame.hide() if state else self.login_frame.show()
+        self.version_text.setVisible(not(state))
 
     def load_login_data(self, server, user, password):
         self.server_input.setText(server)  
@@ -49,19 +51,10 @@ class LoginDialog(QtWidgets.QDialog):
                 'password' : self.password_input.text()
             })
         else:
-            self.show_message("no data")
-    
-    def show_message(self, tag):
-        if "new activity" == tag:
-            html = u"<p>Deseja iniciar a próxima atividade?</p>"
-            result = msgBox.show(text=html, title=u"AVISO!", status="question", parent=self)
-            return result
-        elif "no activity" == tag:
-            html = u"<p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
-            msgBox.show(text=html, title=u"AVISO!", status="question", parent=self)
-        elif "no data" == tag:
             html = u'<p style="color:red">Todos os campos devem ser preenchidos!</p>'
             msgBox.show(text=html, title=u"Aviso", parent=self)
+    
+        
 
 
     

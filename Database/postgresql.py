@@ -33,9 +33,9 @@ class Postgresql(QtCore.QObject):
         ]))
         return alias_dbs
 
-    def set_connections_data(self, conn=False):
-        if conn:
-            pass
+    def set_connections_data(self, config_conn={}):
+        if config_conn:
+            self.conns[config_conn['db_name']] = config_conn
         else:
             aliases = self.get_local_alias_db()
             settings = QtCore.QSettings()
