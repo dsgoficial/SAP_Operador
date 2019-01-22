@@ -3,7 +3,7 @@ from PyQt5 import QtCore, QtWidgets
 from .loadDataFrame import LoadDataFrame
 from .generatorCustomForm import GeneratorCustomForm
 from .generatorCustomInitCode import GeneratorCustomInitCode
-import sys, os, copy, json
+import sys, os, copy, json, platform
 from qgis import core, gui
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from SAP.managerSAP import ManagerSAP
@@ -32,6 +32,7 @@ class LoadData(QtCore.QObject):
         self.load_input_files(settings_data) if settings_data['input_files'] else ''
         self.postgresql.dump_data(db_data)
         self.show_menu.emit() if settings_data['with_menu'] else ''
+        self.frame.show()
     
     def get_frame(self):
         self.frame = LoadDataFrame(self.iface)
@@ -386,13 +387,27 @@ class LoadData(QtCore.QObject):
     def load_input_files(self, settings_data):
         if self.sap_mode:
             sap_data = ManagerSAP().load_data()
-            paths = [
-                d['caminho']
+            paths_data = {
+                d['nome'] : d['caminho']
                 for d in sap_data['dados']['atividade']['insumos'] 
                 if d['nome'] in settings_data['input_files']
-            ]
-            files_path = managerFile.download(paths)
-    
+            }
+            files_data = managerFile.download(paths_data)
+            erro = []
+            for n in files_data:
+                file_path = files_data[n]
+                r = self.add_raster_layer(n, file_path)
+                if not(r):
+                    erro.append(file_path)
+            self.frame.show_erro(erro) if len(erro) > 0 else ''
+
+    def add_raster_layer(self, raster_name, raster_path):
+        layer = core.QgsRasterLayer(raster_path, raster_name)
+        if layer.isValid():
+            core.QgsProject.instance().addMapLayer(layer)
+            return True
+        return False
+            
     #no sap
     def add_layer_default_values(self, v_lyr):
         idx = v_lyr.fieldNameIndex(u"ultimo_usuario")

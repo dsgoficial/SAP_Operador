@@ -2,6 +2,8 @@
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from qgis import core, gui
 import sys, os
+from utils import msgBox
+
 
 class AuthSmb(QtWidgets.QDialog):
 
@@ -27,8 +29,5 @@ class AuthSmb(QtWidgets.QDialog):
         if self.user and self.passwd and self.domain:
             self.accept()
             return
-        QtGui.QMessageBox.information(
-            self,
-            u"Aviso", 
-            u"Todos os campos devem ser preenchidos!"
-        )
+        html=u"<p>Todos os campos devem ser preenchidos!</p>"
+        msgBox.show(text=html, title=u"Aviso", parent=self) 
