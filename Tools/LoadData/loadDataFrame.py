@@ -20,7 +20,7 @@ class LoadDataFrame(QtWidgets.QFrame):
         self.db_selected = None
         self.sap_mode = False
         uic.loadUi(self.dialog_path, self)
-        btns = [
+        self.btns = [
             self.call_all_btn_1,
             self.call_all_btn_2,
             self.call_all_btn_3,
@@ -34,7 +34,7 @@ class LoadDataFrame(QtWidgets.QFrame):
             self.send_selected_btn_2,
             self.send_selected_btn_3
         ]
-        for btn in btns:
+        for btn in self.btns:
             btn.clicked.connect(self.move_items)
         searchs = [
             self.search_all_layers,
@@ -53,6 +53,11 @@ class LoadDataFrame(QtWidgets.QFrame):
         self.db_label.setVisible(False)
         self.workspace_options.setVisible(False)
         self.workspace_label.setVisible(False)
+        self.send_all_btn_1.click()
+        self.send_all_btn_2.click()
+        self.send_all_btn_3.click()
+        for btn in self.btns:
+            btn.setEnabled(False)
 
     def load_dbs_name(self, dbs_name):
         self.db_options.addItems(dbs_name)
@@ -88,8 +93,9 @@ class LoadDataFrame(QtWidgets.QFrame):
     def reset_load_data(self, total):
         self.progress_load.setValue(total)
         self.progress_load.setValue(0)
-        for i in [self.call_all_btn_1, self.call_all_btn_2, self.call_all_btn_3]:
-            self.move_items(i.objectName())
+        if not(self.sap_mode):
+            for i in [self.call_all_btn_1, self.call_all_btn_2, self.call_all_btn_3]:
+                self.move_items(i.objectName())
 
     def update_progressbar(self):
         self.progress_load.setValue(self.progress_load.value() + 1)
