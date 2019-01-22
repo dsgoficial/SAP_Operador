@@ -8,7 +8,7 @@ def save_project_var(key, value):
     core.QgsExpressionContextUtils.setProjectVariable(
         core.QgsProject().instance(), 
         key,
-        chiper_text 
+        chiper_text.decode('utf-8')
     )
 
 def load_project_var(key):
@@ -16,7 +16,7 @@ def load_project_var(key):
     chiper_text = core.QgsExpressionContextUtils.projectScope(current_project).variable(
         key
     )
-    value = base64.b64decode(chiper_text).decode('utf-8') if chiper_text else ''
+    value = base64.b64decode(str.encode(chiper_text)).decode('utf-8') if chiper_text else ''
     return value
 
 def save_qsettings_var(key, value):

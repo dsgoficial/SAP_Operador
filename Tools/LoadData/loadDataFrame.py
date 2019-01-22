@@ -41,8 +41,8 @@ class LoadDataFrame(QtWidgets.QFrame):
             self.search_selected_layers,
             self.search_all_rules,
             self.search_selected_rules,
-            self.search_all_insumos,
-            self.search_selected_insumos
+            self.search_all_files,
+            self.search_selected_files
         ]
         for search in searchs:
             search.textEdited.connect(self.search_list)
@@ -66,8 +66,8 @@ class LoadDataFrame(QtWidgets.QFrame):
         self.layers_list.addItems(frame_data['layers'])
         self.styles_options.clear()
         self.styles_options.addItems(frame_data['styles'])
-        self.insumos_list.clear()
-        self.insumos_list.addItems(frame_data['insumos'])
+        self.files_list.clear()
+        self.files_list.addItems(frame_data['input_files'])
 
     @QtCore.pyqtSlot(int)
     def on_db_options_currentIndexChanged(self, idx):
@@ -82,7 +82,7 @@ class LoadDataFrame(QtWidgets.QFrame):
             self.workspace_options.clear()
             self.layers_list.clear()
             self.styles_options.clear()
-            self.insumos_list.clear()
+            self.files_list.clear()
             self.db_selected = None
 
     def reset_load_data(self, total):
@@ -100,16 +100,16 @@ class LoadDataFrame(QtWidgets.QFrame):
             self.layers_list_input.item(i).text() 
             for i in range(self.layers_list_input.count())
         ]
-        insumos = [ 
-            self.insumos_list_input.item(i).text() 
-            for i in range(self.insumos_list_input.count())
+        input_files = [ 
+            self.files_list_input.item(i).text() 
+            for i in range(self.files_list_input.count())
         ]
         rules = [ 
             self.rules_list_input.item(i).text() 
             for i in range(self.rules_list_input.count())
         ]
         load_menu = self.load_menu.isChecked()
-        total = len(layers+insumos)
+        total = len(layers+input_files)
         workspace_name = self.workspace_options.currentText()
         if self.sap_mode or (workspace_name and self.db_selected):
             cursorWait.start()
@@ -121,7 +121,7 @@ class LoadDataFrame(QtWidgets.QFrame):
                 'with_geom' : self.only_geometry.isChecked(),
                 'layers_name' : layers,
                 'rules_name' : rules,
-                'insumos' : insumos
+                'input_files' : input_files
             })
             self.reset_load_data(total) if total > 0 else ''
             cursorWait.stop()
@@ -168,8 +168,8 @@ class LoadDataFrame(QtWidgets.QFrame):
                 if cmd == 'send' else [self.rules_list_input, self.rules_list]
             )
         else:
-            origin, destination = ([self.insumos_list, self.insumos_list_input]
-                if cmd == 'send' else [self.insumos_list_input, self.insumos_list]
+            origin, destination = ([self.files_list, self.files_list_input]
+                if cmd == 'send' else [self.files_list_input, self.files_list]
             )
         if mode == 'all':
             self.move_all_items(origin, destination)
@@ -192,8 +192,8 @@ class LoadDataFrame(QtWidgets.QFrame):
             )
         else:
             list_items = (
-                self.insumos_list if mode == 'all' 
-                else self.insumos_list_input
+                self.files_list if mode == 'all' 
+                else self.files_list_input
             )
         items = [
             list_items.item(x) for x in range(list_items.count())
