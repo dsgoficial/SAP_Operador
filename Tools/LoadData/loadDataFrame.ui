@@ -408,7 +408,7 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <widget class="QListWidget" name="insumos_list">
+         <widget class="QListWidget" name="files_list">
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
@@ -450,7 +450,7 @@
            </property>
           </widget>
          </widget>
-         <widget class="QListWidget" name="insumos_list_input">
+         <widget class="QListWidget" name="files_list_input">
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
@@ -462,7 +462,7 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <widget class="QLineEdit" name="search_all_insumos">
+         <widget class="QLineEdit" name="search_all_files">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -488,7 +488,7 @@
 &gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
-         <widget class="QLineEdit" name="search_selected_insumos">
+         <widget class="QLineEdit" name="search_selected_files">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>

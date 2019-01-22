@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
 from Tools.Rules.rules import Rules
+from utils import managerFile
 
 class LoadData(QtCore.QObject):
 
@@ -22,6 +23,31 @@ class LoadData(QtCore.QObject):
         self.postgresql.set_connections_data()
         self.rules = None
         self.frame = None
+    
+    def load_data(self, settings_data):
+        print(settings_data)
+        db_data = self.postgresql.load_data()
+        db_data['settings_user'] = settings_data
+        self.load_layers(settings_data, db_data) if settings_data['layers_name'] else ''
+        self.load_input_files(settings_data) if settings_data['input_files'] else ''
+        self.postgresql.dump_data(db_data)
+        self.show_menu.emit() if settings_data['with_menu'] else ''
+    
+    def get_frame(self):
+        self.frame = LoadDataFrame(self.iface)
+        if self.sap_mode:
+            self.config_sap_mode()
+            self.frame.config_sap_mode()
+        else:
+            dbs = [u"<Opções>"] + sorted(self.postgresql.get_dbs_name())
+            self.frame.load_dbs_name(dbs)
+            self.frame.database_load.connect(
+                self.update_frame
+            )
+        self.frame.load_data.connect(
+            self.load_data
+        )
+        return self.frame
 
     def config_sap_mode(self):
         sap_data = ManagerSAP().load_data()
@@ -50,30 +76,14 @@ class LoadData(QtCore.QObject):
         styles_sap = sap_data['dados']['atividade']['estilos']
         styles_name = list(set([ d.split('_')[0] for d in db_json['db_styles'].keys()]))
         styles_name = [ n for n in styles_sap if n in styles_name ]
-        self.insumos_sap = sap_data['dados']['atividade']['insumos']
+        self.input_files = sap_data['dados']['atividade']['insumos']
         self.frame.load({
             'rules' : sorted(rules_name),
             'layers' : sorted(layers_list),
             'styles' : sorted(styles_name),
-            'insumos' : sorted([ d['nome'] for d in self.insumos_sap]),
+            'input_files' : sorted([ d['nome'] for d in self.input_files]),
             'workspaces' : []
         })
-
-    def get_frame(self):
-        self.frame = LoadDataFrame(self.iface)
-        if self.sap_mode:
-            self.config_sap_mode()
-            self.frame.config_sap_mode()
-        else:
-            dbs = [u"<Opções>"] + sorted(self.postgresql.get_dbs_name())
-            self.frame.load_dbs_name(dbs)
-            self.frame.database_load.connect(
-                self.update_frame
-            )
-        self.frame.load_data.connect(
-            self.load_data
-        )
-        return self.frame
 
     def update_frame(self, db_name):
         data = self.postgresql.load_db_json(db_name)
@@ -88,21 +98,12 @@ class LoadData(QtCore.QObject):
             'rules' : rules_name,
             'layers' : sorted(layers_list),
             'styles' : sorted(list(set([ d.split('_')[0] for d in data['db_styles'].keys()]))),
-            'insumos' : sorted([]),
+            'input_files' : sorted([]),
             'workspaces' : [u"Todas"] + sorted(data['db_workspaces_name'])
         })
 
     def get_map_layers(self, layers_data):
         return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
-
-    def load_data(self, settings_data):
-        print(settings_data)
-        db_data = self.postgresql.load_data()
-        db_data['settings_user'] = settings_data
-        self.load_layers(settings_data, db_data) if settings_data['layers_name'] else ''
-        self.load_insumos(settings_data) if settings_data['insumos'] else ''
-        self.postgresql.dump_data(db_data)
-        self.show_menu.emit() if settings_data['with_menu'] else ''
 
     def addGroup(self, group_name, group=None):
         if group:
@@ -279,18 +280,6 @@ class LoadData(QtCore.QObject):
                 core.QgsField(u"area_otf", QtCore.QVariant.Double)
             )
 
-    #no sap
-    def add_layer_default_values(self, v_lyr):
-        idx = v_lyr.fieldNameIndex(u"ultimo_usuario")
-        if idx > 0:
-            v_lyr.setDefaultValueExpression(idx, u"'{}'".format(
-                u""
-            ))
-
-    #no sap
-    def create_virtual_moldura(self):
-        pass
-
     def collapse_all(self, g1):
         g1.setExpanded(False)
         for g2 in g1.children():
@@ -394,12 +383,26 @@ class LoadData(QtCore.QObject):
         self.rules = {}
         return layers_vector
         
-    def load_insumos(self, settings_data):
+    def load_input_files(self, settings_data):
         if self.sap_mode:
             sap_data = ManagerSAP().load_data()
             paths = [
                 d['caminho']
-                for d in sap_data['dados']['atividade']['insumos'] if d['nome'] in settings_data['insumos']
+                for d in sap_data['dados']['atividade']['insumos'] 
+                if d['nome'] in settings_data['input_files']
             ]
-        
+            files_path = managerFile.download(paths)
+    
+    #no sap
+    def add_layer_default_values(self, v_lyr):
+        idx = v_lyr.fieldNameIndex(u"ultimo_usuario")
+        if idx > 0:
+            v_lyr.setDefaultValueExpression(idx, u"'{}'".format(
+                u""
+            ))
+
+    #no sap
+    def create_virtual_moldura(self):
+        pass
+
         
