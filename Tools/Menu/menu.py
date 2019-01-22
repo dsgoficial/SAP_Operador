@@ -58,7 +58,7 @@ class Menu(QtCore.QObject):
             'with_geom' : False,
             'layers_name' : [layer_name],
             'rules_name' : [],
-            'insumos' : []
+            'input_files' : []
         }
         load_data = LoadData(self.iface)
         result = load_data.load_layers(

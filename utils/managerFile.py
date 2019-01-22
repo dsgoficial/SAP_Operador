@@ -71,22 +71,23 @@ def download_file(path_origin, path_dest, parent):
     except:
         return False
 
-def download(paths, parent=utils.iface.mainWindow()):
+def download(paths_data, parent=utils.iface.mainWindow()):
     erro = []
-    files_path = []
+    files_data = {}
     path_dest = get_path_dest(parent)
-    for p in paths:
+    for n in paths_data:
+        p = paths_data[n]
         r = download_file(p, path_dest, parent)
         if r:
-            files_path.append(r)
+            files_data[n] = r
         else:
             erro.append(p)
     show_erro(erro, parent) if len(erro) > 0 else ''
-    return files_path
+    return files_data
 
 def show_erro(erro, parent):
     html=u"<p>Erro em baixar os seguintes arquivos:</p>"
     p = u"<p>{0}</p>"
     for e in erro:
         html += p.format(e)
-    msgBox.show(text=html, title=u"Error", status='critical') 
+    msgBox.show(text=html, title=u"Error", status='critical', parent=parent) 
