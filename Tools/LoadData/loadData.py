@@ -25,7 +25,6 @@ class LoadData(QtCore.QObject):
         self.frame = None
     
     def load_data(self, settings_data):
-        print(settings_data)
         db_data = self.postgresql.load_data()
         db_data['settings_user'] = settings_data
         self.load_layers(settings_data, db_data) if settings_data['layers_name'] else ''
@@ -369,6 +368,7 @@ class LoadData(QtCore.QObject):
         )
         settings_data['db_group'] = db_group
         layers_vector = []
+        print(layers_name_selected)
         for layer_name in layers_name_selected:
             p = layers_map[layer_name]
             layer_data = layers_data[p]
