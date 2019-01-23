@@ -46,6 +46,11 @@ class Tools(QtCore.QObject):
             self.tool_selected.get_frame()
         )
         cursorWait.stop()
+
+    def reload_project_qgis(self):
+        LoadData(self.iface).reload_forms_custom()
+
+    
         
 
     

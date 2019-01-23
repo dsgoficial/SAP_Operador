@@ -35,12 +35,13 @@ class Main(QtCore.QObject):
         core.QgsProject.instance().readProject.disconnect(
             self.load_qgis_project
         )
-        del self.login
         self.validate.stop()
+        del self.login
         del self.validate
 
     def load_qgis_project(self):
         self.validate.start()
+        self.tools.reload_project_qgis()
                 
     def show_tools_dialog(self, sap_mode):
         self.login.action.setEnabled(False)
