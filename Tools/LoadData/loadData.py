@@ -347,6 +347,16 @@ class LoadData(QtCore.QObject):
             })
             self.rules.add_table_rules(v_lyr)
         return v_lyr
+
+    def sort_layers_selected(self, layers_list):
+        def custom_sort(a):
+            if a.split('_')[-1] == 'p':
+                return 0
+            elif a.split('_')[-1] == 'l':
+                return 1
+            else:
+                return 2
+        return sorted(layers_list, key=custom_sort)
     
     def load_layers(self, settings_data, db_data):
         rules = settings_data['rules_name']
@@ -357,7 +367,7 @@ class LoadData(QtCore.QObject):
         layers_data = db_data['db_layers']
         layers_data = layers_data[u'PONTO'] + layers_data[u'LINHA'] + layers_data[u'AREA']
         layers_map = self.get_map_layers(layers_data)
-        layers_name_selected = settings_data[u'layers_name']
+        layers_list = self.sort_layers_selected(settings_data[u'layers_name'])
         db_group = self.addGroup(
             u"{}_{}".format(
                 db_data['db_name'],
@@ -368,8 +378,7 @@ class LoadData(QtCore.QObject):
         )
         settings_data['db_group'] = db_group
         layers_vector = []
-        print(layers_name_selected)
-        for layer_name in layers_name_selected:
+        for layer_name in layers_list:
             p = layers_map[layer_name]
             layer_data = layers_data[p]
             v_lyr = self.load_layer(
