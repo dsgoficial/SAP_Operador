@@ -54,9 +54,13 @@ class LoadDataFrame(QtWidgets.QFrame):
         self.workspace_options.setVisible(False)
         self.workspace_label.setVisible(False)
         self.send_all_btn_1.click()
-        self.send_all_btn_2.click()
-        self.send_all_btn_3.click()
-        for btn in self.btns:
+        btns_layer = [
+            self.call_all_btn_1, 
+            self.send_all_btn_1, 
+            self.call_selected_btn_1, 
+            self.send_selected_btn_1
+        ]
+        for btn in btns_layer:
             btn.setEnabled(False)
 
     def load_dbs_name(self, dbs_name):

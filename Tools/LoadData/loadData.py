@@ -123,7 +123,7 @@ class LoadData(QtCore.QObject):
     def get_map_layers(self, layers_data):
         return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
 
-    def addGroup(self, group_name, group=None):
+    def add_group_layer(self, group_name, group=None):
         if group:
             result = group.findGroup(group_name)
         else:
@@ -136,8 +136,8 @@ class LoadData(QtCore.QObject):
 
     def get_class_group(self, layer_data, settings_data):
         db_group = settings_data['db_group']
-        geom_group = self.addGroup(layer_data['group_geom'],db_group)
-        class_group = self.addGroup(layer_data['group_class'],geom_group)
+        geom_group = self.add_group_layer(layer_data['group_geom'], db_group)
+        class_group = self.add_group_layer(layer_data['group_class'], geom_group)
         return class_group
 
     def get_uri_text(self, conn_data, layer_data, filter_text):
@@ -321,11 +321,12 @@ class LoadData(QtCore.QObject):
                 for g4 in g3.children():
                     g4.setExpanded(False)
 
-    def clean_empyt_groups(self, g1):
+    def clean_empty_groups(self, g1):
         for g2 in g1.children():
-            for g3 in g2.children():
-                if len(g3.children()) == 0 and g3.name() != u"MOLDURA":
-                    g2.removeChildNode(g3)
+            if g2.name() != u"MOLDURA":
+                for g3 in g2.children():
+                    if len(g3.children()) == 0 and g3.name() != u"MOLDURA":
+                        g2.removeChildNode(g3)
 
     def add_layer_on_canvas(self, settings_data, db_data, layer_data, filter_text):
         layer_name = layer_data['layer_name']
@@ -339,10 +340,11 @@ class LoadData(QtCore.QObject):
             conn_data = db_data[u"db_connection"]
             uri_text = self.get_uri_text(conn_data, layer_data, filter_text)
             v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
-        if v_lyr and settings_data['with_geom'] and v_lyr.allFeatureIds():
-            vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
-            class_group.addLayer(vl)
-        elif v_lyr and not(settings_data['with_geom']):
+        if (
+                (v_lyr and settings_data['with_geom'] and v_lyr.allFeatureIds())
+                or 
+                (v_lyr and not(settings_data['with_geom']))
+            ):
             vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
             class_group.addLayer(vl)
         return v_lyr
@@ -417,12 +419,29 @@ class LoadData(QtCore.QObject):
         else:
             workspace_name = settings_data['workspace_name'] 
         db_group_name = u"{}_{}".format(db_data['db_name'], workspace_name)
-        db_group = self.addGroup(db_group_name)
+        db_group = self.add_group_layer(db_group_name)
         return db_group
     
-    def create_virtual_moldura(self):
+    def create_virtual_frame(self, db_group):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            srid = sap_data['geom'].split(';')[0].split('=')[1]
+            wkt = sap_data['geom'].split(';')[1]
+            query = "?query=SELECT geom_from_wkt('{0}') as geometry&geometry=geometry:3:{1}".format(
+                wkt,
+                srid
+            )
+            lyr_virtual = core.QgsVectorLayer(query, "moldura", "virtual")
+            vl = core.QgsProject.instance().addMapLayer(lyr_virtual, False)
+            style_path = os.path.join(
+                os.path.dirname(__file__),
+                "styles",
+                "frame_sap.qml"
+            ) 
+            vl.loadNamedStyle(style_path)
+            frame_group = self.add_group_layer("MOLDURA", db_group)
+            frame_group.addLayer(vl)
+            
 
     def load_layers(self, settings_data, db_data):
         self.create_rules(settings_data, db_data)
@@ -443,9 +462,9 @@ class LoadData(QtCore.QObject):
             )
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
-        self.create_virtual_moldura()
+        self.create_virtual_frame(db_group)
         self.collapse_all(db_group)
-        self.clean_empyt_groups(db_group)
+        self.clean_empty_groups(db_group)
         self.rules = {}
         return layers_vector
         
@@ -473,13 +492,14 @@ class LoadData(QtCore.QObject):
             return True
         return False
             
-    #no sap
+    #sap
     def add_layer_default_values(self, v_lyr):
-        idx = v_lyr.fieldNameIndex(u"ultimo_usuario")
-        if idx > 0:
-            v_lyr.setDefaultValueExpression(idx, u"'{}'".format(
-                u""
-            ))
+        if self.sap_mode:
+            idx = v_lyr.fieldNameIndex(u"ultimo_usuario")
+            if idx > 0:
+                v_lyr.setDefaultValueExpression(idx, u"'{}'".format(
+                    u""
+                ))
 
 
         
