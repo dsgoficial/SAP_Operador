@@ -13,6 +13,7 @@ class LoadDataFrame(QtWidgets.QFrame):
 
     database_load = QtCore.pyqtSignal(str)
     load_data = QtCore.pyqtSignal(dict)
+    menu_selected = QtCore.pyqtSignal()
 
     def __init__(self, iface):
         super(LoadDataFrame, self).__init__()
@@ -66,17 +67,21 @@ class LoadDataFrame(QtWidgets.QFrame):
     def load_dbs_name(self, dbs_name):
         self.db_options.addItems(dbs_name)
 
-    def load(self, frame_data):
+    def load(self, data):
         self.rules_list.clear()
-        self.rules_list.addItems(frame_data['rules'])
+        self.rules_list.addItems(data['rules'])
         self.workspace_options.clear()
-        self.workspace_options.addItems(frame_data['workspaces'])
+        self.workspace_options.addItems(data['workspaces'])
         self.layers_list.clear()
-        self.layers_list.addItems(frame_data['layers'])
+        self.layers_list.addItems(data['layers'])
         self.styles_options.clear()
-        self.styles_options.addItems(frame_data['styles'])
+        self.styles_options.addItems(data['styles'])
         self.files_list.clear()
-        self.files_list.addItems(frame_data['input_files'])
+        self.files_list.addItems(data['input_files'])
+    
+    @QtCore.pyqtSlot(int)
+    def on_load_menu_stateChanged(self, state):
+        self.menu_selected.emit() if state else ''
 
     @QtCore.pyqtSlot(int)
     def on_db_options_currentIndexChanged(self, idx):
@@ -118,7 +123,6 @@ class LoadDataFrame(QtWidgets.QFrame):
             self.rules_list_input.item(i).text() 
             for i in range(self.rules_list_input.count())
         ]
-        load_menu = self.load_menu.isChecked()
         total = len(layers+input_files)
         workspace_name = self.workspace_options.currentText()
         if self.sap_mode or (workspace_name and self.db_selected):
@@ -127,7 +131,6 @@ class LoadDataFrame(QtWidgets.QFrame):
             self.load_data.emit({
                 'workspace_name' : workspace_name,
                 'style_name' : self.styles_options.currentText(),
-                'with_menu' : load_menu,
                 'with_geom' : self.only_geometry.isChecked(),
                 'layers_name' : layers,
                 'rules_name' : rules,
