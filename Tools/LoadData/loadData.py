@@ -460,6 +460,7 @@ class LoadData(QtCore.QObject):
                 db_data,
                 layer_data
             )
+            self.add_layer_default_values(v_lyr)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
         self.create_virtual_frame(db_group)
@@ -492,14 +493,12 @@ class LoadData(QtCore.QObject):
             return True
         return False
             
-    #sap
     def add_layer_default_values(self, v_lyr):
         if self.sap_mode:
-            idx = v_lyr.fieldNameIndex(u"ultimo_usuario")
-            if idx > 0:
-                v_lyr.setDefaultValueExpression(idx, u"'{}'".format(
-                    u""
-                ))
+            sap_data = ManagerSAP().load_data()['dados']
+            idx = v_lyr.fields().indexOf('ultimo_usuario')
+            confField = v_lyr.defaultValueDefinition(idx)
+            confField.setExpression("'{0}'".format(sap_data['usuario_id']))
+            v_lyr.setDefaultValueDefinition(idx, confField)
 
 
-        
