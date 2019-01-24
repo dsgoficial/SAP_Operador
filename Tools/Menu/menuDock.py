@@ -11,13 +11,15 @@ class MenuDock(QtWidgets.QDockWidget):
         'menuDock.ui'
     )
 
-    start_button = QtCore.pyqtSignal(dict)
+    active_button = QtCore.pyqtSignal(dict)
+    load_profile = QtCore.pyqtSignal(str)
+    database_load = QtCore.pyqtSignal(str)
 
     def __init__(self, iface):
         super(MenuDock, self).__init__()
         self.iface = iface
+        self.sap_mode = False
         uic.loadUi(self.dialog_path, self)
-        self.db_data = {}
         self.menu_area_buttons.setTabPosition(QtWidgets.QTabWidget.West)
         self.menu_area_buttons.setElideMode(QtCore.Qt.ElideNone)
         self.menu_area_buttons.setStyleSheet(
@@ -67,22 +69,41 @@ class MenuDock(QtWidgets.QDockWidget):
         self.menu_area_buttons.setTabEnabled(0, False)
         self.menu_area_buttons.setCurrentIndex(1)
 
+    def config_sap_mode(self):
+        self.db_label.setVisible(False)
+        self.workspace_label.setVisible(False)
+        self.workspace_options.setVisible(False)
+        self.db_options.setVisible(False)
+        self.sap_mode = True
+        
+    def load_dbs_name(self, dbs_options):
+        self.db_options.addItems(dbs_options)
+
+    @QtCore.pyqtSlot(int)
+    def on_db_options_currentIndexChanged(self, idx):
+        db_selected = self.db_options.currentText() if idx != 0 else ''
+        if db_selected :
+            cursorWait.start()
+            self.database_load.emit(db_selected)
+            cursorWait.stop()
+        else:
+            self.workspace_options.clear()
+            self.menu_options.clear()
+            self.clean_menu()
+
+    def load(self, data):
+        if not(self.sap_mode):
+            self.workspace_options.addItems(data['workspaces_name'])
+        self.menu_options.addItems(data['profiles_name'])
+
     def show_menu(self):
-        db_data = self.db_data
-        profiles_name = [u"..."] + [db_data['db_menu'][idx]['nome_do_perfil'] for idx in db_data['db_menu']] if db_data else [u"..."]
-        self.menu_profiles.addItems(profiles_name)
         self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self)
 
     @QtCore.pyqtSlot(int)
-    def on_menu_profiles_currentIndexChanged(self, idx):
-        profile_selected = self.menu_profiles.currentText() if idx != 0 else ''
+    def on_menu_options_currentIndexChanged(self, idx):
+        profile_selected = self.menu_options.currentText() if idx != 0 else ''
         if profile_selected:
-            db_data = self.db_data
-            for idx in db_data['db_menu']:
-                if db_data['db_menu'][idx]['nome_do_perfil'] == profile_selected:
-                    profile_data = db_data['db_menu'][idx]
-                    self.load_menu_profile(profile_data)
-                    return
+            self.load_profile.emit(profile_selected)
         else:
             self.clean_menu()
 
@@ -91,19 +112,21 @@ class MenuDock(QtWidgets.QDockWidget):
         for tab_name in reversed(profile_data['orderMenu']['orderTab']):
             self.add_tab(tab_name)
             for button_name in reversed(profile_data['orderMenu']['orderButton'][tab_name]):
-                button_data = profile_data['perfil'][tab_name][button_name]
-                self.add_button(button_data)
+                if button_name in profile_data['perfil'][tab_name]:
+                    button_data = profile_data['perfil'][tab_name][button_name]
+                    self.add_button(button_data)
         self.add_tab_search(profile_data)
 
     def add_tab_search(self, profile_data):
         self.add_tab(u'**Pesquisa**')
         for tab_name in reversed(profile_data['orderMenu']['orderTab']):
             for button_name in reversed(profile_data['orderMenu']['orderButton'][tab_name]):
-                button_data = copy.deepcopy(
-                    profile_data['perfil'][tab_name][button_name]
-                ) 
-                button_data['formValues'][u'*Selecione aba:'] = u'**Pesquisa**'
-                self.add_button(button_data)
+                if button_name in profile_data['perfil'][tab_name]:
+                    button_data = copy.deepcopy(
+                        profile_data['perfil'][tab_name][button_name]
+                    ) 
+                    button_data['formValues'][u'*Selecione aba:'] = u'**Pesquisa**'
+                    self.add_button(button_data)
 
     def add_tab(self, tab_name):
         tab = QtWidgets.QWidget()
@@ -190,9 +213,13 @@ class MenuDock(QtWidgets.QDockWidget):
         button.setStyleSheet(
             self.get_button_style(layer_name, default=False)
         )
-        self.start_button.emit({
+        self.active_button.emit({
             "button_data" : button.button_data,
-            "reclassify" : self.menu_reclassify.isChecked()
+            "reclassify" : self.menu_reclassify.isChecked(),
+            "settings_user" : {
+                "db_name" : self.db_options.currentText(),
+                "workspace_name" : self.workspace_options.currentText()
+            }
         })
         cursorWait.stop()
 

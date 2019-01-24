@@ -16,34 +16,21 @@ class Classification(QtCore.QObject):
         self.layer_vector = {}
         self.fid_before = None
         self.with_form = None
-        
-    def start_signals(self):
-        iface = self.iface
-        signals_list = [
-            iface.actionAddFeature().toggled,
-            iface.layerTreeView().clicked,
-            core.QgsProject.instance().legendLayersAdded,
-            iface.actionToggleEditing().triggered
-        ] 
-        for signal in signals_list:
-            try:
-                signal.connect(self.disconnect_layer)
-            except:
-                pass
     
-    def stop_signals(self):
+    def connect_qgis_signals(self):
         iface = self.iface
-        signals_list = [
+        signals = [
             iface.actionAddFeature().toggled,
             iface.layerTreeView().clicked,
             core.QgsProject.instance().legendLayersAdded,
             iface.actionToggleEditing().triggered
         ] 
-        for signal in signals_list:
+        for s in signals:
             try:
-                signal.disconnect(self.disconnect_layer)
+                s.disconnect(self.disconnect_layer)
             except:
                 pass
+            s.connect(self.disconnect_layer)
         
     def disconnect_layer(self):
         current_layer = self.iface.activeLayer()
@@ -90,8 +77,7 @@ class Classification(QtCore.QObject):
         return layers_selected
         
     def run(self, layer_vector, button_data):
-        self.stop_signals()
-        self.start_signals()
+        self.connect_qgis_signals()
         self.current_button_layer = layer_vector
         self.iface.setActiveLayer(self.current_button_layer)
         self.current_button_layer.startEditing()

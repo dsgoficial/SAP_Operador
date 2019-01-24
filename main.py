@@ -45,6 +45,7 @@ class Main(QtCore.QObject):
                 
     def show_tools_dialog(self, sap_mode):
         self.login.action.setEnabled(False)
+        self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode
         self.tools.show_dialog().enable_action.connect(
             lambda : self.login.action.setEnabled(True)

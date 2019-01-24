@@ -32,6 +32,7 @@ class Tools(QtCore.QObject):
         choose = option_data['name'] 
         if choose == u"Carregar":
             self.tool_selected = LoadData(self.iface)
+            self.tool_selected.sap_mode = self.sap_mode
             self.tool_selected.show_menu.connect(
                 self.menu.show_menu
             )
@@ -41,7 +42,6 @@ class Tools(QtCore.QObject):
             pass
         else:
             self.tool_selected = Rotines(self.iface) """
-        self.tool_selected.sap_mode = self.sap_mode
         self.interface.show_frame(
             self.tool_selected.get_frame()
         )

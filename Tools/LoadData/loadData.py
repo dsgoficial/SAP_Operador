@@ -26,21 +26,23 @@ class LoadData(QtCore.QObject):
     
     def load_data(self, settings_data):
         db_data = self.postgresql.load_data()
-        db_data['settings_user'] = settings_data
         self.load_layers(settings_data, db_data) if settings_data['layers_name'] else ''
         self.load_input_files(settings_data) if settings_data['input_files'] else ''
         self.postgresql.dump_data(db_data)
-        self.show_menu.emit() if settings_data['with_menu'] else ''
         self.frame.show()
     
     def get_frame(self):
         self.frame = LoadDataFrame(self.iface)
+        self.frame.menu_selected.connect(
+            self.show_menu.emit
+        )
         if self.sap_mode:
             self.config_sap_mode()
             self.frame.config_sap_mode()
         else:
-            dbs = [u"<Opções>"] + sorted(self.postgresql.get_dbs_name())
-            self.frame.load_dbs_name(dbs)
+            dbs_name = sorted(self.postgresql.get_dbs_name())
+            dbs_name = [u"<Opções>"] + dbs_name
+            self.frame.load_dbs_name(dbs_name)
             self.frame.database_load.connect(
                 self.update_frame
             )
@@ -349,7 +351,7 @@ class LoadData(QtCore.QObject):
             class_group.addLayer(vl)
         return v_lyr
 
-    def load_layer(self, settings_data, db_data, layer_data):
+    def get_workspace_data(self, settings_data, db_data):
         if self.sap_mode:
             sap_data = ManagerSAP().load_data()['dados']['atividade']
             workspace_name = sap_data['unidade_trabalho']
@@ -359,6 +361,10 @@ class LoadData(QtCore.QObject):
             workspace_wkt = '' if workspace_name == u"Todas" else (
                 db_data['db_workspaces_wkt'][workspace_name]
             )
+        return workspace_name, workspace_wkt
+
+    def load_layer(self, settings_data, db_data, layer_data):
+        workspace_name, workspace_wkt = self.get_workspace_data(settings_data, db_data)
         filter_text = '' 
         if workspace_wkt != '':
             filter_text = self.get_spatial_filter(
@@ -413,11 +419,7 @@ class LoadData(QtCore.QObject):
             self.rules.createRules(db_data['db_rules'])
 
     def create_db_group(self, settings_data, db_data):
-        if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
-            workspace_name = sap_data['unidade_trabalho']
-        else:
-            workspace_name = settings_data['workspace_name'] 
+        workspace_name, _ = self.get_workspace_data(settings_data, db_data) 
         db_group_name = u"{}_{}".format(db_data['db_name'], workspace_name)
         db_group = self.add_group_layer(db_group_name)
         return db_group
