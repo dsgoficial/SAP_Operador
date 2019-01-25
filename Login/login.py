@@ -4,7 +4,7 @@ from .loginAction import LoginAction
 from .loginDialog import LoginDialog
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import managerQgis, network, msgBox
+from utils import managerQgis, msgBox
 from SAP.managerSAP import ManagerSAP
 
 class Login(QtCore.QObject):

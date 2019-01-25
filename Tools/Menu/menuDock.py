@@ -26,9 +26,9 @@ class MenuDock(QtWidgets.QDockWidget):
             "QTabBar::tab::disabled {width: 0; heigth: 0; margin: 0; padding: 0; border: none;}"
         )
         self.menu_search.mousePressEvent = lambda _ : self.menu_search.selectAll()
-        self.menu_search.textEdited.connect(self.filter_button)
 
-    def filter_button(self, text):
+    @QtCore.pyqtSlot(str)
+    def on_menu_search_textEdited(self, text):
         buttons = self.get_all_buttons_tab(u'**Pesquisa**')
         if text:
             self.show_tab_search()

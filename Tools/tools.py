@@ -2,9 +2,9 @@
 from PyQt5 import QtCore, QtWidgets
 from .toolsDialog import ToolsDialog
 from .LoadData.loadData import LoadData
+from .Routines.routines import Routines
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from Database.postgresql import Postgresql
 from utils import cursorWait
 
 class Tools(QtCore.QObject):
@@ -38,10 +38,10 @@ class Tools(QtCore.QObject):
             )
         elif choose == u"Menu":
             self.tool_selected = self.menu
-        """ elif choose == u"Controle":
-            pass
+        #elif choose == u"Controle":
+        #    pass
         else:
-            self.tool_selected = Rotines(self.iface) """
+            self.tool_selected = Rotines(self.iface)
         self.interface.show_frame(
             self.tool_selected.get_frame()
         )
