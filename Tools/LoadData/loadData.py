@@ -37,7 +37,7 @@ class LoadData(QtCore.QObject):
             self.show_menu.emit
         )
         if self.sap_mode:
-            self.config_sap_mode()
+            self.update_frame()
             self.frame.config_sap_mode()
         else:
             dbs_name = sorted(self.postgresql.get_dbs_name())
@@ -51,75 +51,74 @@ class LoadData(QtCore.QObject):
         )
         return self.frame
 
-    def validate_layers_sap(self, layers_sap, db_json):
+    def get_layers_list(self, db_json):
         layers_list = [ ]
         for g in db_json['db_layers']:
             for d in db_json['db_layers'][g]:
                 layers_list.append(d['layer_name'])
-        return [ n for n in layers_sap if n in layers_list] 
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()
+            layers_sap = [ d['nome'] for d in sap_data['dados']['atividade']['camadas']]
+            layers_list = [ n for n in layers_sap if n in layers_list] 
+        return sorted(layers_list)
     
-    def validate_rules_sap(self, rules_sap, db_json):
-        rules_name = list(set([
-            db_json['db_rules'][i]['tipo_estilo'] for i in db_json['db_rules'] 
-        ])) if db_json['db_rules'] else []
-        return [ n for n in rules_sap if n in rules_name ] 
+    def get_rules_list(self, db_json):
+        rules_list = []
+        for i in db_json['db_rules']:
+            rules_list.append(
+                db_json['db_rules'][i]['tipo_estilo'] 
+            )
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()
+            rules_sap = sap_data['dados']['atividade']['regras']
+            rules_list = [ n for n in rules_sap if n in rules_list ] 
+        return sorted(rules_list)
     
-    def validate_styles_sap(self, styles_sap, db_json):
-        styles_name = list(set([ d.split('_')[0] for d in db_json['db_styles'].keys()]))
-        return [ n for n in styles_sap if n in styles_name ]
+    def get_styles_list(self, db_json):
+        styles_list = []
+        for d in db_json['db_styles'].keys():
+            styles_list.append(
+                d.split('_')[0]
+            )
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()
+            styles_sap = sap_data['dados']['atividade']['estilos']
+            styles_list = [ n for n in styles_sap if n in styles_list ] 
+        return sorted(styles_list)
 
-    def config_sap_mode(self):
-        sap_data = ManagerSAP().load_data()
-        db_data = sap_data['dados']['atividade']['banco_dados']
-        db_name = db_data['nome']
-        self.postgresql.set_connections_data({
-            'db_name' : db_name,
-            'db_host' : db_data['servidor'],
-            'db_port' : db_data['porta'],
-            'db_user' : sap_data['user'],
-            'db_password' : sap_data['password'] 
-        })
+    def get_input_files_list(self, db_json):
+        input_files_list = []
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            input_files_list = [ d['nome'] for d in sap_data['insumos'] ]
+        return sorted(input_files_list)
+    
+    def get_workspaces_list(self, db_json):
+        if self.sap_mode:
+            workspaces_list = []
+        else:
+            workspaces_list = [u"Todas"] + sorted(db_data['db_workspaces_name'])
+        return workspaces_list
+
+    def update_frame(self, db_name=''):
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()
+            db_data = sap_data['dados']['atividade']['banco_dados']
+            db_name = db_data['nome']
+            self.postgresql.set_connections_data({
+                'db_name' : db_name,
+                'db_host' : db_data['servidor'],
+                'db_port' : db_data['porta'],
+                'db_user' : sap_data['user'],
+                'db_password' : sap_data['password'] 
+            })
         db_json = self.postgresql.load_db_json(db_name)
-        layers_sap = [ d['nome'] for d in sap_data['dados']['atividade']['camadas']]
-        validated_layers =  self.validate_layers_sap(layers_sap, db_json)
-        rules_sap = sap_data['dados']['atividade']['regras']
-        validated_rules = self.validate_rules_sap(rules_sap, db_json)
-        styles_sap = sap_data['dados']['atividade']['estilos']
-        validated_styles = self.validate_styles_sap(styles_sap, db_json)
-        self.input_files = sap_data['dados']['atividade']['insumos']
         self.frame.load({
-            'rules' : sorted(validated_rules),
-            'layers' : sorted(validated_layers),
-            'styles' : sorted(validated_styles),
-            'input_files' : sorted([ d['nome'] for d in self.input_files]),
-            'workspaces' : []
-        })
-
-    def update_frame(self, db_name):
-        db_data = self.postgresql.load_db_json(db_name)
-        layers_list = [ ]
-        db_layers = db_data['db_layers']
-        for g in db_layers:
-            for d in db_layers[g]:
-                layers_list.append(d['layer_name'])
-        rules_name = []
-        db_rules = db_data['db_rules']
-        if db_rules:
-            rules_name = sorted(list(set([
-                db_rules[i]['tipo_estilo'] 
-                for i in db_rules 
-            ])))
-        styles_name = sorted(list(set([ 
-            d.split('_')[0] 
-            for d in db_data['db_styles'].keys()
-        ])))
-        workspaces_name = sorted(db_data['db_workspaces_name'])
-        self.frame.load({
-            'rules' : rules_name,
-            'layers' : sorted(layers_list),
-            'styles' : styles_name,
-            'input_files' : [],
-            'workspaces' : [u"Todas"] + workspaces_name
+            'rules' : self.get_rules_list(db_json),
+            'layers' : self.get_layers_list(db_json),
+            'styles' : self.get_styles_list(db_json),
+            'input_files' : self.get_input_files_list(db_json),
+            'workspaces' : self.get_workspaces_list(db_json)
         })
 
     def get_map_layers(self, layers_data):
