@@ -184,11 +184,11 @@ class Login(QtGui.QDialog, GUI):
                     url = u"{0}/distribuicao/verifica".format(server)
                     response = Network().GET(server, url, header)
                     data = response.json()
-                    QgsMessageLog.logMessage(json.dumps(data), level=QgsMessageLog.INFO )
+                    QgsMessageLog.logMessage(json.dumps(data), tag="SAP", level=QgsMessageLog.INFO )
                     data['token'] = token
                     return data, response.status_code
                 return False, response.status_code
             except Exception as e:
-                QgsMessageLog.logMessage( str(e), level=QgsMessageLog.INFO )
+                QgsMessageLog.logMessage( str(e), tag="SAP", level=QgsMessageLog.INFO )
                 return False, 1
         return False, 2
