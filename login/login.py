@@ -2,6 +2,7 @@
 from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import QSettings
 import json, sys, os, copy
+from qgis.core import QgsMessageLog
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from managerQgis.projectQgis import ProjectQgis
 from managerNetwork.network import Network
@@ -25,7 +26,7 @@ class Login(QtGui.QDialog, GUI):
         self.iface = iface
         self.projectQgis = ProjectQgis(self.iface)
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.18.13</b>")
+        self.version_lb.setText(u"<b>versão : 2.18.14</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -183,11 +184,11 @@ class Login(QtGui.QDialog, GUI):
                     url = u"{0}/distribuicao/verifica".format(server)
                     response = Network().GET(server, url, header)
                     data = response.json()
-                    print data
+                    QgsMessageLog.logMessage(json.dumps(data), level=QgsMessageLog.INFO )
                     data['token'] = token
                     return data, response.status_code
                 return False, response.status_code
             except Exception as e:
-                print e
+                QgsMessageLog.logMessage( str(e), level=QgsMessageLog.INFO )
                 return False, 1
         return False, 2
