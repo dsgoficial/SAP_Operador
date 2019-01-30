@@ -3,9 +3,9 @@ from PyQt5 import QtCore, QtWidgets
 from .toolsDialog import ToolsDialog
 from .LoadData.loadData import LoadData
 from .Routines.routines import Routines
-from .Works.works import Works
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+from SAP.managerSAP import ManagerSAP
 from utils import cursorWait
 
 class Tools(QtCore.QObject):
@@ -33,16 +33,17 @@ class Tools(QtCore.QObject):
         choose = option_data['name'] 
         if choose == u"Carregar":
             self.tool_selected = LoadData(self.iface)
+            self.tool_selected.sap_mode = self.sap_mode
             self.tool_selected.show_menu.connect(
                 self.menu.show_menu
             )
         elif choose == u"Menu":
             self.tool_selected = self.menu
         elif choose == u"Controle" and self.sap_mode:
-            self.tool_selected = Works(self.iface)
-        elif choose == u"Rotinas"::
+            self.tool_selected = ManagerSAP(iface=self.iface)
+        elif choose == u"Rotinas":
             self.tool_selected = Routines(self.iface)
-        self.tool_selected.sap_mode = self.sap_mode
+            self.tool_selected.sap_mode = self.sap_mode
         self.interface.show_frame(
             self.tool_selected.get_frame()
         )

@@ -5,7 +5,6 @@ from .routinesLocal import RoutinesLocal
 from .routinesFme import RoutinesFme
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from SAP.managerSAP import ManagerSAP
 from utils import managerQgis, network, msgBox
 
 class Routines(QtCore.QObject):

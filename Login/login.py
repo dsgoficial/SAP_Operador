@@ -34,13 +34,8 @@ class Login(QtCore.QObject):
         managerQgis.save_qsettings_var('login/server', server)
         managerQgis.save_project_var('user', user)
         managerQgis.save_project_var('password', password)
-        sap = ManagerSAP(config={
-            'dialog' : self.dialog,
-            'server' : server,
-            'user' : user,
-            'password' : password
-        })
-        sucess = sap.login()
+        sap = ManagerSAP(parent=self.dialog)
+        sucess = sap.login(server, user, password)
         if sucess:
             self.dialog.accept()
             del self.dialog
