@@ -3,12 +3,12 @@ from PyQt5 import QtCore, QtWidgets
 from .loadDataFrame import LoadDataFrame
 from .generatorCustomForm import GeneratorCustomForm
 from .generatorCustomInitCode import GeneratorCustomInitCode
+from .rules import Rules
 import sys, os, copy, json, platform
 from qgis import core, gui
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
-from Tools.Rules.rules import Rules
 from utils import managerFile, managerQgis
 
 class LoadData(QtCore.QObject):
@@ -68,6 +68,7 @@ class LoadData(QtCore.QObject):
             rules_list.append(
                 db_json['db_rules'][i]['tipo_estilo'] 
             )
+        rules_list = list(set(rules_list))
         if self.sap_mode:
             sap_data = ManagerSAP().load_data()
             rules_sap = sap_data['dados']['atividade']['regras']
