@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
 from Tools.Rules.rules import Rules
-from utils import managerFile
+from utils import managerFile, managerQgis
 
 class LoadData(QtCore.QObject):
 
@@ -97,7 +97,7 @@ class LoadData(QtCore.QObject):
         if self.sap_mode:
             workspaces_list = []
         else:
-            workspaces_list = [u"Todas"] + sorted(db_data['db_workspaces_name'])
+            workspaces_list = [u"Todas"] + sorted(db_json['db_workspaces_name'])
         return workspaces_list
 
     def update_frame(self, db_name=''):
@@ -445,6 +445,10 @@ class LoadData(QtCore.QObject):
             
 
     def load_layers(self, settings_data, db_data):
+        managerQgis.save_project_var(
+            'settings_user', 
+            json.dumps(settings_data)
+        )
         self.create_rules(settings_data, db_data)
         db_group = self.create_db_group(settings_data, db_data)
         settings_data['db_group'] = db_group

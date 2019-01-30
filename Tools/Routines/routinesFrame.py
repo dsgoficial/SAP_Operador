@@ -27,7 +27,7 @@ class RoutinesFrame(QtWidgets.QFrame):
 
     @QtCore.pyqtSlot(bool)
     def on_load_btn_clicked(self, b):
-        self.load_rotines.emit(
+        self.load_routines.emit(
             self.server_input.text()
         )
 
@@ -87,7 +87,7 @@ class RoutinesFrame(QtWidgets.QFrame):
                     rf['description'],
                     self.routines_area
                 )
-                r_btn.routine_data = json.dumps(rf)
+                radio_btn.routine_data = json.dumps(rf)
         self.routines_spacer = QtWidgets.QSpacerItem(
             20, 
             40, 

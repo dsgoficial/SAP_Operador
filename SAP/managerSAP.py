@@ -12,7 +12,7 @@ class ManagerSAP(QtCore.QObject):
         if config:
             self.config = config
             self.net = network
-            self.net.CONFIG['interface'] = self.config['dialog']
+            self.net.CONFIG['parent'] = self.config['dialog']
 
     def login(self):
         post_data = {
@@ -70,11 +70,21 @@ class ManagerSAP(QtCore.QObject):
             return False
     
     def show_message(self, tag):
-        interface = self.config['interface']
+        dialog = self.config['dialog'] 
         if "new activity" == tag:
             html = u"<p>Deseja iniciar a próxima atividade?</p>"
-            result = msgBox.show(text=html, title=u"AVISO!", status="question", parent=interface)
+            result = msgBox.show(
+                text=html, 
+                title=u"AVISO!", 
+                status="question", 
+                parent=dialog
+            )
             return result
         elif "no activity" == tag:
-            html = u"<p>Não há nenhum trabalho cadastrado para você.</p><p>Procure seu chefe de seção.</p>"
-            msgBox.show(text=html, title=u"AVISO!", status="question", parent=interface)
+            html = u'''<p>Não há nenhum trabalho cadastrado para você.</p>
+                        <p>Procure seu chefe de seção.</p>'''
+            msgBox.show(
+                text=html, 
+                title=u"AVISO!", 
+                parent=dialog
+            )

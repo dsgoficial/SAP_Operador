@@ -47,8 +47,8 @@ def show_erro(response):
     elif response.status_code in [401, 403]:
         html = u"<p>Usuário ou senha incorretos!</p>"
     if html:
-        if "interface" in CONFIG:
-            msgBox.show(text=html, title=u"Error", parent=CONFIG['interface'])
+        if "parent" in CONFIG:
+            msgBox.show(text=html, title=u"Error", parent=CONFIG['parent'])
         else:
             msgBox.show(text=html, title=u"Error") 
         return True

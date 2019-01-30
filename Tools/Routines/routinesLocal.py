@@ -1,22 +1,22 @@
 #! -*- coding: utf-8 -*-
 from qgis import core, gui
 from PyQt5 import QtCore
-import re, sys, os
+import re, sys, os, json
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
-from utils import msgBox
+from utils import managerQgis, network, msgBox
 
 class RoutinesLocal(QtCore.QObject):
 
-    def __init__(self, iface, routine_data):
+    def __init__(self, iface):
         super(RoutinesLocal, self).__init__()
         self.iface = iface
-        self.routine_data = routine_data
-        self.init_postgresql()
+        self.sap_mode = False
+        self.running = False
 
     def init_postgresql(self):
-        self.postgres = Postgresql()
+        self.postgresql = Postgresql()
         sap_data = ManagerSAP().load_data()
         db_data = sap_data['dados']['atividade']['banco_dados']
         db_name = db_data['nome']
@@ -27,11 +27,27 @@ class RoutinesLocal(QtCore.QObject):
             'db_user' : sap_data['user'],
             'db_password' : sap_data['password'] 
         })
+    
+    def get_routines_data(self):
+        local_routines = {}
+        if self.sap_mode:
+            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            local_routines = sap_data['rotinas']
+            description = {
+                u"notSimpleGeometry" : u"Identifica geometrias não simples.",
+                u"outOfBoundsAngles" : u"Identifica ângulos fora da tolerância.",
+                u"invalidGeometry" : u"Identifica geometrias inválidas."
+            }
+            for name in local_routines:
+                local_routines[name]['description'] = description[name]
+                local_routines[name]['type_routine'] = 'local'
+        return local_routines
 
-    def run(self):
+    def run(self, routine_data):
+        self.init_postgresql()
         count_flags = 0
-        if u"notSimpleGeometry" in self.routine_data:    
-            for param in self.routine_data[u"notSimpleGeometry"]:
+        if u"notSimpleGeometry" in routine_data:    
+            for param in routine_data[u"notSimpleGeometry"]:
                 layer_name = param['camada']
                 flag_layer = param['camada_apontamento']
                 v_layer = self.get_layer_by_name(layer_name)
@@ -43,8 +59,8 @@ class RoutinesLocal(QtCore.QObject):
                     layer, 
                     f_ids
                 )
-        elif u"outOfBoundsAngles" in self.routine_data:
-            for param in self.routine_data[u"outOfBoundsAngles"]:
+        elif u"outOfBoundsAngles" in routine_data:
+            for param in routine_data[u"outOfBoundsAngles"]:
                 layer_name = param['camada']
                 flag_layer = param['camada_apontamento']
                 v_layer = self.get_layer_by_name(layer_name)
@@ -60,8 +76,8 @@ class RoutinesLocal(QtCore.QObject):
                     flag_layer, 
                     geom_type
                 )
-        elif u"invalidGeometry" in self.routine_data:
-            for param in self.routine_data[u"invalidGeometry"]:
+        elif u"invalidGeometry" in routine_data:
+            for param in routine_data[u"invalidGeometry"]:
                 layer_name = param['camada']
                 flag_layer = param['camada_apontamento']
                 v_layer = self.get_layer_by_name(layer_name)
