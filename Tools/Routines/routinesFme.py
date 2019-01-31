@@ -25,7 +25,7 @@ class RoutinesFme(QtCore.QObject):
         if server:
             cat = ''
             if self.sap_mode:
-                sap_data = ManagerSAP().load_data()['dados']['atividade']
+                sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
                 if  sap_data['fme']:
                     cat = sap_data['fme']['categoria']
                     cat = u"&category={0}".format(cat)
@@ -43,7 +43,7 @@ class RoutinesFme(QtCore.QObject):
 
     def get_db_connection_data(self):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP(self.iface).load_data()
             db_data = sap_data['dados']['atividade']['banco_dados']
             db_name = db_data['nome']
             db_host = db_data['servidor']
@@ -63,20 +63,21 @@ class RoutinesFme(QtCore.QObject):
 
     def get_server(self, server=''):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             if  sap_data['fme']:
                 server = sap_data['fme']['servidor']
                 server = u"http://{0}".format(server)
         else:
+            m_qgis = managerQgis(self.iface)
             if server:
-                managerQgis.save_qsettings_var('FME/server', server)
+                m_qgis.save_qsettings_var('FME/server', server)
             else:
-                server = managerQgis.load_qsettings_var('FME/server')
+                server = m_qgis.load_qsettings_var('FME/server')
         return server
 
     def get_workspace_geometry(self, settings_user):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             geometry = "'{0}'".format(sap_data["geom"])
         else:
             workspace_name = settings_user['workspace_name']

@@ -2,7 +2,7 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox
+from utils import msgBox, cursorWait
 
 class LoginDialog(QtWidgets.QDialog):
 
@@ -43,17 +43,25 @@ class LoginDialog(QtWidgets.QDialog):
     @QtCore.pyqtSlot(bool)
     def on_ok_btn_clicked(self):
         if self.localhost_check.isChecked():
-            self.login_local.emit({})
+            data = {}
         elif self.validate_form():
-            self.login_remote.emit({
+            data = {
                 'server' : self.server_input.text(),
                 'user' : self.user_input.text(),
                 'password' : self.password_input.text()
-            })
+            }
         else:
             html = u'<p style="color:red">Todos os campos devem ser preenchidos!</p>'
             msgBox.show(text=html, title=u"Aviso", parent=self)
-    
+            return
+        cursorWait.start()
+        try:
+            if data:
+                self.login_remote.emit(data)
+            else:
+                self.login_local.emit(data)
+        finally:
+            cursorWait.stop()
         
 
 

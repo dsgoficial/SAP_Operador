@@ -3,7 +3,7 @@
 import os, sys
 from qgis import core, gui
 from PyQt5 import QtCore
-from .Login.login import Login
+from .SAP.managerSAP import ManagerSAP
 from .Tools.tools import Tools
 from .Tools.Menu.menu import Menu
 from .Validate.validateOperations import ValidateOperations
@@ -12,14 +12,14 @@ class Main(QtCore.QObject):
     def __init__(self, iface):
         super(Main, self).__init__()
         self.iface = iface
-        self.login = Login(self.iface)
+        self.sap = ManagerSAP(self.iface)
         self.menu = Menu(self.iface)
         self.validate = ValidateOperations(self.iface)
         self.tools = Tools(self.iface, self.menu)
 
     def initGui(self):
-        self.login.action.add_on_qgis()
-        self.login.show_tools.connect(
+        self.sap.add_action_qgis(True)
+        self.sap.show_tools.connect(
             self.show_tools_dialog
         )
         core.QgsProject.instance().readProject.connect(
@@ -28,15 +28,15 @@ class Main(QtCore.QObject):
         
     def unload(self):
         del self.tools
-        self.login.action.remove_from_qgis()
-        self.login.show_tools.disconnect(
+        self.sap.add_action_qgis(False)
+        self.sap.show_tools.disconnect(
             self.show_tools_dialog
         )
         core.QgsProject.instance().readProject.disconnect(
             self.load_qgis_project
         )
         self.validate.stop()
-        del self.login
+        del self.sap
         del self.validate
 
     def load_qgis_project(self):
@@ -44,10 +44,10 @@ class Main(QtCore.QObject):
         self.tools.reload_project_qgis()
                 
     def show_tools_dialog(self, sap_mode):
-        self.login.action.setEnabled(False)
+        self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode
         self.tools.show_dialog().enable_action.connect(
-            lambda : self.login.action.setEnabled(True)
+            lambda : self.sap.enable_action_qgis(True)
         )
 

@@ -2,7 +2,7 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox, cursorWait
+from utils import msgBox
 
 class MenuConfigFrame(QtWidgets.QFrame):
 

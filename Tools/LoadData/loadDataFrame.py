@@ -88,9 +88,11 @@ class LoadDataFrame(QtWidgets.QFrame):
         db_selected = self.db_options.currentText() if idx != 0 else ''
         if db_selected :
             cursorWait.start()
-            self.db_selected = db_selected
-            self.database_load.emit(db_selected)
-            cursorWait.stop()
+            try:
+                self.db_selected = db_selected
+                self.database_load.emit(db_selected)
+            finally:
+                cursorWait.stop()
         else:
             self.rules_list.clear()
             self.workspace_options.clear()
@@ -127,17 +129,19 @@ class LoadDataFrame(QtWidgets.QFrame):
         workspace_name = self.workspace_options.currentText()
         if self.sap_mode or (workspace_name and self.db_selected):
             cursorWait.start()
-            self.progress_load.setMaximum(total) if total > 0 else ''
-            self.load_data.emit({
-                'workspace_name' : workspace_name,
-                'style_name' : self.styles_options.currentText(),
-                'with_geom' : self.only_geometry.isChecked(),
-                'layers_name' : layers,
-                'rules_name' : rules,
-                'input_files' : input_files
-            })
-            self.reset_load_data(total) if total > 0 else ''
-            cursorWait.stop()
+            try:
+                self.progress_load.setMaximum(total) if total > 0 else ''
+                self.load_data.emit({
+                    'workspace_name' : workspace_name,
+                    'style_name' : self.styles_options.currentText(),
+                    'with_geom' : self.only_geometry.isChecked(),
+                    'layers_name' : layers,
+                    'rules_name' : rules,
+                    'input_files' : input_files
+                })
+                self.reset_load_data(total) if total > 0 else ''
+            finally:
+                cursorWait.stop()
 
     def move_all_items(self, list_origin, list_destination):
         items_origin = [
