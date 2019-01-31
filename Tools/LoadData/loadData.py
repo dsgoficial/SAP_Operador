@@ -9,7 +9,9 @@ from qgis import core, gui
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
-from utils import managerFile, managerQgis
+from utils import managerFile
+from utils.managerQgis import ManagerQgis
+
 
 class LoadData(QtCore.QObject):
 
@@ -447,7 +449,7 @@ class LoadData(QtCore.QObject):
             
 
     def load_layers(self, settings_data, db_data):
-        managerQgis(self.iface).save_project_var(
+        ManagerQgis(self.iface).save_project_var(
             'settings_user', 
             json.dumps(settings_data)
         )
