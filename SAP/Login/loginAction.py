@@ -6,7 +6,11 @@ import os
 class LoginAction(QtWidgets.QAction):
     
     path_icon = os.path.join(
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "..")),
+        os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            "..", 
+            ".."
+        )),
         'icons',
         '1cgeo.png'
     )

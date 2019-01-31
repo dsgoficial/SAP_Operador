@@ -4,7 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets
 from .worksItem import WorksItem
 from .worksCloseDialog import WorksCloseDialog
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox, cursorWait
+from utils import msgBox
 
 class WorksFrame(QtWidgets.QFrame):
 
@@ -33,13 +33,13 @@ class WorksFrame(QtWidgets.QFrame):
         self.sap_data = sap_data
         woks_data = self.sap_data['dados']['atividade']
         description = woks_data['nome']
-        values_cbx = woks_data['requisitos'] if woks_data.has_key('requisitos') else []
+        values_cbx = woks_data['requisitos'] if 'requisitos' in woks_data else []
         if len(values_cbx) > 0:
             self.close_works_btn.setEnabled(False)
         self.works_item = WorksItem(description, values_cbx, self)
-        self.works_item.enable_btn(lambda:self.close_works_btn.setEnabled(True))
-        self.works_item.disable_btn(lambda:self.close_works_btn.setEnabled(False))
-        self.works_area.layout().addWidget(self.worksItem)
+        self.works_item.enable_btn.connect(lambda:self.close_works_btn.setEnabled(True))
+        self.works_item.disable_btn.connect(lambda:self.close_works_btn.setEnabled(False))
+        self.works_area.layout().addWidget(self.works_item)
         self.spacer_item = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
         )

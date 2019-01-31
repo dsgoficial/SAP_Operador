@@ -45,7 +45,7 @@ class Menu(QtCore.QObject):
             for idx in menu_data
         ]
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']        
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']        
             profiles_name = [
                 n for n in profiles_name
                 if n in sap_data['menus']
@@ -106,7 +106,7 @@ class Menu(QtCore.QObject):
         load_data = LoadData(self.iface)
         if self.sap_mode:
             load_data.sap_mode = self.sap_mode
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             workspace_name = sap_data['unidade_trabalho']
         else:
             workspace_name = button_data['settings_user']['workspace_name']

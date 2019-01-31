@@ -2,22 +2,41 @@
 from PyQt5 import QtCore
 import sys, os, pickle
 from .worksFrame import WorksFrame
+from .Login.login import Login
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import network, msgBox
+from utils import network, msgBox, managerQgis
+
 
 class ManagerSAP(QtCore.QObject):
 
-    def __init__(self, iface=None, parent=None):
+    show_tools = QtCore.pyqtSignal(bool)
+
+    def __init__(self, iface):
         super(ManagerSAP, self).__init__()
         self.path_data = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data.pickle')
         self.frame = None
         self.iface = iface
-        self.parent = parent
-        if self.parent:
-            self.net = network
-            self.net.CONFIG['parent'] = parent
+        self.login_sap = Login(self.iface)
+        self.login_sap.sap.connect(
+            self.login
+        )
+        self.login_sap.local.connect(
+            self.show_tools.emit
+        )
+        self.net = network
+        self.net.CONFIG['parent'] = self.login_sap.dialog
 
+    def add_action_qgis(self, b):
+        if b:
+            self.login_sap.action.add_on_qgis()
+        else:
+            self.login_sap.action.remove_from_qgis()
+
+    def enable_action_qgis(self, b):
+        self.login_sap.action.setEnabled(b)
+        
     def login(self, server, user, password):
+        sucess = False
         post_data = {
             u"usuario" : user,
             u"senha" : password
@@ -32,15 +51,21 @@ class ManagerSAP(QtCore.QObject):
             if response:
                 data = response.json()
                 if "dados" in data:
-                    data['token'] = token
-                    data['server'] = server
-                    data['user'] = self.config['user']
-                    data['password'] = self.config['password']
+                    self.update_sap_data(
+                        data, 
+                        server, 
+                        user, 
+                        password, 
+                        token
+                    )
                     self.dump_data(data)
-                    return True
+                    sucess = True
                 else:
-                    return self.init_works(server, token)
-        return False
+                    sucess = self.init_works(server, user, password, token)
+        if sucess:
+            self.login_sap.dialog.accept()
+            self.show_tools.emit(True)
+
 
     def get_frame(self):
         self.frame = WorksFrame()
@@ -49,8 +74,19 @@ class ManagerSAP(QtCore.QObject):
             self.close_works
         )
         return self.frame
-    
-    def init_works(self, server, token):
+
+    def update_sap_data(self, data, server, user, password, token):
+        data['token'] = token
+        data['server'] = server
+        data['user'] = user
+        data['password'] = password
+        activity = data['dados']['atividade']['nome']
+        managerQgis(self.iface).save_project_var(
+            'atividade', 
+            activity
+        )
+
+    def init_works(self, server, user, password, token):
         result = self.show_message("new activity")
         if result == 16384:
             header = {'authorization' : token}
@@ -58,10 +94,13 @@ class ManagerSAP(QtCore.QObject):
             response = self.net.POST(server, url, header=header)
             data = response.json()
             if data['sucess']:
-                data['token'] = token
-                data['server'] = server
-                data['user'] = self.config['user']
-                data['password'] = self.config['password']
+                self.update_sap_data(
+                    data, 
+                    server, 
+                    user, 
+                    password, 
+                    token
+                )
                 self.dump_data(data)
                 return True
             self.show_message("no activity")
@@ -86,9 +125,12 @@ class ManagerSAP(QtCore.QObject):
         url = u"{0}/distribuicao/finaliza".format(server)
         response = self.net.POST(server, url, post_data, header)
         if response:
-            pass
-            #self.login(server, user, password)
-            #self.iface.actionNewProject().trigger()
+            self.iface.actionNewProject().trigger()
+            self.login_remote({
+                'server' : server, 
+                'user' : user, 
+                'password' : password
+            })
 
     def dump_data(self, data):
         with open(self.path_data, u"wb") as f:
@@ -102,7 +144,7 @@ class ManagerSAP(QtCore.QObject):
             return False
     
     def show_message(self, tag):
-        dialog = self.config['dialog'] 
+        dialog = self.login_sap.dialog 
         if "new activity" == tag:
             html = u"<p>Deseja iniciar a próxima atividade?</p>"
             result = msgBox.show(

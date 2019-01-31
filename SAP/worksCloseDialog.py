@@ -14,7 +14,7 @@ class WorksCloseDialog(QtWidgets.QDialog):
 
     def __init__(self, user_name):
         super(WorksCloseDialog, self).__init__()
-        ic.loadUi(self.dialog_path, self)
+        uic.loadUi(self.dialog_path, self)
         self.user_name = user_name
         self.cancel_btn.clicked.connect(self.close)
         self.ok_btn.setEnabled(False)

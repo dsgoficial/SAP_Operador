@@ -84,8 +84,10 @@ class MenuDock(QtWidgets.QDockWidget):
         db_selected = self.db_options.currentText() if idx != 0 else ''
         if db_selected :
             cursorWait.start()
-            self.database_load.emit(db_selected)
-            cursorWait.stop()
+            try:
+                self.database_load.emit(db_selected)
+            finally:
+                cursorWait.stop()
         else:
             self.workspace_options.clear()
             self.menu_options.clear()
@@ -207,21 +209,23 @@ class MenuDock(QtWidgets.QDockWidget):
 
     def run_button(self):
         cursorWait.start()
-        button = self.sender()
-        self.reload_button_style()
-        layer_name = button.button_data[u'formValues'][u'*Selecione camada:']
-        button.setStyleSheet(
-            self.get_button_style(layer_name, default=False)
-        )
-        self.active_button.emit({
-            "button_data" : button.button_data,
-            "reclassify" : self.menu_reclassify.isChecked(),
-            "settings_user" : {
-                "db_name" : self.db_options.currentText(),
-                "workspace_name" : self.workspace_options.currentText()
-            }
-        })
-        cursorWait.stop()
+        try:
+            button = self.sender()
+            self.reload_button_style()
+            layer_name = button.button_data[u'formValues'][u'*Selecione camada:']
+            button.setStyleSheet(
+                self.get_button_style(layer_name, default=False)
+            )
+            self.active_button.emit({
+                "button_data" : button.button_data,
+                "reclassify" : self.menu_reclassify.isChecked(),
+                "settings_user" : {
+                    "db_name" : self.db_options.currentText(),
+                    "workspace_name" : self.workspace_options.currentText()
+                }
+            })
+        finally:
+            cursorWait.stop()
 
     def reload_button_style(self):
         for tab_name in self.get_all_tabs_map():

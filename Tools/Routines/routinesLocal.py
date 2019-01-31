@@ -5,7 +5,7 @@ import re, sys, os, json
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
-from utils import managerQgis, network, msgBox
+from utils import network, msgBox
 
 class RoutinesLocal(QtCore.QObject):
 
@@ -17,7 +17,7 @@ class RoutinesLocal(QtCore.QObject):
 
     def init_postgresql(self):
         self.postgresql = Postgresql()
-        sap_data = ManagerSAP().load_data()
+        sap_data = ManagerSAP(self.iface).load_data()
         db_data = sap_data['dados']['atividade']['banco_dados']
         db_name = db_data['nome']
         self.postgresql.set_connections_data({
@@ -31,7 +31,7 @@ class RoutinesLocal(QtCore.QObject):
     def get_routines_data(self):
         local_routines = {}
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             local_routines = sap_data['rotinas']
             description = {
                 u"notSimpleGeometry" : u"Identifica geometrias não simples.",

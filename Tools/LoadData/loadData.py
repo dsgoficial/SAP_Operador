@@ -57,7 +57,7 @@ class LoadData(QtCore.QObject):
             for d in db_json['db_layers'][g]:
                 layers_list.append(d['layer_name'])
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP(self.iface).load_data()
             layers_sap = [ d['nome'] for d in sap_data['dados']['atividade']['camadas']]
             layers_list = [ n for n in layers_sap if n in layers_list] 
         return sorted(layers_list)
@@ -70,7 +70,7 @@ class LoadData(QtCore.QObject):
             )
         rules_list = list(set(rules_list))
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP(self.iface).load_data()
             rules_sap = sap_data['dados']['atividade']['regras']
             rules_list = [ n for n in rules_sap if n in rules_list ] 
         return sorted(rules_list)
@@ -81,8 +81,9 @@ class LoadData(QtCore.QObject):
             styles_list.append(
                 d.split('_')[0]
             )
+        styles_list = list(set(styles_list))
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP(self.iface).load_data()
             styles_sap = sap_data['dados']['atividade']['estilos']
             styles_list = [ n for n in styles_sap if n in styles_list ] 
         return sorted(styles_list)
@@ -90,7 +91,7 @@ class LoadData(QtCore.QObject):
     def get_input_files_list(self, db_json):
         input_files_list = []
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             input_files_list = [ d['nome'] for d in sap_data['insumos'] ]
         return sorted(input_files_list)
     
@@ -103,7 +104,7 @@ class LoadData(QtCore.QObject):
 
     def update_frame(self, db_name=''):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP(self.iface).load_data()
             db_data = sap_data['dados']['atividade']['banco_dados']
             db_name = db_data['nome']
             self.postgresql.set_connections_data({
@@ -353,7 +354,7 @@ class LoadData(QtCore.QObject):
 
     def get_workspace_data(self, settings_data, db_data):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             workspace_name = sap_data['unidade_trabalho']
             workspace_wkt = sap_data['geom']
         else:
@@ -426,7 +427,7 @@ class LoadData(QtCore.QObject):
     
     def create_virtual_frame(self, db_group):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']['atividade']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             srid = sap_data['geom'].split(';')[0].split('=')[1]
             wkt = sap_data['geom'].split(';')[1]
             query = "?query=SELECT geom_from_wkt('{0}') as geometry&geometry=geometry:3:{1}".format(
@@ -446,7 +447,7 @@ class LoadData(QtCore.QObject):
             
 
     def load_layers(self, settings_data, db_data):
-        managerQgis.save_project_var(
+        managerQgis(self.iface).save_project_var(
             'settings_user', 
             json.dumps(settings_data)
         )
@@ -477,7 +478,7 @@ class LoadData(QtCore.QObject):
         
     def load_input_files(self, settings_data):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()
+            sap_data = ManagerSAP(self.iface).load_data()
             paths_data = {
                 d['nome'] : d['caminho']
                 for d in sap_data['dados']['atividade']['insumos'] 
@@ -501,7 +502,7 @@ class LoadData(QtCore.QObject):
             
     def add_layer_default_values(self, v_lyr):
         if self.sap_mode:
-            sap_data = ManagerSAP().load_data()['dados']
+            sap_data = ManagerSAP(self.iface).load_data()['dados']
             idx = v_lyr.fields().indexOf('ultimo_usuario')
             confField = v_lyr.defaultValueDefinition(idx)
             confField.setExpression("'{0}'".format(sap_data['usuario_id']))
