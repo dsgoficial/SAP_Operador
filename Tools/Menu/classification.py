@@ -48,7 +48,7 @@ class Classification(QtCore.QObject):
                 lyr.removeSelection()
          
     def remove_layer_selection(self, layer_name):
-        result = core.QgsMapLayerRegistry.instance().mapLayersByName(
+        result = core.QgsProject.instance().mapLayersByName(
             layer_name
         )
         for lyr in result:

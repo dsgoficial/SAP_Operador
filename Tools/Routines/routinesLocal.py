@@ -97,7 +97,7 @@ class RoutinesLocal(QtCore.QObject):
 
     def get_layer_by_name(self, layer_name):
         dbname = self.postgres.getConnectionData()['dbname']
-        result = core.QgsMapLayerRegistry.instance().mapLayers().values()
+        result = core.QgsProject.instance().mapLayers().values()
         for layer in result:
             uriClass = core.QgsDataSourceURI(layer.styleURI())
             test = (
