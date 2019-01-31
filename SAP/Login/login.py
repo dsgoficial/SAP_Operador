@@ -4,7 +4,8 @@ from .loginAction import LoginAction
 from .loginDialog import LoginDialog
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import managerQgis, msgBox, cursorWait
+from utils import msgBox, cursorWait
+from utils.managerQgis import ManagerQgis
 
 class Login(QtCore.QObject):
 
@@ -34,14 +35,14 @@ class Login(QtCore.QObject):
         server = login_data['server']
         user = login_data['user']
         password = login_data['password']
-        m_qgis = managerQgis(self.iface)
+        m_qgis = ManagerQgis(self.iface)
         m_qgis.save_qsettings_var('login/server', server)
         m_qgis.save_project_var('user', user)
         m_qgis.save_project_var('password', password)
         self.sap.emit(server, user, password)
 
     def show_login_dialog(self):
-        m_qgis = managerQgis(self.iface)
+        m_qgis = ManagerQgis(self.iface)
         server = m_qgis.load_qsettings_var('login/server')
         user = m_qgis.load_project_var('user')
         password = m_qgis.load_project_var('password')

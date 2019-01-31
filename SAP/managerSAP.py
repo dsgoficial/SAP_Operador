@@ -4,7 +4,8 @@ import sys, os, pickle
 from .worksFrame import WorksFrame
 from .Login.login import Login
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import network, msgBox, managerQgis
+from utils import network, msgBox
+from utils.managerQgis import ManagerQgis
 
 
 class ManagerSAP(QtCore.QObject):
@@ -81,7 +82,7 @@ class ManagerSAP(QtCore.QObject):
         data['user'] = user
         data['password'] = password
         activity = data['dados']['atividade']['nome']
-        managerQgis(self.iface).save_project_var(
+        ManagerQgis(self.iface).save_project_var(
             'atividade', 
             activity
         )

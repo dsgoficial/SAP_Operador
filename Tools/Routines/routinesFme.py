@@ -6,7 +6,8 @@ import re, sys, os, json
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
-from utils import managerQgis, network, msgBox
+from utils import network, msgBox
+from utils.managerQgis import ManagerQgis
 
 class RoutinesFme(QtCore.QObject):
 
@@ -68,7 +69,7 @@ class RoutinesFme(QtCore.QObject):
                 server = sap_data['fme']['servidor']
                 server = u"http://{0}".format(server)
         else:
-            m_qgis = managerQgis(self.iface)
+            m_qgis = ManagerQgis(self.iface)
             if server:
                 m_qgis.save_qsettings_var('FME/server', server)
             else:
@@ -93,7 +94,7 @@ class RoutinesFme(QtCore.QObject):
 
     def run(self, routine_data):
         self.routine_data = routine_data
-        settings_user = managerQgis.load_project_var('settings_user')
+        settings_user = ManagerQgis(self.iface).load_project_var('settings_user')
         if settings_user :
             geometry = self.get_workspace_geometry(settings_user)
             db_connection_data = self.get_db_connection_data()
