@@ -6,7 +6,7 @@ import base64
 class ManagerQgis(QtCore.QObject):
 
     def __init__(self, iface):
-        super(ManagerQgis, self).__init__():
+        super(ManagerQgis, self).__init__()
         self.iface = iface
 
     def save_project_var(self, key, value):

@@ -7,6 +7,7 @@ from .SAP.managerSAP import ManagerSAP
 from .Tools.tools import Tools
 from .Tools.Menu.menu import Menu
 from .Validate.validateOperations import ValidateOperations
+from .utils.managerQgis import ManagerQgis
 
 class Main(QtCore.QObject):
     def __init__(self, iface):
@@ -25,6 +26,7 @@ class Main(QtCore.QObject):
         core.QgsProject.instance().readProject.connect(
             self.load_qgis_project
         )
+        ManagerQgis(self.iface).load_custom_config()
         
     def unload(self):
         del self.tools
