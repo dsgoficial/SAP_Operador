@@ -46,27 +46,22 @@ class ManagerSAP(QtCore.QObject):
         response = self.net.POST(server, url, post_data)
         if response and response.json()['sucess']:
             token = response.json()['dados']['token']
-            header = {'authorization' : token}
-            url = u"{0}/distribuicao/verifica".format(server)
-            response = self.net.GET(server, url, header)
-            if response:
-                data = response.json()
-                if "dados" in data:
-                    self.update_sap_data(
-                        data, 
-                        server, 
-                        user, 
-                        password, 
-                        token
-                    )
-                    self.dump_data(data)
-                    sucess = True
-                else:
-                    sucess = self.init_works(server, user, password, token)
+            data = self.get_current_works(server, user, password, token)
+            if data and "dados" in data:
+                self.update_sap_data(
+                    data, 
+                    server, 
+                    user, 
+                    password, 
+                    token
+                )
+                self.dump_data(data)
+                sucess = True
+            elif data:
+                sucess = self.init_works(server, user, password, token)
         if sucess:
             self.login_sap.dialog.accept()
             self.show_tools.emit(True)
-
 
     def get_frame(self):
         self.frame = WorksFrame()
@@ -81,11 +76,24 @@ class ManagerSAP(QtCore.QObject):
         data['server'] = server
         data['user'] = user
         data['password'] = password
-        activity = data['dados']['atividade']['nome']
+        works = data['dados']['atividade']['nome']
         ManagerQgis(self.iface).save_project_var(
-            'atividade', 
-            activity
+            'works', 
+            works
         )
+        ManagerQgis(self.iface).save_project_var(
+            'token', 
+            token
+        )
+
+    def get_current_works(self, server, user, password, token):
+        header = {'authorization' : token}
+        url = u"{0}/distribuicao/verifica".format(server)
+        response = self.net.GET(server, url, header)
+        if response:
+            data = response.json()
+            return data
+        return {}
 
     def init_works(self, server, user, password, token):
         result = self.show_message("new activity")

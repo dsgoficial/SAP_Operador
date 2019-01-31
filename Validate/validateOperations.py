@@ -3,6 +3,7 @@ from PyQt5 import QtCore
 from qgis import core, gui
 from .Operations.addFeatures import AddFeatures
 from .Operations.changedGeometry import ChangedGeometry
+from .Operations.openProject import OpenProject
 
 class ValidateOperations(QtCore.QObject):
     def __init__(self, iface):
@@ -31,6 +32,7 @@ class ValidateOperations(QtCore.QObject):
     def init_operations(self):
         self.addFeatures = AddFeatures(self.iface)
         self.changedGeometry = ChangedGeometry(self.iface)
+        self.openProject = OpenProject(self.iface)
 
     def finish_operations(self):
         del self.addFeatures
