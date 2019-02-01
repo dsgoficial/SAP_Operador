@@ -38,10 +38,15 @@ class RoutinesLocal(QtCore.QObject):
                 u"outOfBoundsAngles" : u"Identifica ângulos fora da tolerância.",
                 u"invalidGeometry" : u"Identifica geometrias inválidas."
             }
+            local_routines_formated = []
             for name in local_routines:
-                local_routines[name]['description'] = description[name]
-                local_routines[name]['type_routine'] = 'local'
-        return local_routines
+                d = {
+                    name : local_routines[name], 
+                    'description' : description[name],
+                    'type_routine' : 'local'
+                }
+                local_routines_formated.append(d)
+        return local_routines_formated
 
     def run(self, routine_data):
         self.init_postgresql()
@@ -96,13 +101,13 @@ class RoutinesLocal(QtCore.QObject):
 
 
     def get_layer_by_name(self, layer_name):
-        dbname = self.postgres.getConnectionData()['dbname']
+        db_name = self.postgresql.load_data()['db_name']
         result = core.QgsProject.instance().mapLayers().values()
         for layer in result:
-            uriClass = core.QgsDataSourceURI(layer.styleURI())
+            uri_class = core.QgsDataSourceUri(layer.styleURI())
             test = (
-                (dbname == layer.source().split(' ')[0][8:-1]) and
-                (layer_name == uriClass.table()) and
+                (db_name == layer.source().split(' ')[0][8:-1]) and
+                (layer_name == uri_class.table()) and
                 layer.allFeatureIds()
             )
             if test:
