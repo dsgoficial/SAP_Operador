@@ -192,9 +192,9 @@ class Classification(QtCore.QObject):
 
     def set_acquisition_tool(self, tool_name):
         if  tool_name == u'Mão livre':
-            self.active_tool(u'DSGTools: Ferramenta de aquisição mão livre')
+            self.active_tool(u'DSGTools: Ferramenta de Aquisição à Mão Livre')
         elif tool_name == u'Angulor reto':  
-            self.active_tool(u'DSGTools: Ferramenta de aquisição com ângulos retos')  
+            self.active_tool(u'DSGTools: Ferramenta de Aquisição com Ângulos Retos')  
         elif tool_name ==  u'Circulo':
             self.active_tool(u'DSGTools: Ferramenta de Aquisição de Círculos')
     
