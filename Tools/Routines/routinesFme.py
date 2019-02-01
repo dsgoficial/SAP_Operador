@@ -84,12 +84,10 @@ class RoutinesFme(QtCore.QObject):
             workspace_name = settings_user['workspace_name']
             postgresql = Postgresql()
             db_workspaces_wkt = postgresql.load_data()['db_workspaces_wkt']
-            workspace_wkt = '' if workspace_name == u"Todas" else (
-                db_data['db_workspaces_wkt'][workspace_name]
-            )
-            geometry = "'{0}'".format(
-                workspace_wkt
-            )
+            if not(workspace_name == u"Todas"):
+                workspace_wkt = db_data['db_workspaces_wkt'][workspace_name]
+                geometry = "'{0}'".format(workspace_wkt)
+            return False
         return geometry
 
     def run(self, routine_data):
@@ -97,34 +95,36 @@ class RoutinesFme(QtCore.QObject):
         settings_user = ManagerQgis(self.iface).load_project_var('settings_user')
         if settings_user :
             geometry = self.get_workspace_geometry(settings_user)
-            db_connection_data = self.get_db_connection_data()
-            post_json  = self.get_post_data(self.routine_data, geometry, db_connection_data)
-            routine_id =  self.routine_data['id']
-            post_data = { 'parameters' : post_json}
-            server  = self.get_server()
-            url = '{0}/versions/{1}/jobs'.format(
-                server, 
-                routine_id
-            )
-            response = self.net.POST(server, url, post_data)
-            url_get_status = '{0}/jobs/{1}'.format(
-                server, 
-                response.json()['data']['job_uuid']
-            )
-            self.running = True
-            self.worker = StatusRoutine(url_get_status, server)
-            self.thread = QtCore.QThread()
-            self.worker.moveToThread(self.thread)
-            self.worker.finish.connect(self.stop)
-            self.thread.started.connect(
-                self.worker.run
-            )
-            self.thread.start()
-            html = u"<p>Processo rodando em background.</p>"
-            msgBox.show(text=html, title=u"Aviso", parent=self.parent)
+            if geometry:
+                db_connection_data = self.get_db_connection_data()
+                post_json  = self.get_post_data(self.routine_data, geometry, db_connection_data)
+                routine_id =  self.routine_data['id']
+                post_data = { 'parameters' : post_json}
+                server  = self.get_server()
+                url = '{0}/versions/{1}/jobs'.format(
+                    server, 
+                    routine_id
+                )
+                response = self.net.POST(server, url, post_data)
+                url_get_status = '{0}/jobs/{1}'.format(
+                    server, 
+                    response.json()['data']['job_uuid']
+                )
+                self.running = True
+                self.worker = StatusRoutine(url_get_status, server)
+                self.thread = QtCore.QThread()
+                self.worker.moveToThread(self.thread)
+                self.worker.finish.connect(self.stop)
+                self.thread.started.connect(
+                    self.worker.run
+                )
+                self.thread.start()
+                html = u"<p>Processo rodando em background.</p>"
+            else:
+                html = u"<p>Carregue uma unidade de trabalho para executar essa rotina.</p>"
         else:
             html = u"<p>Não há dados carregados nesse projeto!</p>"
-            msgBox.show(text=html, title=u"Aviso", parent=self.parent)
+        msgBox.show(text=html, title=u"Aviso", parent=self.parent)
 
     def stop(self, response_routine):
         if self.worker:
