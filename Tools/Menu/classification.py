@@ -66,6 +66,7 @@ class Classification(QtCore.QObject):
                 lyr and 
                 (lyr.type() == core.QgsMapLayer.VectorLayer) and 
                 (lyr.selectedFeatureCount() > 0) and
+                (lyr.geometryType() == currentLayer.geometryType()) and
                 (current_uri.database() == lyr_uri.database()) and
                 (current_uri.host() == lyr_uri.host()) and
                 (current_uri.port() == lyr_uri.port())
