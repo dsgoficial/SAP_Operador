@@ -77,17 +77,18 @@ class RoutinesFrame(QtWidgets.QFrame):
 
     def load(self, routines_data):
         self.clean()
-        all_routines = [
-            routines_data['fme'],
-            routines_data['local']
-        ]
-        for routines in all_routines:
-            for rf in routines:
-                radio_btn = self.create_radio_btn(
-                    rf['description'],
-                    self.routines_area
-                )
-                radio_btn.routine_data = json.dumps(rf)
+        for r in routines_data['fme']:
+            radio_btn = self.create_radio_btn(
+                r['description'],
+                self.routines_area
+            )
+            radio_btn.routine_data = json.dumps(r)
+        for r in routines_data['local']:
+            radio_btn = self.create_radio_btn(
+                r['description'],
+                self.routines_area
+            )
+            radio_btn.routine_data = json.dumps(r)
         self.routines_spacer = QtWidgets.QSpacerItem(
             20, 
             40, 
