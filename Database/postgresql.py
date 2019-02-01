@@ -105,6 +105,7 @@ class Postgresql(QtCore.QObject):
                 } for row in result
             }
             return rules
+        return {}
     
     def save_menu_profile(self, menu_data):
         table_name = menu_data['menu_table_name']

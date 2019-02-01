@@ -64,6 +64,11 @@ class ToolsDialog(QtWidgets.QDialog):
     def showEvent(self, e):
         self.load_btn.click() 
 
+    def show_(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
         
     
 

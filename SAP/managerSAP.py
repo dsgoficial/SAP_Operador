@@ -25,7 +25,6 @@ class ManagerSAP(QtCore.QObject):
             self.show_tools.emit
         )
         self.net = network
-        self.net.CONFIG['parent'] = self.login_sap.dialog
 
     def add_action_qgis(self, b):
         if b:
@@ -55,13 +54,14 @@ class ManagerSAP(QtCore.QObject):
                     password, 
                     token
                 )
-                self.dump_data(data)
                 sucess = True
             elif data:
                 sucess = self.init_works(server, user, password, token)
         if sucess:
             self.login_sap.dialog.accept()
             self.show_tools.emit(True)
+        else:
+            self.login_sap.dialog.show_()
 
     def get_frame(self):
         self.frame = WorksFrame()
@@ -85,6 +85,7 @@ class ManagerSAP(QtCore.QObject):
             'token', 
             token
         )
+        self.dump_data(data)
 
     def get_current_works(self, server, user, password, token):
         header = {'authorization' : token}
@@ -110,7 +111,6 @@ class ManagerSAP(QtCore.QObject):
                     password, 
                     token
                 )
-                self.dump_data(data)
                 return True
             self.show_message("no activity")
             return False
@@ -121,25 +121,21 @@ class ManagerSAP(QtCore.QObject):
         unit_id = works_data['unidade_trabalho_id']
         fase_id = works_data['subfase_etapa_id']
         server = sap_data['server']
-        token = sap_data['server']
+        token = sap_data['token']
         user = sap_data['user']
         password = sap_data['password']
         post_data = {
             'subfase_etapa_id' : fase_id,
             'unidade_trabalho_id': unit_id
         }
-        header = {
+        header = { 
             'authorization' : token
         }
         url = u"{0}/distribuicao/finaliza".format(server)
         response = self.net.POST(server, url, post_data, header)
         if response:
             self.iface.actionNewProject().trigger()
-            self.login_remote({
-                'server' : server, 
-                'user' : user, 
-                'password' : password
-            })
+            self.login(server, user, password)
 
     def dump_data(self, data):
         with open(self.path_data, u"wb") as f:
