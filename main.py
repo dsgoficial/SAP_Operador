@@ -16,7 +16,7 @@ class Main(QtCore.QObject):
         self.sap = ManagerSAP(self.iface)
         self.menu = Menu(self.iface)
         self.validate = ValidateOperations(self.iface)
-        self.tools = Tools(self.iface, self.menu)
+        self.tools = Tools(self.iface, self.menu, self.sap)
 
     def initGui(self):
         self.sap.add_action_qgis(True)

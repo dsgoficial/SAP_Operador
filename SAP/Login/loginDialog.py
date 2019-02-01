@@ -40,6 +40,11 @@ class LoginDialog(QtWidgets.QDialog):
         )
         return test
 
+    def show_(self):
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
     @QtCore.pyqtSlot(bool)
     def on_ok_btn_clicked(self):
         if self.localhost_check.isChecked():

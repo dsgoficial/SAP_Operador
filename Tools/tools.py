@@ -10,22 +10,25 @@ from utils import cursorWait
 
 class Tools(QtCore.QObject):
 
-    def __init__(self, iface, menu):
+    def __init__(self, iface, menu, sap):
         super(Tools, self).__init__()
         self.iface = iface
         self.tool_selected = None
         self.menu = menu
+        self.sap = sap
         self.sap_mode = False
+        self.interface = None
 
     def __del__(self):
-        LoadData(self.iface).clean_forms_custom()        
+        LoadData(self.iface).clean_forms_custom()
 
     def show_dialog(self):
+        self.interface.close() if self.interface else ''  
         self.interface = ToolsDialog(self.iface)
         self.interface.selected_option.connect(
             self.load_frame
         )
-        self.interface.show()
+        self.interface.show_()
         return self.interface
 
     def load_frame(self, option_data):
@@ -41,7 +44,7 @@ class Tools(QtCore.QObject):
             elif choose == u"Menu":
                 self.tool_selected = self.menu
             elif choose == u"Controle" and self.sap_mode:
-                self.tool_selected = ManagerSAP(iface=self.iface)
+                self.tool_selected = self.sap
             elif choose == u"Rotinas":
                 self.tool_selected = Routines(self.iface)
                 self.tool_selected.sap_mode = self.sap_mode

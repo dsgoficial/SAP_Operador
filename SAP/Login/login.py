@@ -47,5 +47,5 @@ class Login(QtCore.QObject):
         user = m_qgis.load_project_var('user')
         password = m_qgis.load_project_var('password')
         self.dialog.load_login_data(server, user, password)
-        self.dialog.show()
+        self.dialog.show_()
         
