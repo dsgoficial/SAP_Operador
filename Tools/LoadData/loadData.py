@@ -6,6 +6,7 @@ from .generatorCustomInitCode import GeneratorCustomInitCode
 from .rules import Rules
 import sys, os, copy, json, platform
 from qgis import core, gui
+from qgis.PyQt.QtXml import QDomDocument
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from SAP.managerSAP import ManagerSAP
 from Database.postgresql import Postgresql
@@ -184,7 +185,9 @@ class LoadData(QtCore.QObject):
                 if (style_selected in style_name) and (layer_name in style_name):
                     style_id = str(styles_data[style_name])
                     style_xml = v_lyr.getStyleFromDatabase(style_id)[0]
-                    v_lyr.loadNamedStyle(style_xml)
+                    doc = QDomDocument()
+                    doc.setContent(style_xml)
+                    v_lyr.importNamedStyle(doc)
                     
     def get_layer_fields_map(self, v_lyr):
         conf = v_lyr.fields()
