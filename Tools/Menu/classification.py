@@ -199,7 +199,7 @@ class Classification(QtCore.QObject):
             self.active_tool(u'DSGTools: Ferramenta de Aquisição de Círculos')
     
     def active_tool(self, toolName):
-        for a in self.iface.mainWindow().findChildren(QtGui.QToolBar):
+        for a in self.iface.mainWindow().findChildren(QtWidgets.QToolBar):
             if a.objectName() == u'DsgTools':
                 for action in a.actions():
                     if toolName == action.text():
