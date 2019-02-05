@@ -89,7 +89,7 @@
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
-        <widget class="QTableWidget" name="tableWidget">
+        <widget class="QTableWidget" name="config_table">
          <column>
           <property name="text">
            <string>Campos</string>
@@ -107,14 +107,14 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="update_btn">
      <property name="text">
       <string>Atualizar Menu</string>
      </property>
     </widget>
    </item>
    <item row="4" column="0">
-    <widget class="QPushButton" name="save_menu_btn">
+    <widget class="QPushButton" name="save_btn">
      <property name="text">
       <string>&amp;Salvar Menu</string>
      </property>

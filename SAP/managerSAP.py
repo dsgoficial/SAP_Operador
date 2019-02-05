@@ -103,7 +103,7 @@ class ManagerSAP(QtCore.QObject):
             url = u"{0}/distribuicao/inicia".format(server)
             response = self.net.POST(server, url, header=header)
             data = response.json()
-            if data['sucess']:
+            if data['sucess'] and 'dados' in data:
                 self.update_sap_data(
                     data, 
                     server, 

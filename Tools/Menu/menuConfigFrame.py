@@ -39,12 +39,33 @@ class MenuConfigFrame(QtWidgets.QFrame):
 
     @QtCore.pyqtSlot(int)
     def on_menu_options_currentIndexChanged(self, idx):
+        self.operation_options.clear()
         profile_selected = self.menu_options.currentText() if idx != 0 else ''
-        if profile_selected:
-            self.operation_options.clear()
+        if profile_selected:      
             self.operation_options.addItems(self.operations)
-        else:
-            self.operation_options.clear()
+      
+    @QtCore.pyqtSlot(int)
+    def on_operation_options_currentIndexChanged(self, idx):
+        operation_selected = self.operation_options.currentText()
+        self.load_table(operation_selected)
 
-    def update_table(self):
-        pass
+    def add_widget_on_cell(self):
+        btn = QtWidgets.QPushButton(table)
+        btn.setText('12/1/12')
+        self.config_table.setCellWidget(0, 0, btn)
+
+    def clean_table(self):
+        self.config_table.setRowCount(0)
+        self.config_table.setColumnCount(0)
+
+    def load_table(self, operation_selected):
+        self.clean_table()
+        if operation_selected == u"Adicionar Aba":
+            self.config_table.setRowCount(2)
+            self.config_table.setColumnCount(2)
+            self.add_widget_on_cell()
+        #elif operation_selected == u"Editar Aba":
+        #elif operation_selected == u"Remover Aba":
+        #elif operation_selected == u"Adicionar Botão":
+        #elif operation_selected == u"Editar Botão":
+        #elif operation_selected == u"Remover Botão": 
