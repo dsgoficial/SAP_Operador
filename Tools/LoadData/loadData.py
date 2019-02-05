@@ -451,7 +451,7 @@ class LoadData(QtCore.QObject):
             frame_group.addLayer(vl)
             
 
-    def load_layers(self, settings_data, db_data):
+    def load_layers(self, settings_data, db_data, is_menu=False):
         ManagerQgis(self.iface).save_project_var(
             'settings_user', 
             json.dumps(settings_data)
@@ -476,7 +476,8 @@ class LoadData(QtCore.QObject):
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
         self.create_virtual_frame(db_group)
-        self.collapse_all(db_group)
+        if not(is_menu):
+            self.collapse_all(db_group)
         self.clean_empty_groups(db_group)
         self.rules = {}
         return layers_vector
