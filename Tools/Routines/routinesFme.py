@@ -11,6 +11,8 @@ from utils.managerQgis import ManagerQgis
 
 class RoutinesFme(QtCore.QObject):
 
+    message = QtCore.pyqtSignal(str)
+
     def __init__(self, iface, parent=None):
         super(RoutinesFme, self).__init__()
         self.iface = iface 
@@ -18,7 +20,7 @@ class RoutinesFme(QtCore.QObject):
         self.parent = parent
         self.net = network
         self.net.CONFIG['parent'] = self.parent
-        self.running = False
+        self.is_running = False
 
     def get_routines_data(self, server=''):
         data = {}
@@ -91,6 +93,7 @@ class RoutinesFme(QtCore.QObject):
         return geometry
 
     def run(self, routine_data):
+        html = ''
         self.routine_data = routine_data
         settings_user = ManagerQgis(self.iface).load_project_var('settings_user')
         if settings_user :
@@ -119,21 +122,22 @@ class RoutinesFme(QtCore.QObject):
                     self.worker.run
                 )
                 self.thread.start()
-                html = u"<p>Processo rodando em background.</p>"
             else:
                 html = u"<p>Carregue uma unidade de trabalho para executar essa rotina.</p>"
         else:
             html = u"<p>Não há dados carregados nesse projeto!</p>"
-        msgBox.show(text=html, title=u"Aviso", parent=self.parent)
+        if html:
+            self.message.emit(html)
 
     def stop(self, response_routine):
         if self.worker:
+            print('close routine')
             self.worker.deleteLater()
             self.thread.quit()
             self.thread.deleteLater()
             self.thread = self.worker = self.running = False
             log_html = self.format_log(response_routine)
-            msgBox.show(text=log_html, title=u"Aviso", parent=self.parent)
+            self.message.emit(log_html)
                
     def get_post_data(self, routine_data, geometry, db_connection):
         post_data = {}

@@ -14,7 +14,7 @@ class Routines(QtCore.QObject):
         self.iface = iface
         self.server = False 
         self.sap_mode = False
-        self.queue_routines = []
+        self.routine_selected = False
         
     def get_frame(self):
         self.frame = RoutinesFrame(self.iface)
@@ -31,32 +31,30 @@ class Routines(QtCore.QObject):
         return self.frame
 
     def load_routines(self, server=''):
-        routinesLocal = RoutinesLocal(self.iface)
-        routinesLocal.sap_mode = self.sap_mode
-        routinesFme = RoutinesFme(self.iface)
-        routinesFme.sap_mode = self.sap_mode
+        self.routinesLocal = RoutinesLocal(self.iface)
+        self.routinesLocal.sap_mode = self.sap_mode
+        self.routinesLocal.message.connect(
+            self.frame.show_message
+        )
+        self.routinesFme = RoutinesFme(self.iface)
+        self.routinesFme.sap_mode = self.sap_mode
+        self.routinesFme.message.connect(
+            self.frame.show_message
+        )
         routines_data = {
-            'local' : routinesLocal.get_routines_data(),
-            'fme' :  routinesFme.get_routines_data(server)
+            'local' : self.routinesLocal.get_routines_data(),
+            'fme' :  self.routinesFme.get_routines_data(server)
         }
         self.frame.load(routines_data)
     
-    def clean_queue_routines(self):
-        self.queue_routines = [ 
-            routine for routine in self.queue_routines
-            if routine.running
-        ]
-            
+   
     def run_routine(self, routine_data):
         type_routine = routine_data['type_routine']
         if type_routine == 'fme':
-            routine_selected = RoutinesFme(self.iface)
+            routine_selected = self.routinesFme
         else:
-            routine_selected = RoutinesLocal(self.iface)
-        routine_selected.sap_mode = self.sap_mode
+            routine_selected = self.routinesLocal
         routine_selected.run(routine_data)
-        self.clean_queue_routines()
-        self.queue_routines.append(routine_selected)
 
         
     
