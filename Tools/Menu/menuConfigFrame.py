@@ -50,9 +50,9 @@ class MenuConfigFrame(QtWidgets.QFrame):
         self.load_table(operation_selected)
 
     def add_widget_on_cell(self):
-        btn = QtWidgets.QPushButton(table)
-        btn.setText('12/1/12')
-        self.config_table.setCellWidget(0, 0, btn)
+        cb = QtWidgets.QComboBox(self.config_table)
+        cb.addItem('12/1/12')
+        self.config_table.setCellWidget(0, 1, cb)
 
     def clean_table(self):
         self.config_table.setRowCount(0)
@@ -64,6 +64,7 @@ class MenuConfigFrame(QtWidgets.QFrame):
             self.config_table.setRowCount(2)
             self.config_table.setColumnCount(2)
             self.add_widget_on_cell()
+            print(self.config_table.cellWidget(0,1))
         #elif operation_selected == u"Editar Aba":
         #elif operation_selected == u"Remover Aba":
         #elif operation_selected == u"Adicionar Botão":

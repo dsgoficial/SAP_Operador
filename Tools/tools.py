@@ -41,8 +41,6 @@ class Tools(QtCore.QObject):
                 self.tool_selected.show_menu.connect(
                     self.menu.show_menu
                 )
-            elif choose == u"Menu":
-                self.tool_selected = self.menu
             elif choose == u"Controle" and self.sap_mode:
                 self.tool_selected = self.sap
             elif choose == u"Rotinas":

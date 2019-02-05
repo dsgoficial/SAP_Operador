@@ -31,9 +31,6 @@ class ToolsDialog(QtWidgets.QDialog):
         self.load_btn.clicked.connect(
             self.handler_options_btn
         )
-        self.menu_btn.clicked.connect(
-            self.handler_options_btn
-        )
         self.rotines_btn.clicked.connect(
             self.handler_options_btn
         )

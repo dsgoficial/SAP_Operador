@@ -9,11 +9,13 @@ from utils import network, msgBox
 
 class RoutinesLocal(QtCore.QObject):
 
+    message = QtCore.pyqtSignal(str)
+
     def __init__(self, iface):
         super(RoutinesLocal, self).__init__()
         self.iface = iface
         self.sap_mode = False
-        self.running = False
+        self.is_running = False
 
     def init_postgresql(self):
         self.postgresql = Postgresql()
@@ -29,7 +31,7 @@ class RoutinesLocal(QtCore.QObject):
         })
     
     def get_routines_data(self):
-        local_routines = {}
+        local_routines_formated = {}
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             local_routines = sap_data['rotinas']
@@ -38,7 +40,6 @@ class RoutinesLocal(QtCore.QObject):
                 u"outOfBoundsAngles" : u"Identifica ângulos fora da tolerância.",
                 u"invalidGeometry" : u"Identifica geometrias inválidas."
             }
-            local_routines_formated = []
             for name in local_routines:
                 d = {
                     name : local_routines[name], 
@@ -97,7 +98,7 @@ class RoutinesLocal(QtCore.QObject):
         html = u'''<p style="color:red">
             Rotina executada! Foram gerados {0} flags.
         </p>'''.format(count_flags)
-        msgBox.show(text=html, title=u"Aviso")
+        self.message.show(html)
 
 
     def get_layer_by_name(self, layer_name):

@@ -19,6 +19,7 @@ class RoutinesFrame(QtWidgets.QFrame):
         self.iface = iface
         uic.loadUi(self.dialog_path, self)
         self.routines_spacer = False
+        self.is_running = False
 
     def config_sap_mode(self):
         self.server_label.setVisible(False)
@@ -34,11 +35,12 @@ class RoutinesFrame(QtWidgets.QFrame):
     @QtCore.pyqtSlot(bool)
     def on_run_btn_clicked(self, b):
         routine_data = self.get_selected_routines()
-        if routine_data:
-            self.routines_progress.setMaximum(100)
-            self.routines_progress.setValue(50)
+        if routine_data and not(self.is_running):
+            self.is_running = True
+            #self.routines_progress.setMaximum(100)
+            #self.routines_progress.setValue(50)
+            self.routines_progress.setRange(0,0)
             self.run_routine.emit(routine_data)
-            self.routines_progress.setValue(0)
 
     @QtCore.pyqtSlot(str)
     def on_server_input_textEdited(self, t):
@@ -64,7 +66,8 @@ class RoutinesFrame(QtWidgets.QFrame):
     def get_selected_routines(self):
         area = self.routines_area
         for idx in range(area.children()[0].count()):
-            if area.children()[0].itemAt(idx).widget().isChecked():
+            widget = area.children()[0].itemAt(idx).widget()
+            if widget and widget.isChecked():
                 routine_data = json.loads(
                     area.children()[0].itemAt(idx).widget().routine_data
                 )
@@ -105,3 +108,8 @@ class RoutinesFrame(QtWidgets.QFrame):
             if type(layout.itemAt(idx).widget()) == QtWidgets.QPushButton:
                 layout.itemAt(idx).widget().deleteLater()
         layout.removeItem(self.routines_spacer) if self.routines_spacer else ''
+    
+    def show_message(self, html):
+        self.is_running = False
+        msgBox.show(text=html, title=u"Aviso", parent=self)
+        self.routines_progress.setRange(0,1)

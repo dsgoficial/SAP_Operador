@@ -53,7 +53,7 @@
       <property name="maximumSize">
        <size>
         <width>91</width>
-        <height>342</height>
+        <height>255</height>
        </size>
       </property>
       <property name="orientation">
@@ -109,35 +109,6 @@
        </property>
        <property name="text">
         <string>Controle</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="autoExclusive">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="menu_btn">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>90</width>
-         <height>81</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>90</width>
-         <height>81</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Menu</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
