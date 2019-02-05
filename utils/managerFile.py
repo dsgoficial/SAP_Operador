@@ -39,12 +39,15 @@ def download_file(path_origin, path_dest, parent):
         if os_name == 'Windows':
             path_origin = path_origin.replace(u"/", u"\\")
             name_file = path_origin.split(u"\\")[-1]
+            path_dest = path_dest.replace(u"/", u"\\")
             local_file_path = os.path.join(path_dest, name_file)
             command = u"copy {0} {1}".format(
                 path_origin,
                 path_dest
             )
-            os.popen(command)  
+            proc = os.popen(command)  
+            proc.read()
+            proc.close()
         elif os_name == 'Linux':
             aut_smb = get_auth_smb(parent)
             if aut_smb:

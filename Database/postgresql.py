@@ -54,17 +54,20 @@ class Postgresql(QtCore.QObject):
         return list(self.conns.keys())
 
     def get_workspaces_name(self, table_name):
+        result = []
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT mi FROM {0}.{1};""".format(
                 data['schema_name'],
                 data['table_name']
             )
-            result = self.run_sql(sql)
-            return list(set([item[0] for item in result]))
-        return []
+            response = self.run_sql(sql)
+            if response:
+                result = list(set([item[0] for item in response]))
+        return result
 
     def get_styles(self, table_name):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT stylename, id 
@@ -72,11 +75,13 @@ class Postgresql(QtCore.QObject):
                         data['schema_name'],
                         data['table_name']
                     )
-            result = self.run_sql(sql)
-            return { name : i for name, i in result }
-        return {}
+            response = self.run_sql(sql)
+            if response:
+                result = { name : i for name, i in response }
+        return result
     
     def get_rules(self, table_name):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT id, tipo_regra, camada, nome, 
@@ -85,27 +90,27 @@ class Postgresql(QtCore.QObject):
                 data['schema_name'],
                 data['table_name']
             )
-            result = self.run_sql(sql)
-            rules = {
-                row[0] : {
-                    u"tipo_regra" : row[1],
-                    u"camada" : row[2],
-                    u"nome" : row[3],
-                    u"corRgb" : [
-                        int(row[4].split(",")[0]),
-                        int(row[4].split(",")[1]),
-                        int(row[4].split(",")[2])
-                    ],
-                    u"cor_rgb" : row[4],
-                    u"regra" : row[5],
-                    u"tipo_estilo" : row[6],
-                    u"atributo" : row[7],
-                    u"descricao" : row[8],
-                    u"ordem" : row[9] 
-                } for row in result
-            }
-            return rules
-        return {}
+            response = self.run_sql(sql)
+            if response:
+                result = {
+                    row[0] : {
+                        u"tipo_regra" : row[1],
+                        u"camada" : row[2],
+                        u"nome" : row[3],
+                        u"corRgb" : [
+                            int(row[4].split(",")[0]),
+                            int(row[4].split(",")[1]),
+                            int(row[4].split(",")[2])
+                        ],
+                        u"cor_rgb" : row[4],
+                        u"regra" : row[5],
+                        u"tipo_estilo" : row[6],
+                        u"atributo" : row[7],
+                        u"descricao" : row[8],
+                        u"ordem" : row[9] 
+                    } for row in response
+                }
+        return result
     
     def save_menu_profile(self, menu_data):
         table_name = menu_data['menu_table_name']
@@ -130,8 +135,8 @@ class Postgresql(QtCore.QObject):
             table_name,
             menu_name
         )
-        result = self.run_sql(sql)
-        if [item[0] for item in result]:
+        response = self.run_sql(sql)
+        if response and [item[0] for item in response]:
             sql = u"""UPDATE {0}.{1} 
                 SET perfil = '{2}', ordem_menu = '{3}'
                 WHERE nome_do_perfil = '{4}';""".format(
@@ -154,6 +159,7 @@ class Postgresql(QtCore.QObject):
             self.run_sql(sql)
 
     def get_menu_profile(self, table_name):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT id, nome_do_perfil, perfil, ordem_menu
@@ -161,15 +167,17 @@ class Postgresql(QtCore.QObject):
                     data['schema_name'],
                     data['table_name']
                 )
-            result = self.run_sql(sql)
-            profiles = {
-                row[0] : {
-                    u"nome_do_perfil" : row[1],
-                    u"perfil" : row[2],
-                    u"orderMenu" : row[3]
-                } for row in result
-            }
-            return profiles
+            response = self.run_sql(sql)
+            if response:
+                result = {
+                    row[0] : {
+                        u"nome_do_perfil" : row[1],
+                        u"perfil" : row[2],
+                        u"orderMenu" : row[3]
+                    } for row in response
+                }
+        return result
+            
     
     def get_db_json(self):
         db_name = self.current_db_name
@@ -232,11 +240,15 @@ class Postgresql(QtCore.QObject):
         return db_json
         
     def get_table(self, table_name):
+        result = []
         data = self.validate_table(table_name)
-        sql = u"""SELECT * FROM {}.{};""".format(
-            data['schema_name'], data['table_name']
-        )
-        result = self.run_sql(sql)
+        if data:
+            sql = u"""SELECT * FROM {}.{};""".format(
+                data['schema_name'], data['table_name']
+            )
+            response = self.run_sql(sql)
+            if response:
+                result = response
         return result
 
     def get_group_geom(self, layer_geom_type):
@@ -253,6 +265,7 @@ class Postgresql(QtCore.QObject):
             return r[0]
 
     def get_all_layers(self, layers_name):
+        result = []
         if layers_name:
             list_names = ", ".join(["'%{}%'".format(name) for name in layers_name])
             sql = u"""SELECT f_table_schema, f_table_name, type 
@@ -263,16 +276,17 @@ class Postgresql(QtCore.QObject):
         else:
             sql = u"""SELECT f_table_schema, f_table_name, type 
                 FROM geometry_columns;"""
-        result = self.run_sql(sql)
-        layers = [
-            { 
-                'layer_schema' : item[0],
-                'layer_name' : item[1],
-                'layer_geom_type' : item[2],
-                'layer_fields' : {}
-            } for item in result
-        ]
-        return layers
+        response = self.run_sql(sql)
+        if response:
+            result = [
+                { 
+                    'layer_schema' : item[0],
+                    'layer_name' : item[1],
+                    'layer_geom_type' : item[2],
+                    'layer_fields' : {}
+                } for item in response
+            ]
+        return result
 
     def get_connection(self):
         conn = psycopg2.connect(
@@ -288,28 +302,38 @@ class Postgresql(QtCore.QObject):
         return conn
 
     def run_sql(self, sql):
-        self.pg_cursor.execute(sql)
-        result = self.pg_cursor.fetchall()
+        try:
+            self.pg_cursor.execute(sql)
+            result = self.pg_cursor.fetchall()
+        except:
+            return False
         return result
 
     def validate_table(self, table_name):
+        result = {}
         sql = u"""SELECT table_schema, table_name 
                     FROM information_schema.tables 
                     WHERE table_name = '{}';""".format(table_name)
-        result = self.run_sql(sql)
-        return {u"schema_name" : result[0][0], u"table_name" : result[0][1]} if result else {}
+        response = self.run_sql(sql)
+        if response:
+            result = {u"schema_name" : response[0][0], u"table_name" : response[0][1]}
+        return result
         
     def get_tables_by_column(self, column_name):
+        result = []
         sql = u"""SELECT c.relname
             FROM pg_class AS c
             INNER JOIN pg_attribute AS a ON a.attrelid = c.oid
             WHERE a.attname = '{}' AND c.relkind = 'r';""".format(
             column_name
         )
-        result = self.run_sql(sql)
-        return [item[0] for item in result]
+        response = self.run_sql(sql)
+        if response:
+            result = [item[0] for item in response]
+        return result
 
     def get_layer_srid(self, table_name):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT srid 
@@ -317,10 +341,13 @@ class Postgresql(QtCore.QObject):
                 WHERE f_table_name = '{}';""".format(
                 table_name
             )
-            result = self.run_sql(sql)
-            return {u"srid" : result[0][0] if result[0][0] else u"31982" }
+            response = self.run_sql(sql)
+            if response:
+                result = {u"srid" : response[0][0] if response[0][0] else u"31982" }
+        return result
 
     def get_layer_columns(self, table_name):
+        result = []
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT column_name 
@@ -331,11 +358,13 @@ class Postgresql(QtCore.QObject):
                 data['schema_name'],
                 data['table_name']
             )
-            result = self.run_sql(sql)
-            return [item[0] for item in result]
-        return []
+            response = self.run_sql(sql)
+            if response:
+                result = [item[0] for item in response]
+        return result
 
     def get_layer_domains(self, table_name):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT pg_get_constraintdef(c.oid) AS cdef
@@ -348,15 +377,17 @@ class Postgresql(QtCore.QObject):
                 data['schema_name'],
                 data['table_name']
             )
-            result = self.run_sql(sql)
-            return {
-                item[0].split('(')[1].split(')')[0].replace(' ', '') :
-                item[0].split('(')[1].split('.')[1]
-                for item in result
-            }
-        return {}
+            response = self.run_sql(sql)
+            if response:
+                result =  {
+                    item[0].split('(')[1].split(')')[0].replace(' ', '') :
+                    item[0].split('(')[1].split('.')[1]
+                    for item in response
+                }
+        return result
 
     def get_layer_contrains_codes(self, layer_name):
+        result = {}
         sql = u"""SELECT d.column_name, c.consrc
             FROM
             (SELECT conname, consrc FROM  pg_constraint) c
@@ -368,22 +399,23 @@ class Postgresql(QtCore.QObject):
             ON (c.conname = d.constraint_name AND not(d.column_name = 'id'));""".format(
             layer_name
         )
-        result = self.run_sql(sql)
-        codes = {}
-        for item in result:
-            field = item[0]
-            text = item[1]
-            code_list = []
-            for code in " ".join(" ".join(text.split("(")).split(")")).split(" "):
-                try:
-                    int(code)
-                    code_list.append(code)
-                except:
-                    pass
-            codes[field] = ",".join(code_list)
-        return codes
+        response = self.run_sql(sql)
+        if response:
+            for item in response:
+                field = item[0]
+                text = item[1]
+                code_list = []
+                for code in " ".join(" ".join(text.split("(")).split(")")).split(" "):
+                    try:
+                        int(code)
+                        code_list.append(code)
+                    except:
+                        pass
+                result[field] = ",".join(code_list)
+        return result
 
     def get_domain_values(self, table_name, code_list=False):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             if code_list:
@@ -394,10 +426,11 @@ class Postgresql(QtCore.QObject):
                 sql = u"SELECT code, code_name FROM {0}.{1};".format(
                     data['schema_name'], table_name
                 )
-            result = self.run_sql(sql)
-            result2dict = dict(result)
-            invert_result2dict = {v : k for k, v in result2dict.items()}
-            return invert_result2dict
+            response = self.run_sql(sql)
+            if response:
+                response2dict = dict(response)
+                result = {v : k for k, v in response2dict.items()}
+            return result
 
     def get_fields_values(self, field, domains, constraint):
         if field in constraint:
@@ -408,16 +441,17 @@ class Postgresql(QtCore.QObject):
         return values
 
     def get_workspaces_wkt(self, table_name):
+        result = {}
         data = self.validate_table(table_name)
         if data:
             sql = u"""SELECT mi, st_asewkt(geom)
                 FROM {0}.{1};""".format(
                 data['schema_name'], data['table_name']
             )
-            result = self.run_sql(sql)
-            items = {item : value for item, value in result}
-            return items
-        return {}
+            response = self.run_sql(sql)
+            if response:
+                result = {item : value for item, value in response}
+        return result
         
 
 
