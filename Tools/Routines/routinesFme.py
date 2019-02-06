@@ -131,7 +131,6 @@ class RoutinesFme(QtCore.QObject):
 
     def stop(self, response_routine):
         if self.worker:
-            print('close routine')
             self.worker.deleteLater()
             self.thread.quit()
             self.thread.deleteLater()
