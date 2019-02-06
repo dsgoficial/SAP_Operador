@@ -64,7 +64,6 @@ class MenuConfigFrame(QtWidgets.QFrame):
             self.config_table.setRowCount(2)
             self.config_table.setColumnCount(2)
             self.add_widget_on_cell()
-            print(self.config_table.cellWidget(0,1))
         #elif operation_selected == u"Editar Aba":
         #elif operation_selected == u"Remover Aba":
         #elif operation_selected == u"Adicionar Botão":
