@@ -130,22 +130,20 @@ class Classification(QtCore.QObject):
                 if is_map_value:
                     valueMap = config['map']
                     if fields[field] in valueMap:
-                        feat.setAttribute(indx, valueMap[fields[field]])
+                        lyr.changeAttributeValue(feat.id(), indx, valueMap[fields[field]])
                 elif fields[field] and not(fields[field] in [u"NULL"]):
                     value  = fields[field]
                     if re.match('^\@value\(".+"\)$', value):
                         variable = value.split('"')[-2]
                         value = ProjectQgis(self.iface).getVariableProject(variable)
-                    feat.setAttribute(indx, value)
+                    lyr.changeAttributeValue(feat.id(), indx, value)
                 elif not(is_map_value):
-                    feat.setAttribute(indx, '')
+                    lyr.changeAttributeValue(feat.id(), indx, "")
 
     def open_form(self, fid, lyr, feat):
         self.set_attribute_feature(lyr, feat)
         result = self.iface.openFeatureForm(lyr, feat)
-        if result :
-            lyr.updateFeature(feat)
-        else:
+        if not(result):
             lyr.deleteFeature(fid)
 
     def edit_feature(self, fid):
@@ -157,7 +155,6 @@ class Classification(QtCore.QObject):
                 self.open_form(fid, lyr, feat)
             else:
                 self.set_attribute_feature(lyr, feat)
-                lyr.updateFeature(feat)
      
     def reclassify(self, formValues, layers_selected):
         self.current_button_data = {'formValues' : formValues}
