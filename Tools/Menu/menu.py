@@ -120,7 +120,7 @@ class Menu(QtCore.QObject):
                 'input_files' : []
             },
             db_data,
-            is_menu=True
+            True
         )
         layer_vector = result[0]
         self.classification.run(

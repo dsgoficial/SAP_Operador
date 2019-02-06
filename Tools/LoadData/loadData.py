@@ -475,8 +475,8 @@ class LoadData(QtCore.QObject):
             self.add_layer_default_values(v_lyr)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
-        self.create_virtual_frame(db_group)
         if not(is_menu):
+            self.create_virtual_frame(db_group)
             self.collapse_all(db_group)
         self.clean_empty_groups(db_group)
         self.rules = {}
