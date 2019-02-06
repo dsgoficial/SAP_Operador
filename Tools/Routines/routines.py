@@ -31,19 +31,13 @@ class Routines(QtCore.QObject):
         return self.frame
 
     def load_routines(self, server=''):
-        self.routinesLocal = RoutinesLocal(self.iface)
-        self.routinesLocal.sap_mode = self.sap_mode
-        self.routinesLocal.message.connect(
-            self.frame.show_message
-        )
-        self.routinesFme = RoutinesFme(self.iface)
-        self.routinesFme.sap_mode = self.sap_mode
-        self.routinesFme.message.connect(
-            self.frame.show_message
-        )
+        routinesLocal = RoutinesLocal(self.iface)
+        routinesLocal.sap_mode = self.sap_mode
+        routinesFme = RoutinesFme(self.iface)
+        routinesFme.sap_mode = self.sap_mode
         routines_data = {
-            'local' : self.routinesLocal.get_routines_data(),
-            'fme' :  self.routinesFme.get_routines_data(server)
+            'local' : routinesLocal.get_routines_data(),
+            'fme' :  routinesFme.get_routines_data(server)
         }
         self.frame.load(routines_data)
     
@@ -51,10 +45,14 @@ class Routines(QtCore.QObject):
     def run_routine(self, routine_data):
         type_routine = routine_data['type_routine']
         if type_routine == 'fme':
-            routine_selected = self.routinesFme
+            self.routine_selected = self.routinesFme
         else:
-            routine_selected = self.routinesLocal
-        routine_selected.run(routine_data)
+            self.routine_selected = self.routinesLocal
+        self.routine_selected.sap_mode = self.sap_mode
+        self.routine_selected.message.connect(
+            self.frame.show_message
+        ) 
+        self.routine_selected.run(routine_data)
 
         
     
