@@ -41,20 +41,6 @@ class Classification(QtCore.QObject):
             except:
                 pass
 
-    def remove_layers_selection(self):
-        layers = self.iface.mapCanvas().layers()
-        for lyr in layers:
-            if lyr.type() == core.QgsMapLayer.VectorLayer:
-                lyr.removeSelection()
-         
-    def remove_layer_selection(self, layer_name):
-        result = core.QgsProject.instance().mapLayersByName(
-            layer_name
-        )
-        for lyr in result:
-            if lyr.type() == core.QgsMapLayer.VectorLayer:
-                lyr.removeSelection()
-
     def get_layers_to_reclassify(self):
         layers_selected = {}
         currentLayer = self.current_button_layer
