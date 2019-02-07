@@ -15,11 +15,13 @@ class MenuDock(QtWidgets.QDockWidget):
     active_button = QtCore.pyqtSignal(dict)
     load_profile = QtCore.pyqtSignal(str)
     database_load = QtCore.pyqtSignal(str)
+    config_profile = QtCore.pyqtSignal(dict)
 
     def __init__(self, iface):
         super(MenuDock, self).__init__()
         self.iface = iface
         self.sap_mode = False
+        self.current_profile = ""
         uic.loadUi(self.dialog_path, self)
         self.menu_area_buttons.setTabPosition(QtWidgets.QTabWidget.West)
         self.menu_area_buttons.setElideMode(QtCore.Qt.ElideNone)
@@ -80,6 +82,12 @@ class MenuDock(QtWidgets.QDockWidget):
     def load_dbs_name(self, dbs_options):
         self.db_options.addItems(dbs_options)
 
+    @QtCore.pyqtSlot(bool)
+    def on_config_btn_clicked(self, b):
+        self.config_profile.emit({
+            'profile_name' : self.current_profile
+        })
+
     @QtCore.pyqtSlot(int)
     def on_db_options_currentIndexChanged(self, idx):
         db_selected = self.db_options.currentText() if idx != 0 else ''
@@ -107,8 +115,10 @@ class MenuDock(QtWidgets.QDockWidget):
         profile_selected = self.menu_options.currentText() if idx != 0 else ''
         if profile_selected:
             self.load_profile.emit(profile_selected)
+            self.current_profile = profile_selected
         else:
             self.clean_menu()
+            self.current_profile = ""
 
     def load_menu_profile(self, profile_data):
         self.clean_menu()
