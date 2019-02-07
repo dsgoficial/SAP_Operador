@@ -3,6 +3,7 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox, cursorWait
+import resources
 
 class MenuDock(QtWidgets.QDockWidget):
 
