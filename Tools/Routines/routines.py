@@ -45,9 +45,9 @@ class Routines(QtCore.QObject):
     def run_routine(self, routine_data):
         type_routine = routine_data['type_routine']
         if type_routine == 'fme':
-            self.routine_selected = self.routinesFme
+            self.routine_selected = RoutinesFme(self.iface)
         else:
-            self.routine_selected = self.routinesLocal
+            self.routine_selected = RoutinesLocal(self.iface)
         self.routine_selected.sap_mode = self.sap_mode
         self.routine_selected.message.connect(
             self.frame.show_message
