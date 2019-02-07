@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>508</height>
+    <width>386</width>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -112,11 +112,49 @@
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QCheckBox" name="menu_reclassify">
-      <property name="text">
-       <string>Ativar reclassificação</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QCheckBox" name="menu_reclassify">
+        <property name="text">
+         <string>Ativar reclassificação</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="config_btn">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>34</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>34</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">qproperty-icon : url(:/plugins/Ferramentas_Producao/icons/menu_config.png)</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>30</width>
+          <height>30</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item row="4" column="0">
      <widget class="QTabWidget" name="menu_area_buttons">
@@ -144,6 +182,8 @@
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../icons/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
