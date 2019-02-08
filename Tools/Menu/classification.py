@@ -16,6 +16,9 @@ class Classification(QtCore.QObject):
         self.layer_vector = {}
         self.fid_before = None
         self.with_form = None
+        self.ignore = False
+        self.current_button_layer = None
+        self.current_button_data = None
     
     def connect_qgis_signals(self):
         iface = self.iface
@@ -116,31 +119,37 @@ class Classification(QtCore.QObject):
                 if is_map_value:
                     valueMap = config['map']
                     if fields[field] in valueMap:
-                        lyr.changeAttributeValue(feat.id(), indx, valueMap[fields[field]])
+                        feat.setAttribute(indx, valueMap[fields[field]])
                 elif fields[field] and not(fields[field] in [u"NULL"]):
                     value  = fields[field]
                     if re.match('^\@value\(".+"\)$', value):
                         variable = value.split('"')[-2]
                         value = ProjectQgis(self.iface).getVariableProject(variable)
-                    lyr.changeAttributeValue(feat.id(), indx, value)
+                    feat.setAttribute(indx, value)
                 elif not(is_map_value):
-                    lyr.changeAttributeValue(feat.id(), indx, "")
+                    feat.setAttribute(indx, "")          
 
     def open_form(self, fid, lyr, feat):
         self.set_attribute_feature(lyr, feat)
         result = self.iface.openFeatureForm(lyr, feat)
-        if not(result):
-            lyr.deleteFeature(fid)
+        return result
 
     def edit_feature(self, fid):
-        if fid < 0 and fid != self.fid_before:
+        if fid < 0 and fid != self.fid_before and not(self.ignore):
             self.fid_before = fid
             lyr = self.current_button_layer
-            feat = lyr.editBuffer().addedFeatures()[fid]
+            feat = lyr.getFeature(fid)
+            lyr.deleteFeature(fid)
+            sucess = False
             if self.with_form:
-                self.open_form(fid, lyr, feat)
+                sucess = self.open_form(fid, lyr, feat)
             else:
                 self.set_attribute_feature(lyr, feat)
+                sucess = True
+            if sucess:
+                self.ignore = True
+                lyr.addFeature(feat)
+                self.ignore = False
      
     def reclassify(self, formValues, layers_selected):
         self.current_button_data = {'formValues' : formValues}
