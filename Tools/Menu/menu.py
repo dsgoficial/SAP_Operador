@@ -57,7 +57,8 @@ class Menu(QtCore.QObject):
         signals = {
             self.menu_dock.active_button : self.active_button,
             self.menu_dock.load_profile : self.load_profile_selected,
-            self.menu_dock.database_load : self.update_dock
+            self.menu_dock.database_load : self.update_dock,
+            self.menu_dock.config_profile : self.config_profile
         }
         for s in signals:
             try:
@@ -93,12 +94,17 @@ class Menu(QtCore.QObject):
             'profiles_name' : profiles_name
         })
 
-    def load_profile_selected(self, name):
+    def get_profile_data(self, name):
+        profile_data = {}
         db_data = self.postgresql.load_data()
         for idx in db_data['db_menu']:
             if db_data['db_menu'][idx]['nome_do_perfil'] == name:
                 profile_data = db_data['db_menu'][idx]
-                self.menu_dock.load_menu_profile(profile_data)
+        return profile_data
+
+    def load_profile_selected(self, name):
+        profile_data = self.get_profile_data(name)
+        self.menu_dock.load_menu_profile(profile_data)
 
     def active_button(self, button_data):
         layer_name = button_data['button_data'][u'formValues'][u'*Selecione camada:']
@@ -135,3 +141,5 @@ class Menu(QtCore.QObject):
         )
         form.show_form(button_data, layers_selected)
         
+    def config_profile(self):
+        profile_data = self.get_profile_data(name)
