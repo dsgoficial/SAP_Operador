@@ -26,12 +26,20 @@ class AddFeatures(QtCore.QObject):
         if ewkt:
             wkt = ewkt.split(';')[1]
             geom = core.QgsGeometry.fromWkt(wkt)
-            feat_key = sorted(list(features_added.keys()))[0]
-            feat = features_added[feat_key]
-            if geom.intersects(feat.geometry()) == False:
+            feats_keys = sorted(list(features_added.keys()))[:2]
+            erro = False
+            for i, fk in enumerate(feats_keys):
+                feat = features_added[fk]
+                check_geom = geom.intersects(feat.geometry()) == False
+                if check_geom and i == 0:
+                    layer.deleteFeature(fk)
+                    erro = True
+                elif check_geom:
+                    layer.undoStack().undo()
+                    erro = True
+            if erro:
                 html = u'''<p style="color:red">
                             A aquisição da camada "{}" está fora da moldura!
                         </p>'''.format(layer.name())
                 msgBox.show(text=html, title=u"critical")
-                layer.undoStack().undo()
-            self.iface.mapCanvas().refresh()
+                self.iface.mapCanvas().refresh()

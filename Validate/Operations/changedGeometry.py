@@ -27,11 +27,11 @@ class ChangedGeometry(QtCore.QObject):
             wkt = ewkt.split(';')[1]
             geom = core.QgsGeometry.fromWkt(wkt)
             feat_key = sorted(list(changed_geometries.keys()))[0]
-            feat = changed_geometries[feat_key]
-            if geom.intersects(feat.geometry()) == False:
+            feat_geom = changed_geometries[feat_key]
+            if geom.intersects(feat_geom) == False:
                 html = u'''<p style="color:red">
                             A edição da camada "{}" está fora da moldura!
                         </p>'''.format(layer.name())
                 msgBox.show(text=html, title=u"critical")
                 layer.undoStack().undo()
-            self.iface.mapCanvas().refresh()
+                self.iface.mapCanvas().refresh()

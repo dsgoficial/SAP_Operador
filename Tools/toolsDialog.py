@@ -12,7 +12,7 @@ class ToolsDialog(QtWidgets.QDialog):
     )
 
     selected_option = QtCore.pyqtSignal(dict)
-    enable_action = QtCore.pyqtSignal()
+    closed_tools_dialog = QtCore.pyqtSignal()
 
     def __init__(self, iface):
         super(ToolsDialog, self).__init__()
@@ -51,11 +51,11 @@ class ToolsDialog(QtWidgets.QDialog):
         self.grid.addWidget(self.frame)
 
     def closeEvent(self, e):
-        self.enable_action.emit()
+        self.closed_tools_dialog.emit()
 
     def eventFilter(self, source , event):
         if event.type() in [QtCore.QEvent.KeyPress, QtCore.QEvent.KeyRelease] and event.key() == QtCore.Qt.Key_Escape:
-            self.enable_action.emit()
+            self.closed_tools_dialog.emit()
         return super(QtWidgets.QDialog, self).eventFilter(source, event)
 
     def showEvent(self, e):

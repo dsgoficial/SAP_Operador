@@ -40,7 +40,7 @@ class Classification(QtCore.QObject):
         if current_layer and (current_layer.type() == core.QgsMapLayer.VectorLayer):
             self.activate_qgis_form(current_layer)
             try:
-                current_layer.featureAdded.disconnect(self.add_feature)
+                current_layer.featureAdded.disconnect(self.edit_feature)
             except:
                 pass
 

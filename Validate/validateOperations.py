@@ -21,11 +21,28 @@ class ValidateOperations(QtCore.QObject):
         self.disconnect_layers()
         self.finish_operations()
 
+    def restart(self):
+        self.stop()
+        self.start()
+
+    def validate_layer(self, layer):
+        variable_name = u'area_trabalho_poligono'
+        ewkt = core.QgsExpressionContextUtils.layerScope(layer).variable(
+            variable_name
+        )
+        if ewkt:
+            return True
+        return False
+
     def update_track_list(self):
         self.disconnect_layers()
         self.track_list = [
-            l for l in self.iface.mapCanvas().layers()
-            if l.type() == core.QgsMapLayer.VectorLayer
+            l for l in core.QgsProject.instance().mapLayers().values()
+            if (
+                l.type() == core.QgsMapLayer.VectorLayer
+                and
+                self.validate_layer(l)
+            )
         ]
         self.connect_layers()
     
