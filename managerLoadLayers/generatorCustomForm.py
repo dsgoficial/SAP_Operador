@@ -141,7 +141,6 @@ class GeneratorCustomForm(object):
             field = vlayer.pendingFields().field(idx).name()
             if field in [u'id', u'controle_id', u'ultimo_usuario', u'data_modificacao']:
                 all_items += self.create_le(field, rowAttr, setReadOnly=True)
-                rowAttr+=1
             elif field == u'tipo':
                 if u'filter' in layerData:
                     all_items += self.create_cb(u'filter', rowAttr)
