@@ -3,364 +3,161 @@ from qgis import core
 
 class GeneratorCustomForm(object):
     def __init__(self):
-        # contrutor
         super(GeneratorCustomForm, self).__init__()
 
-    def getDialogTemplate(self):
+    def get_form_template(self):
         return u'''<?xml version="1.0" encoding="UTF-8"?>
-        <ui version="4.0">
-        <class>Dialog</class>
-        <widget class="QDialog" name="Dialog">
-        <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>680</width>
-            <height>600</height>
-        </rect>
-        </property>
-        <property name="minimumSize">
-        <size>
-            <width>680</width>
-            <height>600</height>
-        </size>
-        </property>
-        <property name="maximumSize">
-        <size>
-            <width>700000</width>
-            <height>6000000</height>
-        </size>
-        </property>
-        <property name="windowTitle">
-        <string>Dialog</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="0">
-            <widget class="QDialogButtonBox" name="buttonBox">
-            <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <ui version="4.0">
+            <class>Dialog</class>
+            <widget class="QDialog" name="Dialog">
+            <property name="windowTitle">
+            <string>Dialog</string>
             </property>
-            <property name="standardButtons">
-            <set>QDialogButtonBox::Ok|QDialogButtonBox::Cancel</set>
-            </property>
-            </widget>
-        </item>
-        <item row="0" column="0">
-            <widget class="QTabWidget" name="tabWidget">
-            <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-            </sizepolicy>
-            </property>
-            <property name="currentIndex">
-            <number>0</number>
-            </property>
-            <widget class="QWidget" name="tab">
-            <attribute name="title">
-            <string>Atributos</string>
-            </attribute>
-            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0">
-                <widget class="QSplitter" name="splitter">
+            <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0" colspan="2">
+                <widget class="QPushButton" name="logBtn">
+                <property name="text">
+                <string>Erros</string>
+                </property>
+                </widget>
+            </item>
+            <item row="0" column="2" rowspan="15" colspan="4">
+                <widget class="QFrame" name="logFrame">
+                <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                <widget class="QLabel" name="logLabel">
+                </widget>
+                </item>
+                </layout>
+                </widget>
+            </item>
+            {items}
+            <item row="{row_btn}" column="0" colspan="2">
+                <widget class="QDialogButtonBox" name="buttonBox">
                 <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                 </property>
-                <widget class="QWidget" name="">
-                <layout class="QVBoxLayout" name="verticalLayout">
-                <item>
-                    <widget class="QPushButton" name="logBtn">
-                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                    </sizepolicy>
-                    </property>
-                    <property name="minimumSize">
-                    <size>
-                    <width>0</width>
-                    <height>30</height>
-                    </size>
-                    </property>
-                    <property name="maximumSize">
-                    <size>
-                    <width>16777215</width>
-                    <height>30</height>
-                    </size>
-                    </property>
-                    <property name="text">
-                    <string>Observações</string>
-                    </property>
-                    </widget>
-                </item>
-                <item>
-                    <layout class="QGridLayout" name="gridLayout_2">
-                    {0}                    
-                    </layout>
-                </item>
-                </layout>
-                </widget>
-                <widget class="QWidget" name="verticalLayoutWidget_2">
-                <layout class="QVBoxLayout" name="verticalLayout_2">
-                <item>
-                    <widget class="QFrame" name="logFrame">
-                    <property name="frameShape">
-                    <enum>QFrame::StyledPanel</enum>
-                    </property>
-                    <property name="frameShadow">
-                    <enum>QFrame::Raised</enum>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_4">
-                    <item>
-                    <widget class="QTextBrowser" name="Browser">
-                        <property name="sizePolicy">
-                        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                        </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                        <size>
-                        <width>0</width>
-                        <height>0</height>
-                        </size>
-                        </property>
-                        <property name="maximumSize">
-                        <size>
-                        <width>16777215</width>
-                        <height>16777215</height>
-                        </size>
-                        </property>
-                    </widget>
-                    </item>
-                    </layout>
-                    </widget>
-                </item>
-                </layout>
-                </widget>
+                <property name="standardButtons">
+                <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+                </property>
                 </widget>
             </item>
             </layout>
+            <zorder>buttonBox</zorder>
+            <zorder>logFrame</zorder>
+            <zorder>logBtn</zorder>
+            <zorder>layoutWidget</zorder>
             </widget>
-            <widget class="QWidget" name="tab_2">
-            <attribute name="title">
-            <string>Controle</string>
-            </attribute>
-            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_4">
-                {1}
-                </layout>
-            </item>
-            <item row="1" column="0">
-                <spacer name="verticalSpacer">
-                <property name="orientation">
-                <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                <size>
-                <width>20</width>
-                <height>337</height>
-                </size>
-                </property>
-                </spacer>
-            </item>
-            </layout>
-            </widget>
-            </widget>
-        </item>
-        </layout>
-        </widget>
-        <tabstops>
-        <tabstop>tabWidget</tabstop>
-        <tabstop>buttonBox</tabstop>
-        </tabstops>
-        <resources/>
-        <connections>
-        <connection>
-        <sender>buttonBox</sender>
-        <signal>accepted()</signal>
-        <receiver>Dialog</receiver>
-        <slot>accept()</slot>
-        <hints>
-            <hint type="sourcelabel">
-            <x>248</x>
-            <y>254</y>
-            </hint>
-            <hint type="destinationlabel">
-            <x>157</x>
-            <y>274</y>
-            </hint>
-        </hints>
-        </connection>
-        <connection>
-        <sender>buttonBox</sender>
-        <signal>rejected()</signal>
-        <receiver>Dialog</receiver>
-        <slot>reject()</slot>
-        <hints>
-            <hint type="sourcelabel">
-            <x>316</x>
-            <y>260</y>
-            </hint>
-            <hint type="destinationlabel">
-            <x>286</x>
-            <y>274</y>
-            </hint>
-        </hints>
-        </connection>
-        </connections>
-        </ui>
-        '''
-        
-    def getComboBoxTemplate(self): 
-        return u'''<item row="{row}" column="0">
-        <widget class="QLabel" name="label_{field}">
-        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-        </property>
-        <property name="minimumSize">
-        <size>
-            <width>0</width>
-            <height>30</height>
-        </size>
-        </property>
-        <property name="maximumSize">
-        <size>
-            <width>16777215</width>
-            <height>30</height>
-        </size>
-        </property>
-        <property name="text">
-        <string>{field}</string>
-        </property>
-        </widget>
-        </item>
-        <item row="{row}" column="1">
-        <widget class="QComboBox" name="{field}">
-        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-        </property>
-        <property name="minimumSize">
-        <size>
-            <width>175</width>
-            <height>30</height>
-        </size>
-        </property>
-        <property name="maximumSize">
-        <size>
-            <width>16777215</width>
-            <height>30</height>
-        </size>
-        </property>
-        </widget>
-        </item>'''
+            <resources/>
+            <connections>
+            <connection>
+            <sender>buttonBox</sender>
+            <signal>accepted()</signal>
+            <receiver>Dialog</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                <x>248</x>
+                <y>254</y>
+                </hint>
+                <hint type="destinationlabel">
+                <x>157</x>
+                <y>274</y>
+                </hint>
+            </hints>
+            </connection>
+            <connection>
+            <sender>buttonBox</sender>
+            <signal>rejected()</signal>
+            <receiver>Dialog</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                <x>316</x>
+                <y>260</y>
+                </hint>
+                <hint type="destinationlabel">
+                <x>286</x>
+                <y>274</y>
+                </hint>
+            </hints>
+            </connection>
+            </connections>
+            </ui>
+            '''
 
-    def getLineEditTemplate(self):
+    def get_le_template(self, field, row, readOnly=''):
         return '''<item row="{row}" column="0">
-        <widget class="QLabel" name="label_{field}">
-        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-        </property>
-        <property name="minimumSize">
-        <size>
-            <width>0</width>
-            <height>30</height>
-        </size>
-        </property>
-        <property name="maximumSize">
-        <size>
-            <width>16777215</width>
-            <height>30</height>
-        </size>
-        </property>
-        <property name="text">
-        <string>{field}</string>
-        </property>
-        </widget>
-        </item>
-        <item row="{row}" column="1">
-        <widget class="QLineEdit" name="{field}">
-        <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-        </property>
-        <property name="minimumSize">
-        <size>
-            <width>175</width>
-            <height>30</height>
-        </size>
-        </property>
-        <property name="maximumSize">
-        <size>
-            <width>16777215</width>
-            <height>30</height>
-        </size>
-        </property>
-        {readOnly}
-        </widget>
-        </item>'''
+                <widget class="QLabel" name="label_{field}">
+                <property name="text">
+                <string>{field}</string>
+                </property>
+                </widget>
+            </item>
+            <item row="{row}" column="1">
+                <widget class="QLineEdit" name="{field}">
+                {readOnly}
+                </widget>
+            </item>
+            '''.format(field=field, row=row, readOnly=readOnly)
 
-    def createComboBox(self, field, row):
-        comboBox = self.getComboBoxTemplate()
-        comboBox = comboBox.replace(u'{field}', field)
-        comboBox = comboBox.replace(u'{row}', unicode(row))
-        return comboBox
+    def get_cb_template(self, field, row):
+        return '''<item row="{row}" column="0">
+                <widget class="QLabel" name="label_{field}">
+                <property name="text">
+                <string>{field}</string>
+                </property>
+                </widget>
+            </item>
+            <item row="{row}" column="1">
+                <widget class="QComboBox" name="{field}"/>
+            </item>'''.format(field=field, row=row)
 
-    def createLineEdit(self, field, row, readOnly = False):
-        lineEdit = self.getLineEditTemplate()
-        lineEdit = lineEdit.replace(u'{field}', field)
-        lineEdit = lineEdit.replace(u'{row}', unicode(row))
-        if readOnly:
-            lineEdit = lineEdit.replace(
-                u'{readOnly}',
-                u'''<property name="readOnly">
-                    <bool>true</bool>
-                   </property>'''
-            )
-        else:
-            lineEdit = lineEdit.replace(u'{readOnly}', u'')
+    
 
-        return lineEdit 
+    def create_cb(self, field, row):
+        return self.get_cb_template(field, row)
+
+    def create_le(self, field, row, setReadOnly=False):
+        """  if setReadOnly:
+            readOnly =u'''<property name="readOnly">
+                            <bool>true</bool>
+                        </property>'''
+            return self.get_le_template(field, row, readOnly) 
+        else: """
+        return self.get_le_template(field, row) 
 
     def create(self, formFile, layerData, fieldsSorted, vlayer):
+        form = self.get_form_template()
         layerData = layerData['layer_fields']
-        dialog = self.getDialogTemplate()
-        allWidgetsTabAttr = u""
-        allWidgetsTabControl = u""
-        rowAttr = 0
-        rowControl = 0
+        all_items = u""
+        rowAttr = 1
         for idx in vlayer.fields().allAttributesList():
             field = vlayer.fields().field(idx).name()
             if field in [u'id', u'controle_id', u'ultimo_usuario', u'data_modificacao']:
-                allWidgetsTabControl += self.createLineEdit(field, rowControl, readOnly = True)
-                rowControl+=1
+                all_items += self.create_le(field, rowAttr, setReadOnly=True)
             elif field == u'tipo':
                 if u'filter' in layerData:
-                    allWidgetsTabAttr += self.createComboBox(u'filter', rowAttr)
+                    all_items += self.create_cb(u'filter', rowAttr)
                     rowAttr+=1
-                allWidgetsTabAttr += self.createComboBox(field, rowAttr)
+                all_items += self.create_cb(field, rowAttr)
             elif (field in layerData)  and layerData[field]:
-                allWidgetsTabAttr += self.createComboBox(field, rowAttr)
+                all_items += self.create_cb(field, rowAttr)
             elif (field in layerData):
-                allWidgetsTabAttr += self.createLineEdit(field, rowAttr)
+                all_items += self.create_le(field, rowAttr)
             rowAttr+=1
         if vlayer.geometryType() == 1:
-            allWidgetsTabAttr += self.createLineEdit(u'length_otf', rowAttr)            
+            all_items += self.create_le(u'length_otf', rowAttr)            
         elif vlayer.geometryType() == 2:
-            allWidgetsTabAttr += self.createLineEdit(u'area_otf', rowAttr)   
-        dialog = dialog.replace(u'{1}', unicode(allWidgetsTabControl))
-        dialog = dialog.replace(u'{0}', unicode(allWidgetsTabAttr))
-        formFile.write(dialog)#.encode("utf-8"))
+            all_items += self.create_le(u'area_otf', rowAttr)   
+        form = form.format(items=unicode(all_items), row_btn=rowAttr+1)
+        formFile.write(form)
         formFile.close()
+
+    
