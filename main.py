@@ -42,14 +42,20 @@ class Main(QtCore.QObject):
         del self.validate
 
     def load_qgis_project(self):
-        self.validate.start()
-        self.tools.reload_project_qgis()
+        value = ManagerQgis(self.iface).load_project_var("settings_user")
+        if value:
+            self.tools.reload_project_qgis()
+            self.validate.start()
+            
+    def closed_tools_dialog(self):
+        self.sap.enable_action_qgis(True)
+        self.validate.restart()
                 
     def show_tools_dialog(self, sap_mode):
         self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode
-        self.tools.show_dialog().enable_action.connect(
-            lambda : self.sap.enable_action_qgis(True)
+        self.tools.show_dialog().closed_tools_dialog.connect(
+            self.closed_tools_dialog 
         )
 
