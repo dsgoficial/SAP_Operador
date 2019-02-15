@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore
-from .menuConfigFrame import MenuConfigFrame
 from .menuDock import MenuDock
 from .classification import Classification
 from .reclassifyForm import ReclassifyForm
@@ -24,26 +23,8 @@ class Menu(QtCore.QObject):
             self.open_reclassify_form
         )
         
-    def get_frame(self):
-        profiles_name = self.get_profiles_name()
-        options_name = profiles_name + [u"<Novo Perfil>"]
-        self.interface_config = MenuConfigFrame(self.iface)
-        if self.menu_dock and self.menu_dock.isVisible():
-            self.interface_config.setEnabled(True)
-        else:
-            self.interface_config.setEnabled(False)
-        self.interface_config.load({
-            'profiles_name' : options_name 
-        })
-        return self.interface_config
-
     def get_profiles_name(self):
-        db_data = self.postgresql.load_data()
-        menu_data = db_data['db_menu']
-        profiles_name = [
-            menu_data[idx]['nome_do_perfil'] 
-            for idx in menu_data
-        ]
+        profiles_name = self.postgresql.get_profiles_name()
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']        
             profiles_name = [
@@ -58,7 +39,6 @@ class Menu(QtCore.QObject):
             self.menu_dock.active_button : self.active_button,
             self.menu_dock.load_profile : self.load_profile_selected,
             self.menu_dock.database_load : self.update_dock,
-            self.menu_dock.config_profile : self.config_profile
         }
         for s in signals:
             try:
@@ -79,14 +59,14 @@ class Menu(QtCore.QObject):
             })
             self.menu_dock.show_menu()
         else:
-            dbs_name = sorted(self.postgresql.get_dbs_name())
+            dbs_name = sorted(self.postgresql.get_dbs_names())
             dbs_name = [u"<Opções>"] + dbs_name
             self.menu_dock.load_dbs_name(dbs_name)
             self.menu_dock.show_menu()
 
     def update_dock(self, db_name):
-        db_data = self.postgresql.load_db_json(db_name)
-        workspaces_name = sorted(db_data['db_workspaces_name'])
+        self.postgresql.load_db_json(db_name)
+        workspaces_name = sorted(self.postgresql.get_frames_names())
         workspaces_name = [u"Todas"] + workspaces_name
         profiles_name = self.get_profiles_name()
         self.menu_dock.load({
@@ -94,21 +74,12 @@ class Menu(QtCore.QObject):
             'profiles_name' : profiles_name
         })
 
-    def get_profile_data(self, name):
-        profile_data = {}
-        db_data = self.postgresql.load_data()
-        for idx in db_data['db_menu']:
-            if db_data['db_menu'][idx]['nome_do_perfil'] == name:
-                profile_data = db_data['db_menu'][idx]
-        return profile_data
-
     def load_profile_selected(self, name):
-        profile_data = self.get_profile_data(name)
+        profile_data = self.postgresql.get_menu_profile_data(name)
         self.menu_dock.load_menu_profile(profile_data)
 
     def active_button(self, button_data):
         layer_name = button_data['button_data'][u'formValues'][u'*Selecione camada:']
-        db_data = self.postgresql.load_data()
         load_data = LoadData(self.iface)
         if self.sap_mode:
             load_data.sap_mode = self.sap_mode
@@ -125,7 +96,6 @@ class Menu(QtCore.QObject):
                 'rules_name' : [],
                 'input_files' : []
             },
-            db_data,
             True
         )
         layer_vector = result[0]
@@ -141,5 +111,5 @@ class Menu(QtCore.QObject):
         )
         form.show_form(button_data, layers_selected)
         
-    def config_profile(self):
-        profile_data = self.get_profile_data(name)
+    
+
