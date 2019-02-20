@@ -35,7 +35,7 @@ class Tools(QtCore.QObject):
         cursorWait.start()
         try:
             choose = option_data['name'] 
-            if choose == u"Carregar":
+            if choose == u"Dados":
                 self.tool_selected = LoadData(self.iface)
                 self.tool_selected.sap_mode = self.sap_mode
                 self.tool_selected.show_menu.connect(
