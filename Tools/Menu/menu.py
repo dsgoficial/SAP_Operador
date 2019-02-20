@@ -110,6 +110,9 @@ class Menu(QtCore.QObject):
             self.classification.reclassify
         )
         form.show_form(button_data, layers_selected)
+
+    def get_layer_data(self, layer_name):
+        return self.postgresql.get_layer_data(layer_name)
         
     
 

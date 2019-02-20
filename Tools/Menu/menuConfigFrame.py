@@ -187,9 +187,9 @@ class MenuConfigFrame(QtWidgets.QDialog):
             self.config_table.insertRow(row_idx)
             self.config_table.setCellWidget(row_idx, 0, widget_label)
             self.config_table.setCellWidget(row_idx, 1, widget_input)
+        self.update_form_widgets("add btns options")
 
     def update_form_widgets(self, tag_name):
-        print(tag_name)
         col_input = 1
         tabs_options = self.config_table.cellWidget(0, col_input)
         tab_name = tabs_options.currentText()
@@ -201,9 +201,12 @@ class MenuConfigFrame(QtWidgets.QDialog):
         elif tag_name == "add btn fields" and btns_options.currentIndex() > 0:
             button_name = btns_options.currentText()
             button_data = self.parent.get_button_data(tab_name, button_name)
-            print(button_data['fields'])
-            print(button_data['formValues'])
-            is_value_map = (
+            layer_name = button_data['formValues']['*Selecione camada:']
+            layer_data = self.parent.parent.get_layer_data(layer_name)
+            print(layer_data)
+            #print(button_data['fields'])
+            #print(button_data['formValues'])
+            """ is_value_map = (
                 (name in layer_data['layer_fields']) and 
                 (u"valueMap" in layer_data['layer_fields'][name])
-            )
+            ) """

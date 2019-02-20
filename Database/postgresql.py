@@ -535,9 +535,6 @@ class Postgresql(QtCore.QObject):
 
     def get_loaddata_data(self):
         pass
-
-    def get_menu_edit_data(self):
-        pass
         
 
 
