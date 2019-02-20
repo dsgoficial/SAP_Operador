@@ -59,6 +59,7 @@ class Menu(QtCore.QObject):
             })
             self.menu_dock.show_menu()
         else:
+            self.postgresql.set_connections_data()
             dbs_name = sorted(self.postgresql.get_dbs_names())
             dbs_name = [u"<Opções>"] + dbs_name
             self.menu_dock.load_dbs_name(dbs_name)
