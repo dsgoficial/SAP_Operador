@@ -92,11 +92,11 @@ class GeneratorCustomForm(object):
             </ui>
             '''
 
-    def get_le_template(self, field, row, readOnly=''):
+    def get_le_template(self, field, alias, row, readOnly=''):
         return '''<item row="{row}" column="0">
                 <widget class="QLabel" name="label_{field}">
                 <property name="text">
-                <string>{field}</string>
+                <string>{alias}</string>
                 </property>
                 </widget>
             </item>
@@ -105,33 +105,33 @@ class GeneratorCustomForm(object):
                 {readOnly}
                 </widget>
             </item>
-            '''.format(field=field, row=row, readOnly=readOnly)
+            '''.format(alias=alias, field=field, row=row, readOnly=readOnly)
 
-    def get_cb_template(self, field, row):
+    def get_cb_template(self, field, alias, row):
         return '''<item row="{row}" column="0">
                 <widget class="QLabel" name="label_{field}">
                 <property name="text">
-                <string>{field}</string>
+                <string>{alias}</string>
                 </property>
                 </widget>
             </item>
             <item row="{row}" column="1">
                 <widget class="QComboBox" name="{field}"/>
-            </item>'''.format(field=field, row=row)
+            </item>'''.format(alias=alias, field=field, row=row)
 
     
 
-    def create_cb(self, field, row):
-        return self.get_cb_template(field, row)
+    def create_cb(self, field, alias, row):
+        return self.get_cb_template(field, alias, row)
 
-    def create_le(self, field, row, setReadOnly=False):
+    def create_le(self, field, alias, row, setReadOnly=False):
         """  if setReadOnly:
             readOnly =u'''<property name="readOnly">
                             <bool>true</bool>
                         </property>'''
             return self.get_le_template(field, row, readOnly) 
         else: """
-        return self.get_le_template(field, row) 
+        return self.get_le_template(field, alias, row) 
 
     def create(self, formFile, layerData, fieldsSorted, vlayer):
         form = self.get_form_template()
@@ -140,22 +140,26 @@ class GeneratorCustomForm(object):
         rowAttr = 1
         for idx in vlayer.fields().allAttributesList():
             field = vlayer.fields().field(idx).name()
+            field_alias = vlayer.fields().field(idx).alias()
             if field in [u'id', u'controle_id', u'ultimo_usuario', u'data_modificacao']:
-                all_items += self.create_le(field, rowAttr, setReadOnly=True)
+                all_items += self.create_le(field, field_alias, rowAttr, setReadOnly=True)
             elif field == u'tipo':
                 if u'filter' in layerData:
-                    all_items += self.create_cb(u'filter', rowAttr)
+                    field_custom_name = u'filter'
+                    all_items += self.create_cb(field_custom_name, field_custom_name, rowAttr)
                     rowAttr+=1
-                all_items += self.create_cb(field, rowAttr)
+                all_items += self.create_cb(field, field_alias, rowAttr)
             elif (field in layerData)  and layerData[field]:
-                all_items += self.create_cb(field, rowAttr)
+                all_items += self.create_cb(field, field_alias, rowAttr)
             elif (field in layerData):
-                all_items += self.create_le(field, rowAttr)
+                all_items += self.create_le(field, field_alias, rowAttr)
             rowAttr+=1
         if vlayer.geometryType() == 1:
-            all_items += self.create_le(u'length_otf', rowAttr)            
+            field_custom_name = u'length_otf'
+            all_items += self.create_le(field_custom_name, field_custom_name, rowAttr)            
         elif vlayer.geometryType() == 2:
-            all_items += self.create_le(u'area_otf', rowAttr)   
+            field_custom_name = u'area_otf'
+            all_items += self.create_le(field_custom_name, field_custom_name, rowAttr)   
         form = form.format(items=unicode(all_items), row_btn=rowAttr+1)
         formFile.write(form)
         formFile.close()
