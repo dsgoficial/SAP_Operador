@@ -31,7 +31,7 @@ class RoutinesLocal(QtCore.QObject):
         })
     
     def get_routines_data(self):
-        local_routines_formated = {}
+        local_routines_formated = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             local_routines = sap_data['rotinas']
