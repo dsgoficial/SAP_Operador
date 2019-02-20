@@ -138,6 +138,7 @@ class ManagerSAP(QtCore.QObject):
             self.login(server, user, password)
 
     def dump_data(self, data):
+        print(data)
         with open(self.path_data, u"wb") as f:
             pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 

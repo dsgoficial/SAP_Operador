@@ -26,6 +26,10 @@ class LoadData(QtCore.QObject):
         self.postgresql.set_connections_data()
         self.rules = None
         self.frame = None
+        self.layers_aliases = {
+            'names' : {},
+            'attr' : {}
+        }
     
     def load_data(self, settings_data):
         self.load_layers(settings_data) if settings_data['layers_name'] else ''
@@ -54,9 +58,21 @@ class LoadData(QtCore.QObject):
 
     def get_layers_list(self):
         layers_names = self.postgresql.get_layers_names()
+        layers_list = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
-            layers_sap = [ d['nome'] for d in sap_data['dados']['atividade']['camadas']]
+            layers_sap = []
+            for d in sap_data['dados']['atividade']['camadas']:
+                lyr_name = d['nome'] 
+                if 'alias' in d:
+                    name = d['alias']
+                    self.layers_aliases['names'][name] = lyr_name
+                    self.layers_aliases['attr'][name] = d['atributos']
+                else:
+                    name = lyr_name
+                layers_sap.append(name)
+        else:
+            layers_list = layers_name
             layers_names = [ n for n in layers_sap if n in layers_names] 
         return sorted(layers_names)
     
