@@ -61,7 +61,6 @@ class LoadData(QtCore.QObject):
         layers_list = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
-            layers_sap = []
             for d in sap_data['dados']['atividade']['camadas']:
                 lyr_name = d['nome'] 
                 if 'alias' in d:
@@ -70,11 +69,10 @@ class LoadData(QtCore.QObject):
                     self.layers_aliases['attr'][name] = d['atributos']
                 else:
                     name = lyr_name
-                layers_sap.append(name)
+                layers_list.append(name) if lyr_name in layers_names else ''
         else:
-            layers_list = layers_name
-            layers_names = [ n for n in layers_sap if n in layers_names] 
-        return sorted(layers_names)
+            layers_list = layers_name 
+        return sorted(layers_list)
     
     def get_rules_list(self):
         rules_names = self.postgresql.get_rules_names()
@@ -346,7 +344,7 @@ class LoadData(QtCore.QObject):
             connection_config = self.postgresql.get_connection_config()
             uri_text = self.get_uri_text(connection_config, layer_data, filter_text)
             v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
-        if (
+            if (
                 (v_lyr and settings_data['with_geom'] and v_lyr.allFeatureIds())
                 or 
                 (v_lyr and not(settings_data['with_geom']))
