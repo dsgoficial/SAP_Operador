@@ -435,7 +435,8 @@ class LoadData(QtCore.QObject):
             ) 
             vl.loadNamedStyle(style_path)
             frame_group = self.add_group_layer("MOLDURA", db_group)
-            frame_group.addLayer(vl)
+            if not(vl.name() in [l.name() for l in frame_group.findLayers()]):
+                frame_group.addLayer(vl)
             
 
     def load_layers(self, settings_data, is_menu=False):

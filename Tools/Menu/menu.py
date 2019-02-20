@@ -24,7 +24,7 @@ class Menu(QtCore.QObject):
         )
         
     def get_profiles_name(self):
-        profiles_name = self.postgresql.get_profiles_name()
+        profiles_name = self.postgresql.get_menu_profile_names()
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']        
             profiles_name = [
@@ -49,7 +49,7 @@ class Menu(QtCore.QObject):
 
     def show_menu(self):
         self.menu_dock.close() if self.menu_dock else ''
-        self.menu_dock = MenuDock(self.iface)  
+        self.menu_dock = MenuDock(self.iface, self)  
         self.connect_menu_dock_signals()   
         if self.sap_mode:
             self.menu_dock.config_sap_mode()
