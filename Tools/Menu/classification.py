@@ -113,7 +113,7 @@ class Classification(QtCore.QObject):
         fields = button_data['formValues']
         for field in fields:
             indx = lyr.fields().indexFromName(unicode(field))
-            if indx >0:
+            if indx >1:
                 config = lyr.editorWidgetSetup(indx).config()
                 is_map_value = ('map' in config)
                 if is_map_value:
