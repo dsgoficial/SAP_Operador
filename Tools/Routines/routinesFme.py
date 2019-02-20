@@ -67,7 +67,7 @@ class RoutinesFme(QtCore.QObject):
     def get_server(self, server=''):
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            if  sap_data['fme']:
+            if  sap_data['fme'] and sap_data['fme']['servidor']:
                 server = sap_data['fme']['servidor']
                 server = u"http://{0}".format(server)
         else:
