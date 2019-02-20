@@ -503,7 +503,7 @@ class Postgresql(QtCore.QObject):
         styles_names = []
         for d in db_data['db_styles'].keys():
             styles_names.append(
-                d.split('_')[0]
+                d.split('|')[0] if '|' in d else d.split('_')[0]
             )
         styles_names = list(set(styles_names))
         return styles_names
@@ -532,6 +532,12 @@ class Postgresql(QtCore.QObject):
 
     def get_map_layers(self, layers_data):
         return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
+
+    def get_loaddata_data(self):
+        pass
+
+    def get_menu_edit_data(self):
+        pass
         
 
 

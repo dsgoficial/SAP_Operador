@@ -4,7 +4,6 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .menuConfigFrame import MenuConfigFrame
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox, cursorWait
-import resources
 
 class MenuDock(QtWidgets.QDockWidget):
 
@@ -13,13 +12,24 @@ class MenuDock(QtWidgets.QDockWidget):
         'menuDock.ui'
     )
 
+    icon_path = os.path.join(
+        os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            "..", 
+            ".."
+        )),
+        'icons',
+        'menu_config.png'
+    )
+
     active_button = QtCore.pyqtSignal(dict)
     load_profile = QtCore.pyqtSignal(str)
     database_load = QtCore.pyqtSignal(str)
 
-    def __init__(self, iface):
+    def __init__(self, iface, parent):
         super(MenuDock, self).__init__()
         self.iface = iface
+        self.parent = parent
         self.sap_mode = False
         self.current_profile = ""
         uic.loadUi(self.dialog_path, self)
@@ -29,7 +39,9 @@ class MenuDock(QtWidgets.QDockWidget):
             "QTabBar::tab::disabled {width: 0; heigth: 0; margin: 0; padding: 0; border: none;}"
         )
         self.menu_search.mousePressEvent = lambda _ : self.menu_search.selectAll()
-        #self.config_btn.setEnabled(False)
+        self.config_btn.setIcon(QtGui.QIcon(self.icon_path))
+        self.config_btn.setIconSize(QtCore.QSize(30, 30))
+        self.config_btn.setEnabled(False)
 
     @QtCore.pyqtSlot(str)
     def on_menu_search_textEdited(self, text):

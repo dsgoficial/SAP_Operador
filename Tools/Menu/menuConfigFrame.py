@@ -146,7 +146,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
             else:
                 field_name = u"Selecione Camada :"
                 widget_field = self.get_lb(field_name)
-                buttons_name = self.parent.get_all_buttons_name()
+                buttons_name = self.parent.get_all_buttons_name()                                                                                                   
                 widget_input = self.get_cb(field_name, buttons_name)
             self.config_table.insertRow(row_idx)
             self.config_table.setCellWidget(row_idx, 0, widget_field)

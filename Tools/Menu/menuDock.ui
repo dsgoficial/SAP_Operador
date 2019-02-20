@@ -141,7 +141,7 @@
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">qproperty-icon : url(:/plugins/Ferramentas_Producao/icons/menu_config.png)</string>
+         <string notr="true"/>
         </property>
         <property name="text">
          <string/>
@@ -182,8 +182,6 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="../../icons/resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
