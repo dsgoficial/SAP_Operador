@@ -80,27 +80,35 @@ class RoutinesFrame(QtWidgets.QFrame):
 
     def load(self, routines_data):
         self.clean()
-        for r in routines_data['fme']:
-            radio_btn = self.create_radio_btn(
-                r['description'],
-                self.routines_area
+        if routines_data['fme'] and routines_data['local']:
+            for r in routines_data['fme']:
+                radio_btn = self.create_radio_btn(
+                    r['description'],
+                    self.routines_area
+                )
+                radio_btn.routine_data = json.dumps(r)
+            for r in routines_data['local']:
+                radio_btn = self.create_radio_btn(
+                    r['description'],
+                    self.routines_area
+                )
+                radio_btn.routine_data = json.dumps(r)
+            self.routines_spacer = QtWidgets.QSpacerItem(
+                20, 
+                40, 
+                QtWidgets.QSizePolicy.Minimum,
+                QtWidgets.QSizePolicy.Expanding
             )
-            radio_btn.routine_data = json.dumps(r)
-        for r in routines_data['local']:
-            radio_btn = self.create_radio_btn(
-                r['description'],
-                self.routines_area
+            self.routines_area.layout().addItem(
+                self.routines_spacer
             )
-            radio_btn.routine_data = json.dumps(r)
-        self.routines_spacer = QtWidgets.QSpacerItem(
-            20, 
-            40, 
-            QtWidgets.QSizePolicy.Minimum,
-            QtWidgets.QSizePolicy.Expanding
-        )
-        self.routines_area.layout().addItem(
-            self.routines_spacer
-        )
+        else:
+            html = u'''<p>Não há nenhuma rotina para essa atividade.</p>'''
+            msgBox.show(
+                text=html, 
+                title=u"AVISO!", 
+                parent=self
+            )
 
     def clean(self):
         layout = self.routines_area.layout()
