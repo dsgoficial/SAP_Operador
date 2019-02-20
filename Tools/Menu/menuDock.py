@@ -41,7 +41,7 @@ class MenuDock(QtWidgets.QDockWidget):
         self.menu_search.mousePressEvent = lambda _ : self.menu_search.selectAll()
         self.config_btn.setIcon(QtGui.QIcon(self.icon_path))
         self.config_btn.setIconSize(QtCore.QSize(30, 30))
-        self.config_btn.setEnabled(False)
+        #self.config_btn.setEnabled(False)
 
     @QtCore.pyqtSlot(str)
     def on_menu_search_textEdited(self, text):
