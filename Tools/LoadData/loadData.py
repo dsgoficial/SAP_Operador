@@ -71,7 +71,7 @@ class LoadData(QtCore.QObject):
                     name = lyr_name
                 layers_list.append(name) if lyr_name in layers_names else ''
         else:
-            layers_list = layers_name 
+            layers_list = layers_names 
         return sorted(layers_list)
     
     def get_rules_list(self):
@@ -194,12 +194,13 @@ class LoadData(QtCore.QObject):
     def add_layer_values_map(self, v_lyr, layer_data):
         fields_map = self.get_layer_fields_map(v_lyr) 
         for name in fields_map:
+            field_index = fields_map[name]
+            v_lyr.setFieldAlias(field_index, name)
             is_value_map = (
                 (name in layer_data['layer_fields']) and 
                 (u"valueMap" in layer_data['layer_fields'][name])
             )
             if is_value_map:
-                field_index = fields_map[name]
                 values = copy.deepcopy(layer_data['layer_fields'][name][u"valueMap"])
                 if u"IGNORAR" in values:
                     del values[u"IGNORAR"]
@@ -348,8 +349,8 @@ class LoadData(QtCore.QObject):
                 (v_lyr and settings_data['with_geom'] and v_lyr.allFeatureIds())
                 or 
                 (v_lyr and not(settings_data['with_geom']))
-            ):
-            vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
+                ):
+                vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
             class_group.addLayer(vl)
         return v_lyr, bool(loaded)
 
@@ -365,44 +366,6 @@ class LoadData(QtCore.QObject):
                 frames_wkt[workspace_name]
             )
         return workspace_name, workspace_wkt
-
-    def load_layer(self, settings_data, layer_data, is_menu):
-        workspace_name, workspace_wkt = self.get_workspace_data(settings_data)
-        filter_text = '' 
-        if workspace_wkt != '':
-            filter_text = self.get_spatial_filter(
-                layer_data['layer_name'], 
-                workspace_name, 
-                workspace_wkt
-            )
-        v_lyr, loaded = self.add_layer_on_canvas(
-            settings_data, 
-            layer_data, 
-            filter_text
-        )
-        if (is_menu and not(loaded)) or not(is_menu):    
-            self.add_layer_style(v_lyr, settings_data)
-            self.add_layer_values_map(v_lyr, layer_data)
-            self.add_layer_fields_custom(v_lyr)
-            form_dump = self.add_layer_custom_form(
-                v_lyr, 
-                layer_data, 
-                self.postgresql.get_current_db_name()
-            )
-            self.add_layer_variable(
-                v_lyr,
-                {
-                    u"uiData" : form_dump,
-                    u"area_trabalho_nome" : workspace_name, 
-                    u"area_trabalho_poligono" : workspace_wkt
-                }
-            )
-            if self.rules:
-                self.rules.loadRulesOnlayer({
-                    u"vectorLayer" : v_lyr
-                })
-                self.rules.add_table_rules(v_lyr)
-        return v_lyr
 
     def sort_layers_selected(self, layers_list):
         def custom_sort(a):
@@ -452,6 +415,55 @@ class LoadData(QtCore.QObject):
             frame_group = self.add_group_layer("MOLDURA", db_group)
             if not(vl.name() in [l.name() for l in frame_group.findLayers()]):
                 frame_group.addLayer(vl)
+
+    def add_layer_aliases(self, v_lyr, layer_aliases):
+        if layer_aliases:
+            self.add_layer_variable(v_lyr, {'layer_name' : v_lyr.name()})
+            v_lyr.setName(layer_aliases['name_alias'])
+            for field_conf in layer_aliases['attr_alias']:
+                field_idx = v_lyr.fields().indexOf(field_conf["nome"])
+                if field_idx > 0:
+                    v_lyr.setFieldAlias(field_idx, field_conf["alias"])
+        
+
+    def load_layer(self, settings_data, layer_data, layer_aliases, is_menu):
+        workspace_name, workspace_wkt = self.get_workspace_data(settings_data)
+        filter_text = '' 
+        if workspace_wkt != '':
+            filter_text = self.get_spatial_filter(
+                layer_data['layer_name'], 
+                workspace_name, 
+                workspace_wkt
+            )
+        v_lyr, loaded = self.add_layer_on_canvas(
+            settings_data, 
+            layer_data, 
+            filter_text
+        )
+        if (is_menu and not(loaded)) or not(is_menu):    
+            self.add_layer_style(v_lyr, settings_data)
+            self.add_layer_values_map(v_lyr, layer_data)
+            self.add_layer_fields_custom(v_lyr)
+            self.add_layer_aliases(v_lyr, layer_aliases)
+            form_dump = self.add_layer_custom_form(
+                v_lyr, 
+                layer_data, 
+                self.postgresql.get_current_db_name()
+            )
+            self.add_layer_variable(
+                v_lyr,
+                {
+                    u"uiData" : form_dump,
+                    u"area_trabalho_nome" : workspace_name, 
+                    u"area_trabalho_poligono" : workspace_wkt
+                }
+            )
+            if self.rules:
+                self.rules.loadRulesOnlayer({
+                    u"vectorLayer" : v_lyr
+                })
+                self.rules.add_table_rules(v_lyr)
+        return v_lyr
             
 
     def load_layers(self, settings_data, is_menu=False):
@@ -465,8 +477,15 @@ class LoadData(QtCore.QObject):
         layers_list = self.sort_layers_selected(settings_data[u'layers_name'])
         layers_vector = []
         for layer_name in layers_list:
+            layer_aliases = {}
+            if layer_name in self.layers_aliases['names']:
+                layer_aliases = {
+                    'name_alias' : layer_name,
+                    'attr_alias' : self.layers_aliases['attr'][layer_name]
+                }
+                layer_name = self.layers_aliases['names'][layer_name]
             layer_data = self.postgresql.get_layer_data(layer_name)
-            v_lyr = self.load_layer(settings_data, layer_data, is_menu)
+            v_lyr = self.load_layer(settings_data, layer_data, layer_aliases, is_menu)
             self.add_layer_default_values(v_lyr)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
