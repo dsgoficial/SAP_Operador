@@ -108,12 +108,15 @@ class Classification(QtCore.QObject):
         setup.setSuppress(QgsEditFormConfig.SuppressOff)
         layer_vector.setEditFormConfig(setup)
 
-    def set_attribute_feature(self, lyr, feat):
+    def set_attribute_feature(self, lyr, feat, clean_id=True):
         button_data = self.current_button_data
         fields = button_data['formValues']
+        if clean_id:
+            indx = lyr.fields().indexFromName(unicode('id'))
+            feat.setAttribute(indx, None) 
         for field in fields:
             indx = lyr.fields().indexFromName(unicode(field))
-            if indx >1:
+            if indx >0:
                 config = lyr.editorWidgetSetup(indx).config()
                 is_map_value = ('map' in config)
                 if is_map_value:
@@ -167,7 +170,7 @@ class Classification(QtCore.QObject):
                     if lyr_name == current_layer.name():
                         feats = current_layer.getFeatures(ids)
                         for feat in feats:
-                            self.set_attribute_feature(current_layer, feat)
+                            self.set_attribute_feature(current_layer, feat, clean_id=False)
                             current_layer.updateFeature(feat)
                     else:
                         layer_origin.removeSelection()
