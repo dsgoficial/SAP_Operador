@@ -99,7 +99,8 @@ class ManagerQgis(QtCore.QObject):
             u'shortcuts/Mostrar camadas selecionadas' : u'U',
             u'shortcuts/Show Selected Layers' : u'U',
             u'shortcuts/Esconder camadas selecionadas' : u'Y',
-            u'shortcuts/Hide Selected Layers' : u'Y'
+            u'shortcuts/Hide Selected Layers' : u'Y',
+            u'shortcuts/Toggle Snapping' : u''
         }
         return variables
 
