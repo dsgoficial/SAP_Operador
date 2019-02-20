@@ -336,9 +336,9 @@ class LoadData(QtCore.QObject):
         layer_name = layer_data['layer_name']
         class_group = self.get_class_group(layer_data, settings_data)
         layers = class_group.findLayers()
-        result = [ l.layer() for l in layers if l and l.layer().name() == layer_name]
-        if result:
-            v_lyr = result[0]
+        loaded = [ l.layer() for l in layers if l and l.layer().name() == layer_name]
+        if loaded:
+            v_lyr = loaded[0]
             v_lyr.setSubsetString(filter_text)
         else:
             connection_config = self.postgresql.get_connection_config()
@@ -351,7 +351,7 @@ class LoadData(QtCore.QObject):
             ):
             vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
             class_group.addLayer(vl)
-        return v_lyr
+        return v_lyr, bool(loaded)
 
     def get_workspace_data(self, settings_data):
         if self.sap_mode:
@@ -366,7 +366,7 @@ class LoadData(QtCore.QObject):
             )
         return workspace_name, workspace_wkt
 
-    def load_layer(self, settings_data, layer_data):
+    def load_layer(self, settings_data, layer_data, is_menu):
         workspace_name, workspace_wkt = self.get_workspace_data(settings_data)
         filter_text = '' 
         if workspace_wkt != '':
@@ -375,32 +375,33 @@ class LoadData(QtCore.QObject):
                 workspace_name, 
                 workspace_wkt
             )
-        v_lyr = self.add_layer_on_canvas(
+        v_lyr, loaded = self.add_layer_on_canvas(
             settings_data, 
             layer_data, 
             filter_text
-        )    
-        self.add_layer_style(v_lyr, settings_data)
-        self.add_layer_values_map(v_lyr, layer_data)
-        self.add_layer_fields_custom(v_lyr)
-        form_dump = self.add_layer_custom_form(
-            v_lyr, 
-            layer_data, 
-            self.postgresql.get_current_db_name()
         )
-        self.add_layer_variable(
-            v_lyr,
-            {
-                u"uiData" : form_dump,
-                u"area_trabalho_nome" : workspace_name, 
-                u"area_trabalho_poligono" : workspace_wkt
-            }
-        )
-        if self.rules:
-            self.rules.loadRulesOnlayer({
-                u"vectorLayer" : v_lyr
-            })
-            self.rules.add_table_rules(v_lyr)
+        if (is_menu and not(loaded)) or not(is_menu):    
+            self.add_layer_style(v_lyr, settings_data)
+            self.add_layer_values_map(v_lyr, layer_data)
+            self.add_layer_fields_custom(v_lyr)
+            form_dump = self.add_layer_custom_form(
+                v_lyr, 
+                layer_data, 
+                self.postgresql.get_current_db_name()
+            )
+            self.add_layer_variable(
+                v_lyr,
+                {
+                    u"uiData" : form_dump,
+                    u"area_trabalho_nome" : workspace_name, 
+                    u"area_trabalho_poligono" : workspace_wkt
+                }
+            )
+            if self.rules:
+                self.rules.loadRulesOnlayer({
+                    u"vectorLayer" : v_lyr
+                })
+                self.rules.add_table_rules(v_lyr)
         return v_lyr
 
     def sort_layers_selected(self, layers_list):
@@ -465,7 +466,7 @@ class LoadData(QtCore.QObject):
         layers_vector = []
         for layer_name in layers_list:
             layer_data = self.postgresql.get_layer_data(layer_name)
-            v_lyr = self.load_layer(settings_data, layer_data)
+            v_lyr = self.load_layer(settings_data, layer_data, is_menu)
             self.add_layer_default_values(v_lyr)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
