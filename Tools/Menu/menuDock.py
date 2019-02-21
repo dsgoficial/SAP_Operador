@@ -29,7 +29,7 @@ class MenuDock(QtWidgets.QDockWidget):
         self.iface = iface
         self.parent = parent
         self.sap_mode = False
-        self.current_profile = ""
+        self.current_profile_name = ""
         uic.loadUi(self.dialog_path, self)
         self.menu_area_buttons.setTabPosition(QtWidgets.QTabWidget.West)
         self.menu_area_buttons.setElideMode(QtCore.Qt.ElideNone)
@@ -39,7 +39,6 @@ class MenuDock(QtWidgets.QDockWidget):
         self.menu_search.mousePressEvent = lambda _ : self.menu_search.selectAll()
         self.config_btn.setIcon(QtGui.QIcon(self.icon_path))
         self.config_btn.setIconSize(QtCore.QSize(30, 30))
-        self.config_btn.setEnabled(False)
 
     @QtCore.pyqtSlot(str)
     def on_menu_search_textEdited(self, text):
@@ -121,18 +120,33 @@ class MenuDock(QtWidgets.QDockWidget):
     def show_menu(self):
         self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self)
 
+    def save_profile(self, profile_name):
+        result = self.parent.save_profile_on_db(profile_name)
+        if result:
+            idx = self.menu_options.findText(
+                profile_name,
+                QtCore.Qt.MatchFixedString
+            )
+            if idx < 0:
+                idx = 1
+                self.menu_options.insertItem(idx, profile_name)
+            self.menu_options.setCurrentIndex(idx)
+            html="<p>Salvo com sucesso!</p>"
+        else:
+            html="<p>Erro ao salvar!</p>"
+        self.menu_config.show_message(html)
+
     @QtCore.pyqtSlot(int)
     def on_menu_options_currentIndexChanged(self, idx):
         profile_selected = self.menu_options.currentText() if idx != 0 else ''
         if profile_selected:
             profile_data = self.parent.get_profile_data(profile_selected)
             self.load_menu_profile(profile_data)
-            self.current_profile = profile_selected
-            self.config_btn.setEnabled(True)
+            self.current_profile_name = profile_selected
         else:
             self.clean_menu()
-            self.current_profile = ""
-            self.config_btn.setEnabled(False)
+            self.current_profile_name = ""
+            self.parent.dump_data({})
 
     def load_menu_profile(self, profile_data):
         self.clean_menu()
@@ -187,7 +201,7 @@ class MenuDock(QtWidgets.QDockWidget):
     
     def get_all_tabs_name(self, onlyEditable=False):
         tabs_name = list(self.get_all_tabs_map().keys())
-        if onlyEditable:
+        if onlyEditable and tabs_name:
             tabs_name.remove(u'**Pesquisa**')
         return sorted(tabs_name)
             
@@ -208,11 +222,12 @@ class MenuDock(QtWidgets.QDockWidget):
              
     def get_all_buttons_tab(self, tab_name):
         buttons = {}
-        tab_widgets = self.get_tab_widgets(tab_name)
-        for idx in range(tab_widgets['layout'].count()):
-            button_name = tab_widgets['layout'].itemAt(idx).widget().objectName()
-            button_widget = tab_widgets['layout'].itemAt(idx).widget()
-            buttons[button_name] = button_widget
+        if tab_name:
+            tab_widgets = self.get_tab_widgets(tab_name)
+            for idx in range(tab_widgets['layout'].count()):
+                button_name = tab_widgets['layout'].itemAt(idx).widget().objectName()
+                button_widget = tab_widgets['layout'].itemAt(idx).widget()
+                buttons[button_name] = button_widget
         return buttons
 
     def get_button_data(self, tab_name, btn_name):
@@ -319,28 +334,6 @@ class MenuDock(QtWidgets.QDockWidget):
         }
         if default:
             return default_styles[layer_name.split('_')[-1]]
-        return click_styles[layer_name.split('_')[-1]]
-
-    ###sem uso
-    def remove_all_buttons(self, tab_name):
-        buttons = self.get_all_buttons_tab(tab_name)
-        for button_name in buttons:
-            buttons[button_name].deleteLater()
-
-    ####sem uso
-    def get_order_menu(self):
-        orderMenu = {
-            "orderTab" : [],
-            "orderButton" : {},
-        }
-        for tab_name in self.get_all_tabs_map():
-            if not(tab_name in [u'**Pesquisa**']):
-                orderMenu["orderTab"].append(tab_name)
-                orderMenu["orderButton"][tab_name] = []
-                tab_widgets = self.get_tab_widgets(tab_name)
-                for idx in range(tab_widgets['layout'].count()):
-                    button_name = tab_widgets['layout'].itemAt(idx).widget().objectName()
-                    orderMenu["orderButton"][tab_name].append(button_name)
-        return orderMenu             
+        return click_styles[layer_name.split('_')[-1]]       
 
     

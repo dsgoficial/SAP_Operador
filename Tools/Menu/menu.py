@@ -31,6 +31,16 @@ class Menu(QtCore.QObject):
 
     def load_data(self):
         return managerFile.load_data(self.path_data)
+    
+    def save_profile_on_db(self, profile_name):
+        profile_data = self.load_data()
+        profile_data['nome_do_perfil'] = profile_name
+        menu_data = {}
+        menu_data['menu_name'] = profile_data['nome_do_perfil']
+        menu_data['menu_profile'] = profile_data['perfil']
+        menu_data['menu_order'] = profile_data['orderMenu']
+        return self.postgresql.save_menu_profile(menu_data)
+         
 
     def get_profiles_name(self):
         profiles_name = self.postgresql.get_menu_profile_names()
@@ -40,7 +50,7 @@ class Menu(QtCore.QObject):
                 n for n in profiles_name
                 if n in sap_data['menus']
             ]
-        profiles_name = [u"..."] + profiles_name
+        profiles_name = [u"<Vazio>"] + profiles_name
         return profiles_name
 
     def connect_menu_dock_signals(self):
