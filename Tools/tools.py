@@ -22,6 +22,10 @@ class Tools(QtCore.QObject):
     def __del__(self):
         LoadData(self.iface).clean_forms_custom()
 
+    def close_dialog(self):
+        if self.interface:
+            self.interface.close()
+            
     def show_dialog(self):
         self.interface.close() if self.interface else ''  
         self.interface = ToolsDialog(self.iface)

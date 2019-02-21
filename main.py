@@ -23,6 +23,9 @@ class Main(QtCore.QObject):
         self.sap.show_tools.connect(
             self.show_tools_dialog
         )
+        self.sap.close_tools.connect(
+            self.tools.close_dialog
+        )
         core.QgsProject.instance().readProject.connect(
             self.load_qgis_project
         )
@@ -33,6 +36,9 @@ class Main(QtCore.QObject):
         self.sap.add_action_qgis(False)
         self.sap.show_tools.disconnect(
             self.show_tools_dialog
+        )
+        self.sap.close_tools.disconnect(
+            self.tools.close_dialog
         )
         core.QgsProject.instance().readProject.disconnect(
             self.load_qgis_project
