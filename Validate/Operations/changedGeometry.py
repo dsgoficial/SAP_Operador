@@ -13,7 +13,7 @@ class ChangedGeometry(QtCore.QObject):
 
     def validate(self):
         layer = self.iface.activeLayer()
-        if layer:
+        if layer and layer.type() == core.QgsMapLayer.VectorLayer:
             changed_geometries = layer.editBuffer().changedGeometries() if layer.editBuffer() else ''
             self.check_changed_geometry(changed_geometries) if changed_geometries else ''
 
