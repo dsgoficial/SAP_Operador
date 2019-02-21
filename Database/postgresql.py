@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, sys, psycopg2, base64, pickle, json, copy
 from PyQt5 import QtCore
-
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+from utils import managerFile
 
 class Postgresql(QtCore.QObject):
 
@@ -11,15 +12,10 @@ class Postgresql(QtCore.QObject):
         self.path_data = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data.pickle')
 
     def dump_data(self, data):
-        with open(self.path_data, u"wb") as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        managerFile.dump_data(self.path_data, data)
 
     def load_data(self):
-        try:
-            with open(self.path_data, u"rb") as f:
-                return pickle.load(f)
-        except FileNotFoundError:
-            return False
+        return managerFile.load_data(self.path_data)
 
     def get_local_alias_db(self):
         conf = QtCore.QSettings().allKeys()
@@ -354,7 +350,7 @@ class Postgresql(QtCore.QObject):
                 FROM information_schema.columns
                 WHERE table_schema = '{0}'
                 AND table_name = '{1}'
-                AND column_name !~ 'geom' AND column_name !~ 'id';""".format(
+                AND NOT column_name='geom' AND NOT column_name='id';""".format(
                 data['schema_name'],
                 data['table_name']
             )
