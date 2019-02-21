@@ -32,7 +32,6 @@ class Main(QtCore.QObject):
         ManagerQgis(self.iface).load_custom_config()
         
     def unload(self):
-        del self.tools
         self.sap.add_action_qgis(False)
         self.sap.show_tools.disconnect(
             self.show_tools_dialog
@@ -40,6 +39,7 @@ class Main(QtCore.QObject):
         self.sap.close_tools.disconnect(
             self.tools.close_dialog
         )
+        del self.tools
         core.QgsProject.instance().readProject.disconnect(
             self.load_qgis_project
         )
