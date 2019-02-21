@@ -109,8 +109,10 @@ class Postgresql(QtCore.QObject):
         return result
     
     def save_menu_profile(self, menu_data):
-        table_name = menu_data['menu_table_name']
-        schema_name = menu_data['menu_schema_name']
+        table_name = 'menu_profile'
+        schema_name = 'public'
+        conn = self.get_connection()
+        self.pg_cursor = conn.cursor()
         data = self.validate_table(table_name)
         if not data:
             sql = u"""CREATE TABLE {0}.{1} (
@@ -122,7 +124,7 @@ class Postgresql(QtCore.QObject):
                 ); GRANT ALL ON public.menu_profile TO public;""".format(
                 schema_name, table_name
             )
-            self.run_sql(sql)
+            self.run_sql(sql, returning=False)
         menu_name = menu_data['menu_name']
         menu_profile = menu_data['menu_profile']
         menu_order = menu_data['menu_order']
@@ -139,9 +141,10 @@ class Postgresql(QtCore.QObject):
                     schema_name,
                     table_name,
                     json.dumps(menu_profile),
-                    json.dumps(menu_order)
+                    json.dumps(menu_order),
+                    menu_name
             )
-            self.run_sql(sql)
+            self.run_sql(sql, returning=False)
         else:
             sql = u"""INSERT INTO {0}.{1} (
                 nome_do_perfil, perfil, ordem_menu
@@ -152,7 +155,15 @@ class Postgresql(QtCore.QObject):
                 menu_profile, 
                 menu_order
             )
-            self.run_sql(sql)
+            self.run_sql(sql, returning=False)
+        self.pg_cursor.close()
+        self.update_db_data()
+        if menu_name in self.get_menu_profile_names():
+            return True
+        return False
+
+    def update_db_data(self):
+        self.load_db_json(self.current_db_name)
 
     def get_menu_profile(self, table_name):
         result = {}
@@ -231,7 +242,6 @@ class Postgresql(QtCore.QObject):
                 layer_all_data['group_class'] = group_class
                 db_json['db_layers'][group_geom].append(layer_all_data)
         self.dump_data( db_json )
-        del self.current_db_name
         self.pg_cursor.close()
         return db_json
         
@@ -297,10 +307,12 @@ class Postgresql(QtCore.QObject):
         conn.set_session(autocommit=True)
         return conn
 
-    def run_sql(self, sql):
+    def run_sql(self, sql, returning=True):
+        result = True
         try:
             self.pg_cursor.execute(sql)
-            result = self.pg_cursor.fetchall()
+            if returning:
+                result = self.pg_cursor.fetchall()
         except:
             return False
         return result

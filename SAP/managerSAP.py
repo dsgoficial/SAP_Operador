@@ -140,7 +140,6 @@ class ManagerSAP(QtCore.QObject):
             self.login(server, user, password)
 
     def dump_data(self, data):
-        print(data)
         managerFile.dump_data(self.path_data, data)
 
     def load_data(self):

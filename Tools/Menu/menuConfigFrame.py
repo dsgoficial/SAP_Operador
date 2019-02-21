@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import os, sys
+import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets
+from .saveProfileDialog import SaveProfileDialog
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox
 
@@ -11,11 +12,6 @@ class MenuConfigFrame(QtWidgets.QDialog):
         'menuConfigFrame.ui'
     )
 
-    update = QtCore.pyqtSignal(dict)
-    add = QtCore.pyqtSignal(dict)
-    delete = QtCore.pyqtSignal(dict)
-    get = QtCore.pyqtSignal(dict)
-
     def __init__(self, iface, parent):
         super(MenuConfigFrame, self).__init__()
         self.iface = iface
@@ -25,15 +21,39 @@ class MenuConfigFrame(QtWidgets.QDialog):
         self.config_table.setHorizontalHeaderLabels(['Campos', 'Valores'])
         self.config_table.setColumnWidth(0, 300)
         self.config_table.setColumnWidth(1, 300)
-        operations =  [
-            '<Operações>', 
-            'Adicionar Aba', 
-            'Adicionar Botão', 
-            'Editar Aba', 
-            'Editar Botão', 
-            'Remover Aba', 
-            'Remover Botão'
-        ]
+        self.functions_map = { 
+            'Adicionar Aba' : { 
+                'open_form' : self.load_form_tab,
+                'tag_name' : 'add',
+                'run' : self.update_tab_data
+            }, 
+            'Adicionar Botão' : { 
+                'open_form' : self.load_form_btn,
+                'tag_name' : 'add',
+                'run' : self.update_btn_data
+            },
+            'Editar Aba' : { 
+                'open_form' : self.load_form_tab, 
+                'tag_name' : 'edit',
+                'run' : self.update_tab_data
+            },
+            'Editar Botão' : { 
+                'open_form' : self.load_form_btn, 
+                'tag_name' : 'edit',
+                'run' : self.update_btn_data
+            },
+            'Remover Aba' : { 
+                'open_form' : self.load_form_tab, 
+                'tag_name' : 'del',
+                'run' : self.update_tab_data
+            },
+            'Remover Botão' : { 
+                'open_form' : self.load_form_btn, 
+                'tag_name' : 'del',
+                'run' : self.update_btn_data
+            }
+        }
+        operations =  ['<Operações>']+sorted(list(self.functions_map.keys()))
         self.operation_options.addItems(operations)
         self.form_values = {}
 
@@ -42,102 +62,181 @@ class MenuConfigFrame(QtWidgets.QDialog):
         if idx > 0:
             self.clean_table()
             self.form_values = {}
-            functions = { 
-                'Adicionar Aba' : { 
-                    'function' : self.load_form_tab, 
-                    'tag_name' : 'add tab'
-                }, 
-                'Adicionar Botão' : { 
-                    'function' : self.load_form_btn, 
-                    'tag_name' : 'add button'
-                },
-                'Editar Aba' : { 
-                    'function' : self.load_form_tab, 
-                    'tag_name' : 'edit tab'
-                },
-                'Editar Botão' : { 
-                    'function' : self.load_form_btn, 
-                    'tag_name' : 'edit button'
-                },
-                'Remover Aba' : { 
-                    'function' : self.load_form_tab, 
-                    'tag_name' : 'del tab'
-                },
-                'Remover Botão' : { 
-                    'function' : self.load_form_btn, 
-                    'tag_name' : 'del button'
-                }
-            }
+            
             op_name = self.operation_options.currentText()
-            tag_name = functions[op_name]['tag_name']
-            functions[op_name]['function'](tag_name)
+            tag_name = self.functions_map[op_name]['tag_name']
+            self.functions_map[op_name]['open_form'](tag_name)
         else:
             self.clean_table()
 
     def validate_form_values(self):
-        fields = []
-        for f in self.form_values:
-            if '*' in f and not(self.form_values[f]) or '<...>' == self.form_values[f]:
-                fields.append(f)
-        if fields:
-            html="<p>Os seguintes campos são obrigatórios(*):</p>"
-            html+='\n'.join([ '<p style="color:red;">[{}]</p>'.format(f) for f in fields])
-            self.show_message(html)
-            return False
-        return True
+        idx_oper = self.operation_options.currentIndex()
+        valid = False
+        if idx_oper > 0:
+            fields = []
+            for f in self.form_values:
+                if '*' in f and not(self.form_values[f]) or '<...>' == self.form_values[f]:
+                    fields.append(f)
+            if fields:
+                html="<p>Os seguintes campos são obrigatórios(*):</p>"
+                html+='\n'.join([ '<p style="color:red;">[{}]</p>'.format(f) for f in fields])
+                self.show_message(html)
+            else:
+                valid = True
+        return valid
 
     def show_message(self, html):
         msgBox.show(html, "AVISO", parent=self)
 
+    def get_template_profile_data(self):
+        template = {
+            "nome_do_perfil" : '',
+            "perfil" : {},
+            "orderMenu" : {
+                'orderTab' : [],
+                'orderButton' : {}
+            }
+        }
+        return template
+
+    def get_current_profile_data(self):
+        data = self.parent.parent.load_data()
+        if not(data):
+            data = self.get_template_profile_data()
+        return data
+
+    def update_tab_data(self, tag_name):
+        current_profile_data = self.get_current_profile_data()
+        order_menu = current_profile_data['orderMenu']
+        profile = current_profile_data['perfil']
+        if tag_name == 'add':
+            tab_name = self.form_values['*Nome da aba:']
+            if not(tab_name in profile):
+                profile[tab_name] = {}
+                order_menu['orderTab'].append(tab_name)
+                order_menu['orderButton'][tab_name] = []
+        else:
+            tab_name = self.form_values['*Selecione aba:']
+            valid_tab = tab_name in profile
+            if valid_tab and tag_name == 'del':
+                del profile[tab_name]
+                order_menu['orderTab'].remove(tab_name)
+                del order_menu['orderButton'][tab_name]
+            elif valid_tab:
+                new_tab = self.form_values['*Nome da aba:']
+                temp = profile[tab_name] 
+                for b in temp:
+                    temp[b]['formValues']['*Selecione aba:'] = new_tab
+                del profile[tab_name] 
+                profile[new_tab] = temp
+                order_menu['orderTab'] = [
+                    n.replace(tab_name, new_tab) for n in order_menu['orderTab']
+                ]
+                temp = order_menu['orderButton'][tab_name]
+                del order_menu['orderButton'][tab_name]
+                order_menu['orderButton'][new_tab] = temp
+        self.parent.load_menu_profile(
+            copy.deepcopy(current_profile_data)
+        )
+        self.clean_table()
+        self.load_form_tab(tag_name)
+
+    def update_btn_data(self, tag_name):
+        current_profile_data = self.get_current_profile_data()
+        order_menu = current_profile_data['orderMenu']
+        profile = current_profile_data['perfil']
+        tab_name = self.form_values['*Selecione aba:']
+        if tag_name == 'add':
+            btn_name = self.form_values['*Nome do botão:']
+            valid_btn = (
+                tab_name in profile
+                and
+                not(btn_name in profile[tab_name])
+            )
+            if valid_btn:
+                profile[tab_name][btn_name] = {
+                    'formValues' : self.form_values
+                }
+                order_menu['orderButton'][tab_name].append(btn_name)
+        elif tag_name == 'del':
+            btn_name = self.form_values['*Selecione botão:']
+            valid_btn = (
+                tab_name in profile
+                and
+                btn_name in profile[tab_name]
+            )
+            if valid_btn:
+                del profile[tab_name][btn_name]
+                order_menu['orderButton'][tab_name].remove(btn_name)
+        else:
+            old_name = self.form_values['*Selecione botão:']
+            valid_btn = (
+                tab_name in profile
+                and
+                old_name in profile[tab_name]
+            )
+            if valid_btn: 
+                btn_name = self.form_values['*Nome do botão:']
+                temp = profile[tab_name][old_name]
+                del profile[tab_name][old_name]
+                temp['formValues'].update(self.form_values)
+                profile[tab_name][btn_name] = temp
+                order_btn = order_menu['orderButton'][tab_name]
+                order_menu['orderButton'][tab_name] = [
+                    n.replace(old_name, btn_name) for n in order_btn
+                ]
+        self.parent.load_menu_profile(
+            copy.deepcopy(current_profile_data)
+        )
+        if tag_name == 'del':
+            self.load_form_btn("add buttons options")
+        else:
+            options_cb = self.config_table.cellWidget(1, 1)
+            if tag_name == 'add':
+                default_value = self.form_values[u"*Selecione camada:"]
+                self.load_form_btn("add")
+            else:
+                self.load_form_btn("edit")
+                default_value = btn_name
+            self.set_default_value_cb(options_cb, default_value)
+
+
     @QtCore.pyqtSlot(bool)
     def on_update_btn_clicked(self, b):
         if self.validate_form_values():
-            print(self.operation_options.currentIndex())
-            print(self.operation_options.currentText())
-            print(self.form_values)
-            """ profile_data = self.parent.load_data()
-            for tab_name in reversed(profile_data['orderMenu']['orderTab']):
-                self.add_tab(tab_name)
-                for button_name in reversed(profile_data['orderMenu']['orderButton'][tab_name]):
-                    if button_name in profile_data['perfil'][tab_name]:
-                        button_data = profile_data['perfil'][tab_name][button_name]
-                        self.add_button(button_data) """
-
+            op_name = self.operation_options.currentText()
+            tag_name = self.functions_map[op_name]['tag_name']
+            self.functions_map[op_name]['run'](tag_name)
+    
     @QtCore.pyqtSlot(bool)
     def on_save_btn_clicked(self, b):
-        print(self.form_values)
- 
-    def update_form_values(self, obj_input):
-        field_name = obj_input.objectName()
-        if type(obj_input) == QtWidgets.QComboBox:
-            self.form_values[field_name] = obj_input.currentText()
-        else:
-            self.form_values[field_name] = obj_input.text()
-    
+        profile_name = self.parent.current_profile_name
+        diag = SaveProfileDialog(profile_name)
+        diag.exec_()
+        profile_name = diag.get_profile_name()
+        self.parent.save_profile(profile_name)
+        
     def load_form_tab(self, tag_name):
-        if tag_name == 'add tab':
-            field_name = u"*Nome da aba :"
+        if tag_name == 'add':
+            field_name = u"*Nome da aba:"
             self.add_widget_cell(field_name, '', type_field='le')  
-        elif tag_name == 'del tab':
-            field_name = u"*Selecione aba :"
-            tabs_name = self.parent.get_all_tabs_name(onlyEditable=True)
-            tabs_cb = self.add_widget_cell(field_name, tabs_name, type_field='cb')
         else:
-            field_name = u"*Selecione aba :"
+            field_name = u"*Selecione aba:"
             tabs_name = self.parent.get_all_tabs_name(onlyEditable=True)
             tabs_cb = self.add_widget_cell(field_name, tabs_name, type_field='cb')
-            field_name = u"*Nome da aba :"
-            self.add_widget_cell(field_name, '', type_field='le')
+            if tag_name == 'edit':
+                field_name = u"*Nome da aba:"
+                self.add_widget_cell(field_name, '', type_field='le')
     
     def load_form_btn(self, tag_name):
-        field_name = u"*Selecione aba :"
+        field_name = u"*Selecione aba:"
         tabs_name = self.parent.get_all_tabs_name(onlyEditable=True)
         tabs_cb = self.add_widget_cell(field_name, tabs_name, type_field='cb')
-        if tag_name == 'add button':
+        if tag_name == 'add':
             tabs_cb.currentIndexChanged.connect(
                 lambda : self.update_form_widgets("add layers options")
             )
-            field_name = u"*Selecione camada :"
+            field_name = u"*Selecione camada:"
             layers_cb = self.add_widget_cell(field_name, [], type_field='cb')
             layers_cb.currentIndexChanged.connect(
                 lambda : self.update_form_widgets("add button fields")
@@ -147,9 +246,9 @@ class MenuConfigFrame(QtWidgets.QDialog):
             tabs_cb.currentIndexChanged.connect(
                 lambda : self.update_form_widgets("add buttons options")
             )
-            field_name = u"*Selecione botão :"
+            field_name = u"*Selecione botão:"
             btns_cb = self.add_widget_cell(field_name, [], type_field='cb')
-            if tag_name == 'edit button':
+            if tag_name == 'edit':
                 btns_cb.currentIndexChanged.connect(
                     lambda : self.update_form_widgets("edit button fields")
                 )
@@ -186,7 +285,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
     def load_custom_fields_btn(self, button_name, button_data):
         custom_fields = [
             {
-                'field_name' :  u'*Nome do botão :',
+                'field_name' :  u'*Nome do botão:',
                 'field_values' : button_name
             },
             {
@@ -239,7 +338,8 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 default_value = ''
                 if exist_field:
                     default_value = button_data['formValues'][field_name]
-                if 'valueMap' in layer_fields[field_name]:
+                field_type = [n.lower() for n in list(layer_fields[field_name].keys())]
+                if 'valuemap' in field_type:
                     options_values = list(layer_fields[field_name]['valueMap'].keys())
                     options_values.append('IGNORAR')
                     options_values = list(set(options_values))
@@ -311,3 +411,10 @@ class MenuConfigFrame(QtWidgets.QDialog):
         )
         self.form_values[field_name] = le.text()
         return le
+
+    def update_form_values(self, obj_input):
+        field_name = obj_input.objectName()
+        if type(obj_input) == QtWidgets.QComboBox:
+            self.form_values[field_name] = obj_input.currentText()
+        else:
+            self.form_values[field_name] = obj_input.text()

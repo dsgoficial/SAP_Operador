@@ -197,8 +197,13 @@ class LoadData(QtCore.QObject):
             field_index = fields_map[name]
             v_lyr.setFieldAlias(field_index, name)
             is_value_map = (
-                (name in layer_data['layer_fields']) and 
-                (u"valueMap" in layer_data['layer_fields'][name])
+                (name in layer_data['layer_fields']) 
+                and 
+                (
+                    u"valuemap" in [
+                        n.lower() for n in list(layer_data['layer_fields'][name].keys())
+                    ]
+                )
             )
             if is_value_map:
                 values = copy.deepcopy(layer_data['layer_fields'][name][u"valueMap"])
