@@ -14,10 +14,20 @@ class GeneratorCustomForm(object):
             <string>Dialog</string>
             </property>
             <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0" colspan="2">
+            <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                <property name="text">
+                <string>Relatório de erros :</string>
+                </property>
+                </widget>
+            </item>
+            <item row="0" column="1">
                 <widget class="QPushButton" name="logBtn">
                 <property name="text">
-                <string>Erros</string>
+                <string>&gt;&gt;&gt;</string>
+                </property>
+                <property name="autoDefault">
+                <bool>false</bool>
                 </property>
                 </widget>
             </item>
