@@ -184,6 +184,19 @@ class LoadData(QtCore.QObject):
                     doc = QDomDocument()
                     doc.setContent(style_xml)
                     v_lyr.importNamedStyle(doc)
+
+    def add_custom_action_layer(self):
+        if self.sap_mode:
+        custom_action = core.QgsAction(
+            QgsAction.OpenUrl, 
+            "Doc MGCP", 
+            "[%'{}{}'%]".format(
+                server,
+                config_layer['link']
+            )
+        )
+        custom_action.setActionScopes({'Feature', 'Canvas'})
+        v_layer.actions().addAction(custom_action)
                     
     def get_layer_fields_map(self, v_lyr):
         conf = v_lyr.fields()
