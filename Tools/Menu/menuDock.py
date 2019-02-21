@@ -23,8 +23,6 @@ class MenuDock(QtWidgets.QDockWidget):
     )
 
     active_button = QtCore.pyqtSignal(dict)
-    load_profile = QtCore.pyqtSignal(str)
-    database_load = QtCore.pyqtSignal(str)
 
     def __init__(self, iface, parent):
         super(MenuDock, self).__init__()
@@ -41,7 +39,7 @@ class MenuDock(QtWidgets.QDockWidget):
         self.menu_search.mousePressEvent = lambda _ : self.menu_search.selectAll()
         self.config_btn.setIcon(QtGui.QIcon(self.icon_path))
         self.config_btn.setIconSize(QtCore.QSize(30, 30))
-        #self.config_btn.setEnabled(False)
+        self.config_btn.setEnabled(False)
 
     @QtCore.pyqtSlot(str)
     def on_menu_search_textEdited(self, text):
@@ -106,7 +104,8 @@ class MenuDock(QtWidgets.QDockWidget):
         if db_selected :
             cursorWait.start()
             try:
-                self.database_load.emit(db_selected)
+                db_data = self.parent.get_db_data(db_selected)
+                self.load(db_data)
             finally:
                 cursorWait.stop()
         else:
@@ -126,11 +125,14 @@ class MenuDock(QtWidgets.QDockWidget):
     def on_menu_options_currentIndexChanged(self, idx):
         profile_selected = self.menu_options.currentText() if idx != 0 else ''
         if profile_selected:
-            self.load_profile.emit(profile_selected)
+            profile_data = self.parent.get_profile_data(profile_selected)
+            self.load_menu_profile(profile_data)
             self.current_profile = profile_selected
+            self.config_btn.setEnabled(True)
         else:
             self.clean_menu()
             self.current_profile = ""
+            self.config_btn.setEnabled(False)
 
     def load_menu_profile(self, profile_data):
         self.clean_menu()
@@ -140,8 +142,9 @@ class MenuDock(QtWidgets.QDockWidget):
                 if button_name in profile_data['perfil'][tab_name]:
                     button_data = profile_data['perfil'][tab_name][button_name]
                     self.add_button(button_data)
+        self.parent.dump_data(profile_data)
         self.add_tab_search(profile_data)
-
+        
     def add_tab_search(self, profile_data):
         self.add_tab(u'**Pesquisa**')
         for tab_name in reversed(profile_data['orderMenu']['orderTab']):

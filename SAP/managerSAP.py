@@ -4,7 +4,7 @@ import sys, os, pickle
 from .worksFrame import WorksFrame
 from .Login.login import Login
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import network, msgBox
+from utils import network, msgBox, managerFile
 from utils.managerQgis import ManagerQgis
 
 
@@ -141,15 +141,10 @@ class ManagerSAP(QtCore.QObject):
 
     def dump_data(self, data):
         print(data)
-        with open(self.path_data, u"wb") as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        managerFile.dump_data(self.path_data, data)
 
     def load_data(self):
-        try:
-            with open(self.path_data, u"rb") as f:
-                return pickle.load(f)
-        except FileNotFoundError:
-            return False
+        return managerFile.load_data(self.path_data)
     
     def show_message(self, tag):
         dialog = self.login_sap.dialog 
