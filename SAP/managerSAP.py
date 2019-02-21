@@ -11,6 +11,7 @@ from utils.managerQgis import ManagerQgis
 class ManagerSAP(QtCore.QObject):
 
     show_tools = QtCore.pyqtSignal(bool)
+    close_tools = QtCore.pyqtSignal()
 
     def __init__(self, iface):
         super(ManagerSAP, self).__init__()
@@ -61,6 +62,7 @@ class ManagerSAP(QtCore.QObject):
             self.login_sap.dialog.accept()
             self.show_tools.emit(True)
         else:
+            self.close_tools.emit()
             self.login_sap.dialog.show_()
 
     def get_frame(self):
