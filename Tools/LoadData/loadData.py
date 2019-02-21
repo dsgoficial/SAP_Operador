@@ -354,7 +354,7 @@ class LoadData(QtCore.QObject):
                 (v_lyr and not(settings_data['with_geom']))
                 ):
                 vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
-            class_group.addLayer(vl)
+                class_group.addLayer(vl)
         return v_lyr, bool(loaded)
 
     def get_workspace_data(self, settings_data):

@@ -203,7 +203,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
             button_data = self.parent.get_button_data(tab_name, button_name)
             layer_name = button_data['formValues']['*Selecione camada:']
             layer_data = self.parent.parent.get_layer_data(layer_name)
-            print(layer_data)
+            print(layer_data) 
             #print(button_data['fields'])
             #print(button_data['formValues'])
             """ is_value_map = (
