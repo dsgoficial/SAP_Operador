@@ -234,15 +234,17 @@ class LoadData(QtCore.QObject):
         for v_lyr in core.QgsProject.instance().mapLayers().values():
             data = core.QgsExpressionContextUtils.layerScope(v_lyr).variable(u"uiData")
             if v_lyr.type() == core.QgsMapLayer.VectorLayer and data:
-                ui_data = json.loads(data)['uiData']
-                form_file = self.get_form_file(ui_data['form_name'])
-                form_custom = GeneratorCustomForm()
-                form_custom.create(
-                    form_file,
-                    ui_data["layer_data"],
-                    ui_data["fields_sorted"],
-                    v_lyr
-                )
+                json_data = json.loads(data)
+                if 'uiData' in json_data:
+                    ui_data = json.loads(data)['uiData']
+                    form_file = self.get_form_file(ui_data['form_name'])
+                    form_custom = GeneratorCustomForm()
+                    form_custom.create(
+                        form_file,
+                        ui_data["layer_data"],
+                        ui_data["fields_sorted"],
+                        v_lyr
+                    )
 
     def clean_forms_custom(self):
         directory_path = os.path.join(
