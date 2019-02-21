@@ -169,25 +169,30 @@ class MenuConfigFrame(QtWidgets.QDialog):
             self.config_table.setCellWidget(row_idx, 1, widget_input)
     
     def update_btn_form(self):
-        for row_idx in range(2):
-            if row_idx == 0:
-                field_name = u"Selecione Aba :"
-                tabs_name = self.parent.get_all_tabs_name(onlyEditable=True)
-                widget_input = self.get_cb(field_name, tabs_name)
-                widget_input.currentIndexChanged.connect(
-                    lambda : self.update_form_widgets("add btns options")
-                )
-            else:
-                field_name = u"Selecione Botão :"
-                widget_input = self.get_cb(field_name)
-                widget_input.currentIndexChanged.connect(
-                    lambda : self.update_form_widgets("add btn fields")
-                )
-            widget_label = self.get_lb(field_name)
-            self.config_table.insertRow(row_idx)
-            self.config_table.setCellWidget(row_idx, 0, widget_label)
-            self.config_table.setCellWidget(row_idx, 1, widget_input)
+        field_name = u"*Selecione aba :"
+        tabs_name = self.parent.get_all_tabs_name(onlyEditable=True)
+        widget_input = self.add_widget_cell(field_name, tabs_name, type_field='cb')
+        widget_input.currentIndexChanged.connect(
+            lambda : self.update_form_widgets("add btns options")
+        )
+        field_name = u"*Nome do botão :"
+        widget_input = self.add_widget_cell(field_name, [], type_field='cb')
+        widget_input.currentIndexChanged.connect(
+            lambda : self.update_form_widgets("add btn fields")
+        )
         self.update_form_widgets("add btns options")
+
+    def set_default_value_cb(self, cb, value=''):
+        if value:
+            index = cb.findText( 
+                value, QtCore.Qt.MatchFixedString
+            )  
+        else: 
+            index = cb.findText(
+                "A SER PREENCHIDO", QtCore.Qt.MatchFixedString
+            )
+        if index >= 0:
+            cb.setCurrentIndex(index)
 
     def update_form_widgets(self, tag_name):
         col_input = 1
@@ -203,10 +208,73 @@ class MenuConfigFrame(QtWidgets.QDialog):
             button_data = self.parent.get_button_data(tab_name, button_name)
             layer_name = button_data['formValues']['*Selecione camada:']
             layer_data = self.parent.parent.get_layer_data(layer_name)
-            print(layer_data) 
-            print(button_data['fields'])
-            print(button_data['formValues'])
-            """ is_value_map = (
-                (name in layer_data['layer_fields']) and 
-                (u"valueMap" in layer_data['layer_fields'][name])
-            ) """
+            custom_fields = [
+                 {
+                    'field_name' :  u'Novo nome para o botão:',
+                    'field_values' : ''
+                },
+                {
+                    'field_name' :  u'Fechar form na aquisição:',
+                    'field_values' : [
+                        u'Não',
+                        u'Sim'
+                    ]
+                },
+                {
+                    'field_name' : u'Escolha ferramenta de aquisição:',
+                    'field_values' : [
+                        u'Normal',
+                        u'Mão livre',
+                        u'Angulor reto',
+                        u'Circulo'
+                    ]
+                },
+                { 
+                    'field_name' : u'Definir palavras chaves(separar com ";"):',
+                    'field_values' : ''
+                }
+            ]
+            for field_data in custom_fields:
+                field_name = field_data['field_name']
+                field_values = field_data['field_values']
+                type_field = 'cb' if type(field_values) == list else 'le'
+                default_value = button_data['formValues'][field_name]
+                self.add_widget_cell(
+                    field_name,
+                    field_values,
+                    type_field=type_field,
+                    default_value=default_value
+                )
+            layer_fields = layer_data['layer_fields']
+            for field_name in layer_fields:
+                exist_field = field_name in button_data['formValues']
+                if exist_field and 'valueMap' in layer_fields[field_name]:
+                    options_values = list(layer_fields[field_name]['valueMap'].keys())
+                    self.add_widget_cell(
+                        field_name,
+                        options_values,
+                        type_field='cb',
+                        default_value=button_data['formValues'][field_name]
+                    )
+                else:
+                    default_value = button_data['formValues'][field_name]
+                    self.add_widget_cell(
+                        field_name,
+                        '',
+                        type_field='le',
+                        default_value=default_value 
+                    )
+
+    def add_widget_cell(self, field_name, value, type_field, default_value=''):
+        row_idx = self.config_table.rowCount()
+        if type_field == 'cb':
+            widget_input = self.get_cb(field_name, value)
+            self.set_default_value_cb(widget_input, default_value)
+        else:
+            widget_input = self.get_le(field_name, value)
+            widget_input.setText(default_value)
+        widget_label = self.get_lb(field_name)
+        self.config_table.insertRow(row_idx)
+        self.config_table.setCellWidget(row_idx, 0, widget_label)
+        self.config_table.setCellWidget(row_idx, 1, widget_input)            
+        return widget_input

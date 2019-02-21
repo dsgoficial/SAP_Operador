@@ -226,6 +226,7 @@ class LoadDataFrame(QtWidgets.QFrame):
         p = u"<p>{0}</p>"
         for e in erro:
             html += p.format(e)
+        html+=u"<p>Tente carregar os arquivos manualmente:</p>"
         msgBox.show(
             text=html, 
             title=u"Error", 
