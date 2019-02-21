@@ -66,72 +66,7 @@ class Classification(QtCore.QObject):
                 selectedIds = lyr.selectedFeatureIds()
                 layers_selected[lyrName] = [selectedIds, lyr]
         return layers_selected
-
-    #####################
-    """ def setLayer(self, layer):
-        if layer == self.layer:
-            return
-        if self.layer:
-            try:
-                self.layer.destroyed.disconnect(self.onLayerRemoved)
-            except TypeError:
-                # Do not care if it is not connected
-                pass
-        self.layer = layer
-        if self.layer:
-            self.layer.destroyed.connect(self.onLayerRemoved)
-        self.layerComboBox.setLayer(layer)
-        if self.attributeForm:
-            try:
-                self.attributeForm.deleteLater()
-            except RuntimeError:
-                # Sometimes the form has already been deleted, that's ok for us
-                pass
-        if self.layer is not None:
-            context = QgsAttributeEditorContext()
-            context.setVectorLayerTools(self.iface.vectorLayerTools())
-            context.setFormMode(QgsAttributeEditorContext.StandaloneDialog)
-            self.attributeForm = QgsAttributeForm(self.layer, QgsFeature(), context)
-            self.attributeForm.hideButtonBox()
-            try:
-                self.layer.updatedFields.disconnect(
-                    self.attributeForm.onUpdatedFields)
-            except TypeError:
-                pass
-            fields = self.layer.fields()
-            self.feature = QgsFeature(fields)
-            for idx in range(self.layer.fields().count()):
-                self.feature.setAttribute(idx, self.layer.defaultValue(idx))
-            self.feature.setValid(True)
-            self.attributeForm.setFeature(self.feature)
-            self.attributeForm.widgetValueChanged.connect(
-                self.onAttributeChanged)
-            self.formWidget.layout().addWidget(self.attributeForm)
-            self.layerChanged.emit(self.layer)
-
-    def onLayerRemoved(self):
-        self.setLayer(None)
-
-    def onAttributeChanged(self, attributeName, value, changed):
-        idx = self.layer.fields().indexOf(attributeName)
-        if value != 'NULL':
-            defaultValue = QgsExpression.quotedValue(value)
-        else:
-            defaultValue = 'NULL'
-        self.layer.blockSignals(True)
-        self.layer.setDefaultValueDefinition(
-            idx, QgsDefaultValue(defaultValue))
-        self.layer.blockSignals(False)
-        self.currentValueChanged.emit(attributeName, value)
-
-    def onProjectRead(self, doc):
-        title, isDefined = QgsProject.instance().readEntry('quick_attribution', 'layercbxtitle')
-        if isDefined:
-            self.layerTitleLabel.setText(title)
-        else:
-            self.layerTitleLabel.setText(self.tr('Layer')) """
-    ########################################
-        
+     
     def run(self, layer_vector, button_data):
         self.connect_qgis_signals()
         self.current_button_layer = layer_vector
