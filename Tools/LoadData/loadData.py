@@ -337,7 +337,10 @@ class LoadData(QtCore.QObject):
         layer_name = layer_data['layer_name']
         class_group = self.get_class_group(layer_data, settings_data)
         layers = class_group.findLayers()
-        loaded = [ l.layer() for l in layers if l and l.layer().name() == layer_name]
+        loaded = [ l.layer() 
+            for l in layers 
+            if l and l.layer().dataProvider().uri().table() == layer_name 
+        ]
         if loaded:
             v_lyr = loaded[0]
             v_lyr.setSubsetString(filter_text)
