@@ -211,10 +211,8 @@ class MenuConfigFrame(QtWidgets.QDialog):
     @QtCore.pyqtSlot(bool)
     def on_save_btn_clicked(self, b):
         profile_name = self.parent.current_profile_name
-        diag = SaveProfileDialog(profile_name)
+        diag = SaveProfileDialog(profile_name, self)
         diag.exec_()
-        profile_name = diag.get_profile_name()
-        self.parent.save_profile(profile_name)
         
     def load_form_tab(self, tag_name):
         if tag_name == 'add':
@@ -305,7 +303,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 ]
             },
             { 
-                'field_name' : u'Definir palavras chaves(separar com ";"):',
+                'field_name' : u"Definir palavras chaves(separar com ';'):",
                 'field_values' : ''
             }
         ]
