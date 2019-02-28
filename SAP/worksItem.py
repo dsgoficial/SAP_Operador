@@ -15,12 +15,18 @@ class WorksItem(QtWidgets.QWidget):
         'worksItem.ui'
     )
 
-    def __init__(self, description, values_cbx, parent):
+    def __init__(self, sap_data, parent):
         super(WorksItem, self).__init__()
         uic.loadUi(self.dialog_path, self)
         self.parent = parent
-        self.description = description
-        self.values_cbx = values_cbx
+        woks_data = sap_data['dados']['atividade']
+        self.description = woks_data['nome']
+        self.values_cbx = woks_data['requisitos'] if 'requisitos' in woks_data else []
+        self.observation = ''
+        if 'observacao' in woks_data and woks_data['observacao']:
+            self.observation = woks_data['observacao']
+        if len(self.values_cbx) > 0:
+            self.close_works_btn.setEnabled(False)
         self.load_activity()
 
     def get_checkbox(self, name, parent):
@@ -30,6 +36,7 @@ class WorksItem(QtWidgets.QWidget):
 
     def load_activity(self):
         self.description_lb.setText(u"<h2>{0}</h2>".format(self.description))
+        self.observation_lb.setText(u"<h2>{0}</h2>".format(self.observation))
         for value in self.values_cbx:
             cbx = self.get_checkbox(value, self.cbx_gpb)
             cbx.clicked.connect(self.validate_checkbox)
