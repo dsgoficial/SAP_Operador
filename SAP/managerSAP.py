@@ -66,10 +66,12 @@ class ManagerSAP(QtCore.QObject):
             self.login_sap.dialog.show_()
 
     def get_frame(self):
-        self.frame = WorksFrame()
-        self.frame.load(self.load_data())
+        self.frame = WorksFrame(self)
         self.frame.close_works.connect(
             self.close_works
+        )
+        self.frame.report_bug.connect(
+            self.report_work_bug
         )
         return self.frame
 
@@ -124,8 +126,6 @@ class ManagerSAP(QtCore.QObject):
         fase_id = works_data['subfase_etapa_id']
         server = sap_data['server']
         token = sap_data['token']
-        user = sap_data['user']
-        password = sap_data['password']
         post_data = {
             'subfase_etapa_id' : fase_id,
             'unidade_trabalho_id': unit_id
@@ -136,8 +136,13 @@ class ManagerSAP(QtCore.QObject):
         url = u"{0}/distribuicao/finaliza".format(server)
         response = self.net.POST(server, url, post_data, header)
         if response:
-            self.iface.actionNewProject().trigger()
-            self.login(server, user, password)
+            user = sap_data['user']
+            password = sap_data['password']
+            self.next_work(server, user, password)
+
+    def next_work(self, server, user, password):
+        self.iface.actionNewProject().trigger()
+        self.login(server, user, password)
 
     def dump_data(self, data):
         print(data)
@@ -145,6 +150,32 @@ class ManagerSAP(QtCore.QObject):
 
     def load_data(self):
         return managerFile.load_data(self.path_data)
+    
+    def get_report_data(self):
+        sap_data = self.load_data()
+        token = sap_data['token']
+        server = sap_data['server']
+        header = {'authorization' : token}
+        url = u"{0}/distribuicao/tipo_problema".format(server)
+        response = self.net.GET(server, url, header)
+        return response.json()
+    
+    def report_work_bug(self, report_input):
+        sap_data = self.load_data()
+        post_data = {
+            "atividade_id" : sap_data['dados']['atividade']['id'],
+        }
+        post_data.update(report_input)
+        sap_data = self.load_data()
+        token = sap_data['token']
+        server = sap_data['server']
+        header = {'authorization' : token}
+        url = u"{0}/distribuicao/problema_atividade".format(server)
+        response = self.net.POST(server, url, post_data, header)
+        if response:
+            user = sap_data['user']
+            password = sap_data['password']
+            self.next_work(server, user, password)
     
     def show_message(self, tag):
         dialog = self.login_sap.dialog 
