@@ -31,12 +31,7 @@ class WorksFrame(QtWidgets.QFrame):
     def load(self, sap_data):
         self.clean_works()
         self.sap_data = sap_data
-        woks_data = self.sap_data['dados']['atividade']
-        description = woks_data['nome']
-        values_cbx = woks_data['requisitos'] if 'requisitos' in woks_data else []
-        if len(values_cbx) > 0:
-            self.close_works_btn.setEnabled(False)
-        self.works_item = WorksItem(description, values_cbx, self)
+        self.works_item = WorksItem(sap_data, self)
         self.works_item.enable_btn.connect(lambda:self.close_works_btn.setEnabled(True))
         self.works_item.disable_btn.connect(lambda:self.close_works_btn.setEnabled(False))
         self.works_area.layout().addWidget(self.works_item)
