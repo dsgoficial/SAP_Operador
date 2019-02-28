@@ -187,16 +187,16 @@ class LoadData(QtCore.QObject):
 
     def add_custom_action_layer(self):
         if self.sap_mode:
-        custom_action = core.QgsAction(
-            QgsAction.OpenUrl, 
-            "Doc MGCP", 
-            "[%'{}{}'%]".format(
-                server,
-                config_layer['link']
+            custom_action = core.QgsAction(
+                QgsAction.OpenUrl, 
+                "Doc MGCP", 
+                "[%'{}{}'%]".format(
+                    server,
+                    config_layer['link']
+                )
             )
-        )
-        custom_action.setActionScopes({'Feature', 'Canvas'})
-        v_layer.actions().addAction(custom_action)
+            custom_action.setActionScopes({'Feature', 'Canvas'})
+            v_layer.actions().addAction(custom_action)
                     
     def get_layer_fields_map(self, v_lyr):
         conf = v_lyr.fields()
@@ -353,18 +353,28 @@ class LoadData(QtCore.QObject):
                     if len(g3.children()) == 0 and g3.name() != u"MOLDURA":
                         g2.removeChildNode(g3)
 
+    def search_layer(self, layer_name):
+        db_name = self.postgresql.get_connection_config()['db_name']
+        layers = core.QgsProject.instance().mapLayers().values()
+        for layer in layers:
+            data_source = layer.dataProvider().uri()
+            test = (
+                (db_name == data_source.database()) 
+                and
+                (layer_name == data_source.table())            
+            )
+            if test:
+                return layer
+        return False
+
     def add_layer_on_canvas(self, settings_data, layer_data, filter_text):
         layer_name = layer_data['layer_name']
-        class_group = self.get_class_group(layer_data, settings_data)
-        layers = class_group.findLayers()
-        loaded = [ l.layer() 
-            for l in layers 
-            if l and l.layer().dataProvider().uri().table() == layer_name 
-        ]
-        if loaded:
-            v_lyr = loaded[0]
+        result = self.search_layer(layer_name)
+        if result:
+            v_lyr = result
             v_lyr.setSubsetString(filter_text)
         else:
+            class_group = self.get_class_group(layer_data, settings_data)
             connection_config = self.postgresql.get_connection_config()
             uri_text = self.get_uri_text(connection_config, layer_data, filter_text)
             v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
@@ -375,7 +385,7 @@ class LoadData(QtCore.QObject):
                 ):
                 vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
                 class_group.addLayer(vl)
-        return v_lyr, bool(loaded)
+        return v_lyr, bool(result)
 
     def get_workspace_data(self, settings_data):
         if self.sap_mode:
