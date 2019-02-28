@@ -66,7 +66,7 @@ class ManagerSAP(QtCore.QObject):
             self.login_sap.dialog.show_()
 
     def get_frame(self):
-        self.frame = WorksFrame(self)
+        self.frame = WorksFrame(self.iface, self)
         self.frame.close_works.connect(
             self.close_works
         )

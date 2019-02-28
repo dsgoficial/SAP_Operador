@@ -8,6 +8,7 @@ from .Tools.tools import Tools
 from .Tools.Menu.menu import Menu
 from .Validate.validateOperations import ValidateOperations
 from .utils.managerQgis import ManagerQgis
+from .utils.messageSave import MessageSave
 
 class Main(QtCore.QObject):
     def __init__(self, iface):
@@ -17,6 +18,7 @@ class Main(QtCore.QObject):
         self.menu = Menu(self.iface)
         self.validate = ValidateOperations(self.iface)
         self.tools = Tools(self.iface, self.menu, self.sap)
+        self.msg_save = MessageSave(self.iface, 20)#5*60)
 
     def initGui(self):
         self.sap.add_action_qgis(True)
@@ -50,6 +52,7 @@ class Main(QtCore.QObject):
     def load_qgis_project(self):
         value = ManagerQgis(self.iface).load_project_var("settings_user")
         if value:
+            self.msg_save.start() if not(self.msg_save.is_running) else ''
             self.tools.reload_project_qgis()
             self.validate.start()
             
@@ -64,4 +67,5 @@ class Main(QtCore.QObject):
         self.tools.show_dialog().closed_tools_dialog.connect(
             self.closed_tools_dialog 
         )
+        self.msg_save.start() if not(self.msg_save.is_running) else ''
 

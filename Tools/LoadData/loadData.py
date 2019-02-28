@@ -251,7 +251,8 @@ class LoadData(QtCore.QObject):
         return open(form_path, "w")
 
     def reload_forms_custom(self):
-        for v_lyr in core.QgsProject.instance().mapLayers().values():
+        m_qgis = ManagerQgis(self.iface)
+        for v_lyr in m_qgis.get_loaded_layers():
             data = core.QgsExpressionContextUtils.layerScope(v_lyr).variable(u"uiData")
             if v_lyr.type() == core.QgsMapLayer.VectorLayer and data:
                 json_data = json.loads(data)
@@ -357,7 +358,8 @@ class LoadData(QtCore.QObject):
 
     def search_layer(self, layer_name):
         db_name = self.postgresql.get_connection_config()['db_name']
-        layers = core.QgsProject.instance().mapLayers().values()
+        m_qgis = ManagerQgis(self.iface)
+        layers = m_qgis.get_loaded_layers()
         for layer in layers:
             data_source = layer.dataProvider().uri()
             test = (
@@ -401,16 +403,6 @@ class LoadData(QtCore.QObject):
                 frames_wkt[workspace_name]
             )
         return workspace_name, workspace_wkt
-
-    def sort_layers_selected(self, layers_list):
-        def custom_sort(a):
-            if a.split('_')[-1] == 'p':
-                return 0
-            elif a.split('_')[-1] == 'l':
-                return 1
-            else:
-                return 2
-        return sorted(layers_list, key=custom_sort)
 
     def create_rules(self, settings_data):
         rules = settings_data['rules_name']
@@ -499,8 +491,41 @@ class LoadData(QtCore.QObject):
                     u"vectorLayer" : v_lyr
                 })
                 self.rules.add_table_rules(v_lyr)
+        self.add_layer_default_values(v_lyr)
         return v_lyr
-            
+
+    def get_layers_data(self, layers_name):
+        def custom_sort(d):
+            if d['group_geom'] == 'PONTO':
+                return 0
+            elif d['group_geom'] == 'LINHA':
+                return 1
+            else:
+                return 2
+        layers_data = []
+        for name  in layers_name:
+            if name in self.layers_config['names']:
+                name = self.layers_config['names'][name]
+            layers_data.append(self.postgresql.get_layer_data(name))
+        return sorted(layers_data, key=custom_sort)
+
+    def get_layer_config(self, layer_name):
+        layer_config = {}
+        name = layer_name
+        values_config = list(self.layers_config['names'].values())
+        if layer_name in values_config:
+            keys_config = list(self.layers_config['names'].keys())
+            name = keys_config[values_config.index(layer_name)]
+            layer_config = {
+                'name_alias' : name, 
+                'attr_alias' : {},
+                'doc' : {}
+            }
+            if name in self.layers_config['attr']:
+                layer_config['attr_alias'] = self.layers_config['attr'][name]
+            if name in self.layers_config['doc']:
+                layer_config['doc'] = self.layers_config['doc'][name]
+        return layer_config
 
     def load_layers(self, settings_data, is_menu=False):
         ManagerQgis(self.iface).save_project_var(
@@ -510,23 +535,11 @@ class LoadData(QtCore.QObject):
         self.create_rules(settings_data)
         db_group = self.create_db_group(settings_data)
         settings_data['db_group'] = db_group
-        layers_list = self.sort_layers_selected(settings_data[u'layers_name'])
+        layers_data = self.get_layers_data(settings_data[u'layers_name'])
         layers_vector = []
-        for name in layers_list:
-            layer_name = name
-            layer_config = {}
-            if name in self.layers_config['names']:
-                layer_config = {
-                    'name_alias' : name,
-                    'attr_alias' : self.layers_config['attr'][name],
-                    'doc' : {}
-                }
-                layer_name = self.layers_config['names'][name]                
-            if name in self.layers_config['doc']:
-                layer_config['doc'] = self.layers_config['doc'][name]
-            layer_data = self.postgresql.get_layer_data(layer_name)
-            v_lyr = self.load_layer(settings_data, layer_data, layer_config, is_menu)
-            self.add_layer_default_values(v_lyr)
+        for lyr_data in layers_data:
+            layer_config = self.get_layer_config(lyr_data['layer_name'])
+            v_lyr = self.load_layer(settings_data, lyr_data, layer_config, is_menu)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
         if not(is_menu):

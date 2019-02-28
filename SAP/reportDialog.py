@@ -15,8 +15,12 @@ class ReportDialog(QtWidgets.QDialog):
     def __init__(self, report_config, parent):
         super(ReportDialog, self).__init__()
         uic.loadUi(self.dialog_path, self)
+        self.parent = parent
         self.report_config = report_config
         self.type_bug_id = {}
+        self.buttonBox.accepted.connect(
+            self.report
+        )
         self.load()
 
     def load(self):
@@ -36,8 +40,7 @@ class ReportDialog(QtWidgets.QDialog):
         }
         result = self.show_message('report')
         if result == 16384:
-            return report_input
-        return False
+            self.parent.report_bug.emit(report_input)
 
     def show_message(self, tag):
         dialog = self
