@@ -36,7 +36,7 @@ class WorksItem(QtWidgets.QWidget):
 
     def load_activity(self):
         self.description_lb.setText(u"<h2>{0}</h2>".format(self.description))
-        self.observation_lb.setText(u"<h2>{0}</h2>".format(self.observation))
+        self.observation_lb.setText(u"<br><br><h2>{0}</h2><br><br>".format(self.observation))
         for value in self.values_cbx:
             cbx = self.get_checkbox(value, self.cbx_gpb)
             cbx.clicked.connect(self.validate_checkbox)
