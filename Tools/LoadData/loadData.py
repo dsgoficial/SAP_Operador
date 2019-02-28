@@ -26,9 +26,10 @@ class LoadData(QtCore.QObject):
         self.postgresql.set_connections_data()
         self.rules = None
         self.frame = None
-        self.layers_aliases = {
+        self.layers_config = {
             'names' : {},
-            'attr' : {}
+            'attr' : {},
+            'doc' : {}
         }
     
     def load_data(self, settings_data):
@@ -65,10 +66,12 @@ class LoadData(QtCore.QObject):
                 lyr_name = d['nome'] 
                 if 'alias' in d:
                     name = d['alias']
-                    self.layers_aliases['names'][name] = lyr_name
-                    self.layers_aliases['attr'][name] = d['atributos']
+                    self.layers_config['names'][name] = lyr_name
+                    self.layers_config['attr'][name] = d['atributos']
                 else:
                     name = lyr_name
+                if 'documentacao' in d:
+                    self.layers_config['doc'][name] = d['documentacao']
                 layers_list.append(name) if lyr_name in layers_names else ''
         else:
             layers_list = layers_names 
@@ -185,18 +188,17 @@ class LoadData(QtCore.QObject):
                     doc.setContent(style_xml)
                     v_lyr.importNamedStyle(doc)
 
-    def add_custom_action_layer(self):
-        if self.sap_mode:
+    def add_custom_action_layer(self, v_lyr, layer_config):
+        if self.sap_mode and layer_config['doc']:
             custom_action = core.QgsAction(
-                QgsAction.OpenUrl, 
+                core.QgsAction.OpenUrl, 
                 "Doc MGCP", 
-                "[%'{}{}'%]".format(
-                    server,
-                    config_layer['link']
+                "[%'{}'%]".format(
+                    layer_config['doc']
                 )
             )
             custom_action.setActionScopes({'Feature', 'Canvas'})
-            v_layer.actions().addAction(custom_action)
+            v_lyr.actions().addAction(custom_action)
                     
     def get_layer_fields_map(self, v_lyr):
         conf = v_lyr.fields()
@@ -449,17 +451,17 @@ class LoadData(QtCore.QObject):
             if not(vl.name() in [l.name() for l in frame_group.findLayers()]):
                 frame_group.addLayer(vl)
 
-    def add_layer_aliases(self, v_lyr, layer_aliases):
-        if layer_aliases:
+    def add_layer_aliases(self, v_lyr, layer_config):
+        if layer_config:
             self.add_layer_variable(v_lyr, {'layer_name' : v_lyr.name()})
-            v_lyr.setName(layer_aliases['name_alias'])
-            for field_conf in layer_aliases['attr_alias']:
+            v_lyr.setName(layer_config['name_alias'])
+            for field_conf in layer_config['attr_alias']:
                 field_idx = v_lyr.fields().indexOf(field_conf["nome"])
                 if field_idx > 0:
                     v_lyr.setFieldAlias(field_idx, field_conf["alias"])
         
 
-    def load_layer(self, settings_data, layer_data, layer_aliases, is_menu):
+    def load_layer(self, settings_data, layer_data, layer_config, is_menu):
         workspace_name, workspace_wkt = self.get_workspace_data(settings_data)
         filter_text = '' 
         if workspace_wkt != '':
@@ -477,7 +479,8 @@ class LoadData(QtCore.QObject):
             self.add_layer_style(v_lyr, settings_data)
             self.add_layer_values_map(v_lyr, layer_data)
             self.add_layer_fields_custom(v_lyr)
-            self.add_layer_aliases(v_lyr, layer_aliases)
+            self.add_layer_aliases(v_lyr, layer_config)
+            self.add_custom_action_layer(v_lyr, layer_config)
             form_dump = self.add_layer_custom_form(
                 v_lyr, 
                 layer_data, 
@@ -509,16 +512,20 @@ class LoadData(QtCore.QObject):
         settings_data['db_group'] = db_group
         layers_list = self.sort_layers_selected(settings_data[u'layers_name'])
         layers_vector = []
-        for layer_name in layers_list:
-            layer_aliases = {}
-            if layer_name in self.layers_aliases['names']:
-                layer_aliases = {
-                    'name_alias' : layer_name,
-                    'attr_alias' : self.layers_aliases['attr'][layer_name]
+        for name in layers_list:
+            layer_name = name
+            layer_config = {}
+            if name in self.layers_config['names']:
+                layer_config = {
+                    'name_alias' : name,
+                    'attr_alias' : self.layers_config['attr'][name],
+                    'doc' : {}
                 }
-                layer_name = self.layers_aliases['names'][layer_name]
+                layer_name = self.layers_config['names'][name]                
+            if name in self.layers_config['doc']:
+                layer_config['doc'] = self.layers_config['doc'][name]
             layer_data = self.postgresql.get_layer_data(layer_name)
-            v_lyr = self.load_layer(settings_data, layer_data, layer_aliases, is_menu)
+            v_lyr = self.load_layer(settings_data, layer_data, layer_config, is_menu)
             self.add_layer_default_values(v_lyr)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
