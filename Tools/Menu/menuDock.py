@@ -105,12 +105,14 @@ class MenuDock(QtWidgets.QDockWidget):
             try:
                 db_data = self.parent.get_db_data(db_selected)
                 self.load(db_data)
+                self.config_btn.setEnabled(True)
             finally:
                 cursorWait.stop()
         else:
             self.workspace_options.clear()
             self.menu_options.clear()
             self.clean_menu()
+            self.config_btn.setEnabled(False)
 
     def load(self, data):
         if not(self.sap_mode):
