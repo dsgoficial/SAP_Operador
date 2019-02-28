@@ -6,6 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
 from utils import network, msgBox
+from utils.managerQgis import ManagerQgis
 
 class RoutinesLocal(QtCore.QObject):
 
@@ -103,7 +104,8 @@ class RoutinesLocal(QtCore.QObject):
 
     def get_layer_by_name(self, layer_name):
         db_name = self.postgresql.load_data()['db_name']
-        result = core.QgsProject.instance().mapLayers().values()
+        m_qgis = ManagerQgis(self.iface)
+        result = m_qgis.get_loaded_layers()
         for layer in result:
             uri_class = core.QgsDataSourceUri(layer.styleURI())
             test = (

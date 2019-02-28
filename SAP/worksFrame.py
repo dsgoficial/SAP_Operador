@@ -6,6 +6,7 @@ from .worksCloseDialog import WorksCloseDialog
 from .reportDialog import ReportDialog
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox, cursorWait
+from utils.managerQgis import ManagerQgis
 
 class WorksFrame(QtWidgets.QFrame):
 
@@ -17,10 +18,11 @@ class WorksFrame(QtWidgets.QFrame):
     close_works = QtCore.pyqtSignal()
     report_bug = QtCore.pyqtSignal(dict)
 
-    def __init__(self, parent):
+    def __init__(self, iface, parent):
         super(WorksFrame, self).__init__()
         uic.loadUi(self.dialog_path, self)
         self.spacer_item = None
+        self.iface = iface
         self.parent = parent
         self.sap_data = {}
         self.load()
@@ -47,11 +49,16 @@ class WorksFrame(QtWidgets.QFrame):
     @QtCore.pyqtSlot(bool)
     def on_close_works_btn_clicked(self, b):
         user_name = self.sap_data['user']
-        worksCloseDialog  = WorksCloseDialog(user_name)
-        worksCloseDialog.finish.connect(
-            self.close_works.emit
-        )
-        worksCloseDialog.exec_()
+        m_qgis = ManagerQgis(self.iface)
+        if m_qgis.count_modified_layer() > 0:
+            html = u'<p style="color:red">Salve todas suas alterações antes de finalizar!</p>'
+            msgBox.show(text=html, title=u"Aviso", parent=self)
+        else:
+            worksCloseDialog  = WorksCloseDialog(self.iface, user_name)
+            worksCloseDialog.finish.connect(
+                self.close_works.emit
+            )
+            worksCloseDialog.exec_()
 
     @QtCore.pyqtSlot(bool)
     def on_report_btn_clicked(self, b):
@@ -62,6 +69,3 @@ class WorksFrame(QtWidgets.QFrame):
         finally:
             cursorWait.stop()
         diag.exec_()
-        result = diag.report()
-        if result:
-            self.report_bug.emit(result)

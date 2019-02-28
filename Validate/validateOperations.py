@@ -4,6 +4,9 @@ from qgis import core, gui
 from .Operations.addFeatures import AddFeatures
 from .Operations.changedGeometry import ChangedGeometry
 from .Operations.openProject import OpenProject
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+from utils.managerQgis import ManagerQgis
+
 
 class ValidateOperations(QtCore.QObject):
     def __init__(self, iface):
@@ -36,8 +39,9 @@ class ValidateOperations(QtCore.QObject):
 
     def update_track_list(self):
         self.disconnect_layers()
+        m_qgis = ManagerQgis(self.iface)
         self.track_list = [
-            l for l in core.QgsProject.instance().mapLayers().values()
+            l for l in m_qgis.get_loaded_layers()
             if (
                 l.type() == core.QgsMapLayer.VectorLayer
                 and
