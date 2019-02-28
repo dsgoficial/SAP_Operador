@@ -189,15 +189,19 @@ class Classification(QtCore.QObject):
 
     def set_acquisition_tool(self, tool_name):
         if  tool_name == u'Mão livre':
-            self.active_tool(u'DSGTools: Ferramenta de Aquisição à Mão Livre')
+            self.active_tool([
+                u'DSGTools: Ferramenta de Aquisição à Mão Livre',
+                u'DSGTools: Free Hand Acquisition'
+            ])
         elif tool_name == u'Angulor reto':  
-            self.active_tool(u'DSGTools: Ferramenta de Aquisição com Ângulos Retos')  
-        elif tool_name ==  u'Circulo':
-            self.active_tool(u'DSGTools: Ferramenta de Aquisição de Círculos')
+            self.active_tool([
+                u'DSGTools: Ferramenta de Aquisição com Ângulos Retos',
+                u'DSGTools: Right Degree Angle Digitizing'
+            ])  
     
     def active_tool(self, toolName):
         for a in self.iface.mainWindow().findChildren(QtWidgets.QToolBar):
             if a.objectName() == u'DsgTools':
                 for action in a.actions():
-                    if toolName == action.text():
+                    if action.text() in toolName:
                         action.trigger() 
