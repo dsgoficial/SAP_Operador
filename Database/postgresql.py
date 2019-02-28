@@ -152,8 +152,8 @@ class Postgresql(QtCore.QObject):
                 schema_name,
                 table_name,
                 menu_name, 
-                menu_profile, 
-                menu_order
+                json.dumps(menu_profile),
+                json.dumps(menu_order)
             )
             self.run_sql(sql, returning=False)
         self.pg_cursor.close()
@@ -309,13 +309,12 @@ class Postgresql(QtCore.QObject):
 
     def run_sql(self, sql, returning=True):
         result = True
-        try:
-            self.pg_cursor.execute(sql)
-            if returning:
-                result = self.pg_cursor.fetchall()
-        except:
-            return False
+        self.pg_cursor.execute(sql)
+        if returning:
+            result = self.pg_cursor.fetchall()
+            return result
         return result
+        
 
     def validate_table(self, table_name):
         result = {}

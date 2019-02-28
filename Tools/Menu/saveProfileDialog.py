@@ -9,10 +9,15 @@ class SaveProfileDialog(QtWidgets.QDialog):
         'saveProfileDialog.ui'
     )
 
-    def __init__(self, profile_name):
+    def __init__(self, profile_name, parent):
         super(SaveProfileDialog, self).__init__()
         uic.loadUi(self.dialog_path, self)
         self.profile_name_le.setText(profile_name)
+        self.parent = parent
+        self.buttonBox.accepted.connect(
+            self.save
+        )
 
-    def get_profile_name(self):
-        return self.profile_name_le.text()
+    def save(self):
+        name = self.profile_name_le.text()
+        self.parent.parent.save_profile(name)

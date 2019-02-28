@@ -201,11 +201,3 @@ class Classification(QtCore.QObject):
                 for action in a.actions():
                     if toolName == action.text():
                         action.trigger() 
-
-    
-
-    
-                    
-    
-                
-                
