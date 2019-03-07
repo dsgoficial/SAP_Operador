@@ -178,7 +178,8 @@ class LoadData(QtCore.QObject):
         v_lyr.loadDefaultStyle()
         style_selected = settings_data[u"style_name"]
         if style_selected:
-            layer_name = v_lyr.name()
+            data_source = v_lyr.dataProvider().uri()
+            layer_name = data_source.table()
             styles_data = self.postgresql.get_styles_data()
             for style_name in styles_data:
                 if (style_selected in style_name) and (layer_name in style_name):
