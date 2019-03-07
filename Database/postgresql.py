@@ -444,7 +444,8 @@ class Postgresql(QtCore.QObject):
             values = self.get_domain_values(domains[field], constraint[field])
         else:
             values = self.get_domain_values(domains[field])
-        values.update({u"IGNORAR" : 10000})
+        if values:
+            values.update({u"IGNORAR" : 10000})
         return values
 
     def get_workspaces_wkt(self, table_name):

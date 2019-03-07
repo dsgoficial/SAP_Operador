@@ -189,7 +189,7 @@ class LoadData(QtCore.QObject):
                     v_lyr.importNamedStyle(doc)
 
     def add_custom_action_layer(self, v_lyr, layer_config):
-        if self.sap_mode and layer_config['doc']:
+        if self.sap_mode and 'doc' in layer_config and layer_config['doc']:
             custom_action = core.QgsAction(
                 core.QgsAction.OpenUrl, 
                 "Doc MGCP", 
