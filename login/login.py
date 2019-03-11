@@ -26,7 +26,7 @@ class Login(QtGui.QDialog, GUI):
         self.iface = iface
         self.projectQgis = ProjectQgis(self.iface)
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.18.18</b>")
+        self.version_lb.setText(u"<b>versão : 2.18.19</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
@@ -158,6 +158,7 @@ class Login(QtGui.QDialog, GUI):
         if data["sucess"]:
             data['token'] = token
             return data
+        return {}
 
     def finishActivity(self, server, unitId, faseId, token):
         postData = {
