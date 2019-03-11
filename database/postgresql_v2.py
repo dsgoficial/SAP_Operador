@@ -359,16 +359,19 @@ class Postgresql_v2(object):
         return dataBase
 
     def loadStyles(self):
-        if self.getTableFromDb('layer_styles'):
-            postgresCursor = self.connectionPsycopg2.cursor()
-            postgresCursor.execute('''  SELECT
-                                        stylename, id
-                                        FROM
-                                        layer_styles;
-                                        ''')
-            query = postgresCursor.fetchall()
-            items = {item : value for item, value in query}
-            return items
+        try:
+            if self.getTableFromDb('layer_styles'):
+                postgresCursor = self.connectionPsycopg2.cursor()
+                postgresCursor.execute('''  SELECT
+                                            stylename, id
+                                            FROM
+                                            layer_styles;
+                                            ''')
+                query = postgresCursor.fetchall()
+                items = {item : value for item, value in query}
+                return items
+        except:
+            pass
         return {}
 
     def loadWorkspaces(self):
