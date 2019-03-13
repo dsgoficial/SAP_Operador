@@ -481,13 +481,18 @@ class Postgresql_v2(object):
         layer_schema = data_layer['schema']
         postgresCursor = self.connectionPsycopg2.cursor()
         postgresCursor.execute('''
-            SELECT pg_get_constraintdef(c.oid) AS cdef
+            SELECT distinct pg_get_constraintdef(c.oid) AS cdef
             FROM pg_constraint c
             JOIN pg_namespace n
             ON n.oid = c.connamespace
             WHERE contype IN ('f')
             AND n.nspname = '{0}'
-            AND conrelid::regclass::text IN ('{0}.{1}');'''.format(layer_schema, layer_name))
+            AND (
+                conrelid::regclass::text IN ('{0}.{1}')
+                or
+                conrelid::regclass::text IN ('{1}')
+            );
+            '''.format(layer_schema, layer_name))
         query = postgresCursor.fetchall()
         domains = { 
             item[0].split('(')[1].split(')')[0].replace(' ','') : \

@@ -26,7 +26,7 @@ class Login(QtGui.QDialog, GUI):
         self.iface = iface
         self.projectQgis = ProjectQgis(self.iface)
         self.loadFields()
-        self.version_lb.setText(u"<b>versão : 2.18.20</b>")
+        self.version_lb.setText(u"<b>versão : 2.18.21</b>")
         self.connectionTypeSlider.valueChanged.connect(
             self.connectionType
         )
