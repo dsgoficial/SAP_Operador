@@ -504,7 +504,7 @@ class Postgresql_v2(object):
                                 FROM information_schema.columns
                                 WHERE table_schema = '{}'
                                 AND table_name   = '{}'
-                                AND column_name !~ 'geom' AND column_name !~ 'id'
+                                AND NOT column_name='geom' AND NOT column_name='id';
                                """.format(layer_schema, layer_name))
         query = postgresCursor.fetchall()
         listOfFields = [item[0] for item in query]
