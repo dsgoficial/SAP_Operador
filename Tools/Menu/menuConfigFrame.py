@@ -303,7 +303,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 ]
             },
             { 
-                'field_name' : u"Definir palavras chaves(separar com ';'):",
+                'field_name' : u"Definir palavras chaves:",
                 'field_values' : ''
             }
         ]
