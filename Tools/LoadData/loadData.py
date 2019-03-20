@@ -223,7 +223,7 @@ class LoadData(QtCore.QObject):
             )
             if is_value_map:
                 values = copy.deepcopy(layer_data['layer_fields'][name][u"valueMap"])
-                if u"IGNORAR" in values:
+                if values and u"IGNORAR" in values:
                     del values[u"IGNORAR"]
                 setup = core.QgsEditorWidgetSetup( 'ValueMap', {
                          'map': values
