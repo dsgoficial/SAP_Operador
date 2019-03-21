@@ -373,7 +373,12 @@ class Postgresql(QtCore.QObject):
                 ON n.oid = c.connamespace
                 WHERE contype IN ('f')
                 AND n.nspname = '{0}'
-                AND conrelid::regclass::text IN ('{0}.{1}');""".format(
+                AND (
+                    conrelid::regclass::text IN ('{0}.{1}')
+                    or
+                    conrelid::regclass::text IN ('{1}')
+                );
+            """.format(
                 data['schema_name'],
                 data['table_name']
             )
