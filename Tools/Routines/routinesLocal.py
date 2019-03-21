@@ -6,6 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
 from utils import network, msgBox
+from utils.managerQgis import ManagerQgis
 
 class RoutinesLocal(QtCore.QObject):
 
@@ -20,18 +21,18 @@ class RoutinesLocal(QtCore.QObject):
     def init_postgresql(self):
         self.postgresql = Postgresql()
         sap_data = ManagerSAP(self.iface).load_data()
-        db_data = sap_data['dados']['atividade']['banco_dados']
-        db_name = db_data['nome']
+        db_connection = sap_data['dados']['atividade']['banco_dados']
+        db_name = db_connection['nome']
         self.postgresql.set_connections_data({
             'db_name' : db_name,
-            'db_host' : db_data['servidor'],
-            'db_port' : db_data['porta'],
+            'db_host' : db_connection['servidor'],
+            'db_port' : db_connection['porta'],
             'db_user' : sap_data['user'],
             'db_password' : sap_data['password'] 
         })
     
     def get_routines_data(self):
-        local_routines_formated = {}
+        local_routines_formated = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             local_routines = sap_data['rotinas']
@@ -103,7 +104,8 @@ class RoutinesLocal(QtCore.QObject):
 
     def get_layer_by_name(self, layer_name):
         db_name = self.postgresql.load_data()['db_name']
-        result = core.QgsProject.instance().mapLayers().values()
+        m_qgis = ManagerQgis(self.iface)
+        result = m_qgis.get_loaded_layers()
         for layer in result:
             uri_class = core.QgsDataSourceUri(layer.styleURI())
             test = (

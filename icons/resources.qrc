@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/plugins/Ferramentas_Producao/icons" >
-     <file>1cgeo.png</file>
-     <file>menu_config.png</file>
-  </qresource>
-</RCC>

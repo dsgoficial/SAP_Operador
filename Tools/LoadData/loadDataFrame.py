@@ -222,13 +222,12 @@ class LoadDataFrame(QtWidgets.QFrame):
                 item.setHidden(False)
     
     def show_erro(self, erro):
-        html=u"<p>Erro em carregar os seguintes arquivos:</p>"
+        html=u"<p>Carregue os seguintes arquivos manualmente:</p>"
         p = u"<p>{0}</p>"
         for e in erro:
             html += p.format(e)
         msgBox.show(
             text=html, 
-            title=u"Error", 
-            status='critical', 
+            title=u"AVISO", 
             parent=self
         )

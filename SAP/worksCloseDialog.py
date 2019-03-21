@@ -2,7 +2,6 @@
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 import os, sys
 
-
 class WorksCloseDialog(QtWidgets.QDialog):
 
     dialog_path = os.path.join(
@@ -12,9 +11,10 @@ class WorksCloseDialog(QtWidgets.QDialog):
 
     finish = QtCore.pyqtSignal()
 
-    def __init__(self, user_name):
+    def __init__(self, iface, user_name):
         super(WorksCloseDialog, self).__init__()
         uic.loadUi(self.dialog_path, self)
+        self.iface = iface
         self.user_name = user_name
         self.cancel_btn.clicked.connect(self.close)
         self.ok_btn.setEnabled(False)
