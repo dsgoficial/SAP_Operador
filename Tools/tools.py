@@ -22,8 +22,11 @@ class Tools(QtCore.QObject):
     def __del__(self):
         LoadData(self.iface).clean_forms_custom()
 
+    def close_dialog(self):
+        if self.interface:
+            self.interface.close()
+            
     def show_dialog(self):
-        self.interface.close() if self.interface else ''  
         self.interface = ToolsDialog(self.iface)
         self.interface.selected_option.connect(
             self.load_frame
@@ -35,7 +38,7 @@ class Tools(QtCore.QObject):
         cursorWait.start()
         try:
             choose = option_data['name'] 
-            if choose == u"Carregar":
+            if choose == u"Dados":
                 self.tool_selected = LoadData(self.iface)
                 self.tool_selected.sap_mode = self.sap_mode
                 self.tool_selected.show_menu.connect(

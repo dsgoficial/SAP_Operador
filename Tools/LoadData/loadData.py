@@ -26,13 +26,16 @@ class LoadData(QtCore.QObject):
         self.postgresql.set_connections_data()
         self.rules = None
         self.frame = None
+        self.layers_config = {
+            'names' : {},
+            'attr' : {},
+            'doc' : {}
+        }
     
     def load_data(self, settings_data):
-        db_data = self.postgresql.load_data()
-        self.load_layers(settings_data, db_data) if settings_data['layers_name'] else ''
+        self.load_layers(settings_data) if settings_data['layers_name'] else ''
         self.load_input_files(settings_data) if settings_data['input_files'] else ''
-        self.postgresql.dump_data(db_data)
-        self.frame.show()
+        #show tool
     
     def get_frame(self):
         self.frame = LoadDataFrame(self.iface)
@@ -43,7 +46,7 @@ class LoadData(QtCore.QObject):
             self.update_frame()
             self.frame.config_sap_mode()
         else:
-            dbs_name = sorted(self.postgresql.get_dbs_name())
+            dbs_name = sorted(self.postgresql.get_dbs_names())
             dbs_name = [u"<Opções>"] + dbs_name
             self.frame.load_dbs_name(dbs_name)
             self.frame.database_load.connect(
@@ -54,80 +57,76 @@ class LoadData(QtCore.QObject):
         )
         return self.frame
 
-    def get_layers_list(self, db_json):
-        layers_list = [ ]
-        for g in db_json['db_layers']:
-            for d in db_json['db_layers'][g]:
-                layers_list.append(d['layer_name'])
+    def get_layers_list(self):
+        layers_names = self.postgresql.get_layers_names()
+        layers_list = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
-            layers_sap = [ d['nome'] for d in sap_data['dados']['atividade']['camadas']]
-            layers_list = [ n for n in layers_sap if n in layers_list] 
+            for d in sap_data['dados']['atividade']['camadas']:
+                lyr_name = d['nome'] 
+                if 'alias' in d:
+                    name = d['alias']
+                    self.layers_config['names'][name] = lyr_name
+                    self.layers_config['attr'][name] = d['atributos']
+                else:
+                    name = lyr_name
+                if 'documentacao' in d:
+                    self.layers_config['doc'][name] = d['documentacao']
+                layers_list.append(name) if lyr_name in layers_names else ''
+        else:
+            layers_list = layers_names 
         return sorted(layers_list)
     
-    def get_rules_list(self, db_json):
-        rules_list = []
-        for i in db_json['db_rules']:
-            rules_list.append(
-                db_json['db_rules'][i]['tipo_estilo'] 
-            )
-        rules_list = list(set(rules_list))
+    def get_rules_list(self):
+        rules_names = self.postgresql.get_rules_names()
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
             rules_sap = sap_data['dados']['atividade']['regras']
-            rules_list = [ n for n in rules_sap if n in rules_list ] 
-        return sorted(rules_list)
+            rules_names = [ n for n in rules_sap if n in rules_names ] 
+        return sorted(rules_names)
     
-    def get_styles_list(self, db_json):
-        styles_list = []
-        for d in db_json['db_styles'].keys():
-            styles_list.append(
-                d.split('_')[0]
-            )
-        styles_list = list(set(styles_list))
+    def get_styles_list(self):
+        styles_names = self.postgresql.get_styles_names()
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
             styles_sap = sap_data['dados']['atividade']['estilos']
-            styles_list = [ n for n in styles_sap if n in styles_list ] 
-        return sorted(styles_list)
+            styles_names = [ n for n in styles_sap if n in styles_names ] 
+        return sorted(styles_names)
 
-    def get_input_files_list(self, db_json):
+    def get_input_files_list(self):
         input_files_list = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             input_files_list = [ d['nome'] for d in sap_data['insumos'] ]
         return sorted(input_files_list)
     
-    def get_workspaces_list(self, db_json):
+    def get_workspaces_list(self):
         if self.sap_mode:
-            workspaces_list = []
+            workspaces_names = []
         else:
-            workspaces_list = [u"Todas"] + sorted(db_json['db_workspaces_name'])
-        return workspaces_list
+            workspaces_names = [u"Todas"] + self.postgresql.get_frames_names()
+        return workspaces_names
 
     def update_frame(self, db_name=''):
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
-            db_data = sap_data['dados']['atividade']['banco_dados']
-            db_name = db_data['nome']
+            db_connection = sap_data['dados']['atividade']['banco_dados']
+            db_name = db_connection['nome']
             self.postgresql.set_connections_data({
                 'db_name' : db_name,
-                'db_host' : db_data['servidor'],
-                'db_port' : db_data['porta'],
+                'db_host' : db_connection['servidor'],
+                'db_port' : db_connection['porta'],
                 'db_user' : sap_data['user'],
                 'db_password' : sap_data['password'] 
             })
-        db_json = self.postgresql.load_db_json(db_name)
+        self.postgresql.load_db_json(db_name)
         self.frame.load({
-            'rules' : self.get_rules_list(db_json),
-            'layers' : self.get_layers_list(db_json),
-            'styles' : self.get_styles_list(db_json),
-            'input_files' : self.get_input_files_list(db_json),
-            'workspaces' : self.get_workspaces_list(db_json)
+            'rules' : self.get_rules_list(),
+            'layers' : self.get_layers_list(),
+            'styles' : self.get_styles_list(),
+            'input_files' : self.get_input_files_list(),
+            'workspaces' : self.get_workspaces_list()
         })
-
-    def get_map_layers(self, layers_data):
-        return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
 
     def add_group_layer(self, group_name, group=None):
         if group:
@@ -175,12 +174,13 @@ class LoadData(QtCore.QObject):
                 data_dump[name]
             )
 
-    def add_layer_style(self, v_lyr, settings_data, db_data):
+    def add_layer_style(self, v_lyr, settings_data):
         v_lyr.loadDefaultStyle()
         style_selected = settings_data[u"style_name"]
         if style_selected:
-            layer_name = v_lyr.name()
-            styles_data = db_data[u'db_styles']
+            data_source = v_lyr.dataProvider().uri()
+            layer_name = data_source.table()
+            styles_data = self.postgresql.get_styles_data()
             for style_name in styles_data:
                 if (style_selected in style_name) and (layer_name in style_name):
                     style_id = str(styles_data[style_name])
@@ -188,6 +188,18 @@ class LoadData(QtCore.QObject):
                     doc = QDomDocument()
                     doc.setContent(style_xml)
                     v_lyr.importNamedStyle(doc)
+
+    def add_custom_action_layer(self, v_lyr, layer_config):
+        if self.sap_mode and 'doc' in layer_config and layer_config['doc']:
+            custom_action = core.QgsAction(
+                core.QgsAction.OpenUrl, 
+                "Doc MGCP", 
+                "[%'{}'%]".format(
+                    layer_config['doc']
+                )
+            )
+            custom_action.setActionScopes({'Feature', 'Canvas'})
+            v_lyr.actions().addAction(custom_action)
                     
     def get_layer_fields_map(self, v_lyr):
         conf = v_lyr.fields()
@@ -198,14 +210,20 @@ class LoadData(QtCore.QObject):
     def add_layer_values_map(self, v_lyr, layer_data):
         fields_map = self.get_layer_fields_map(v_lyr) 
         for name in fields_map:
+            field_index = fields_map[name]
+            v_lyr.setFieldAlias(field_index, name)
             is_value_map = (
-                (name in layer_data['layer_fields']) and 
-                (u"valueMap" in layer_data['layer_fields'][name])
+                (name in layer_data['layer_fields']) 
+                and 
+                (
+                    u"valuemap" in [
+                        n.lower() for n in list(layer_data['layer_fields'][name].keys())
+                    ]
+                )
             )
             if is_value_map:
-                field_index = fields_map[name]
                 values = copy.deepcopy(layer_data['layer_fields'][name][u"valueMap"])
-                if u"IGNORAR" in values:
+                if values and u"IGNORAR" in values:
                     del values[u"IGNORAR"]
                 setup = core.QgsEditorWidgetSetup( 'ValueMap', {
                          'map': values
@@ -234,18 +252,21 @@ class LoadData(QtCore.QObject):
         return open(form_path, "w")
 
     def reload_forms_custom(self):
-        for v_lyr in core.QgsProject.instance().mapLayers().values():
+        m_qgis = ManagerQgis(self.iface)
+        for v_lyr in m_qgis.get_loaded_layers():
             data = core.QgsExpressionContextUtils.layerScope(v_lyr).variable(u"uiData")
             if v_lyr.type() == core.QgsMapLayer.VectorLayer and data:
-                ui_data = json.loads(data)['uiData']
-                form_file = self.get_form_file(ui_data['form_name'])
-                form_custom = GeneratorCustomForm()
-                form_custom.create(
-                    form_file,
-                    ui_data["layer_data"],
-                    ui_data["fields_sorted"],
-                    v_lyr
-                )
+                json_data = json.loads(data)
+                if 'uiData' in json_data:
+                    ui_data = json.loads(data)['uiData']
+                    form_file = self.get_form_file(ui_data['form_name'])
+                    form_custom = GeneratorCustomForm()
+                    form_custom.create(
+                        form_file,
+                        ui_data["layer_data"],
+                        ui_data["fields_sorted"],
+                        v_lyr
+                    )
 
     def clean_forms_custom(self):
         directory_path = os.path.join(
@@ -336,97 +357,69 @@ class LoadData(QtCore.QObject):
                     if len(g3.children()) == 0 and g3.name() != u"MOLDURA":
                         g2.removeChildNode(g3)
 
-    def add_layer_on_canvas(self, settings_data, db_data, layer_data, filter_text):
+    def search_layer(self, layer_name):
+        db_name = self.postgresql.get_connection_config()['db_name']
+        m_qgis = ManagerQgis(self.iface)
+        layers = m_qgis.get_loaded_layers()
+        for layer in layers:
+            data_source = layer.dataProvider().uri()
+            test = (
+                (db_name == data_source.database()) 
+                and
+                (layer_name == data_source.table())            
+            )
+            if test:
+                return layer
+        return False
+
+    def add_layer_on_canvas(self, settings_data, layer_data, filter_text):
         layer_name = layer_data['layer_name']
-        class_group = self.get_class_group(layer_data, settings_data)
-        layers = class_group.findLayers()
-        result = [ l.layer() for l in layers if l and l.layer().name() == layer_name]
+        result = self.search_layer(layer_name)
         if result:
-            v_lyr = result[0]
+            v_lyr = result
             v_lyr.setSubsetString(filter_text)
         else:
-            conn_data = db_data[u"db_connection"]
-            uri_text = self.get_uri_text(conn_data, layer_data, filter_text)
+            class_group = self.get_class_group(layer_data, settings_data)
+            connection_config = self.postgresql.get_connection_config()
+            uri_text = self.get_uri_text(connection_config, layer_data, filter_text)
             v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
-        if (
+            if (
                 (v_lyr and settings_data['with_geom'] and v_lyr.allFeatureIds())
                 or 
                 (v_lyr and not(settings_data['with_geom']))
-            ):
-            vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
-            class_group.addLayer(vl)
-        return v_lyr
+                ):
+                vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
+                class_group.addLayer(vl)
+        return v_lyr, bool(result)
 
-    def get_workspace_data(self, settings_data, db_data):
+    def get_workspace_data(self, settings_data):
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             workspace_name = sap_data['unidade_trabalho']
             workspace_wkt = sap_data['geom']
         else:
             workspace_name = settings_data['workspace_name'] 
+            frames_wkt = self.postgresql.get_frames_wkt()
             workspace_wkt = '' if workspace_name == u"Todas" else (
-                db_data['db_workspaces_wkt'][workspace_name]
+                frames_wkt[workspace_name]
             )
         return workspace_name, workspace_wkt
 
-    def load_layer(self, settings_data, db_data, layer_data):
-        workspace_name, workspace_wkt = self.get_workspace_data(settings_data, db_data)
-        filter_text = '' 
-        if workspace_wkt != '':
-            filter_text = self.get_spatial_filter(
-                layer_data['layer_name'], 
-                workspace_name, 
-                workspace_wkt
-            )
-        v_lyr = self.add_layer_on_canvas(
-            settings_data, 
-            db_data, 
-            layer_data, 
-            filter_text
-        )    
-        self.add_layer_style(v_lyr, settings_data, db_data)
-        self.add_layer_values_map(v_lyr, layer_data)
-        self.add_layer_fields_custom(v_lyr)
-        form_dump = self.add_layer_custom_form(
-            v_lyr, 
-            layer_data, 
-            db_data['db_name']
-        )
-        self.add_layer_variable(
-            v_lyr,
-            {
-                u"uiData" : form_dump,
-                u"area_trabalho_nome" : workspace_name, 
-                u"area_trabalho_poligono" : workspace_wkt
-            }
-        )
-        if self.rules:
-            self.rules.loadRulesOnlayer({
-                u"vectorLayer" : v_lyr
-            })
-            self.rules.add_table_rules(v_lyr)
-        return v_lyr
-
-    def sort_layers_selected(self, layers_list):
-        def custom_sort(a):
-            if a.split('_')[-1] == 'p':
-                return 0
-            elif a.split('_')[-1] == 'l':
-                return 1
-            else:
-                return 2
-        return sorted(layers_list, key=custom_sort)
-
-    def create_rules(self, settings_data, db_data):
+    def create_rules(self, settings_data):
         rules = settings_data['rules_name']
         if rules:
             self.rules = Rules(self.iface)
             self.rules.rules_selected = rules
-            self.rules.createRules(db_data['db_rules'])
+            self.rules.createRules(
+                self.postgresql.get_rules_data()
+            )
 
-    def create_db_group(self, settings_data, db_data):
-        workspace_name, _ = self.get_workspace_data(settings_data, db_data) 
-        db_group_name = u"{}_{}".format(db_data['db_name'], workspace_name)
+    def create_db_group(self, settings_data):
+        workspace_name, _ = self.get_workspace_data(settings_data) 
+        db_group_name = u"{}_{}".format(
+            self.postgresql.get_current_db_name(), 
+            workspace_name
+        )
         db_group = self.add_group_layer(db_group_name)
         return db_group
     
@@ -448,31 +441,106 @@ class LoadData(QtCore.QObject):
             ) 
             vl.loadNamedStyle(style_path)
             frame_group = self.add_group_layer("MOLDURA", db_group)
-            frame_group.addLayer(vl)
-            
+            if not(vl.name() in [l.name() for l in frame_group.findLayers()]):
+                frame_group.addLayer(vl)
 
-    def load_layers(self, settings_data, db_data, is_menu=False):
+    def add_layer_aliases(self, v_lyr, layer_config):
+        if layer_config:
+            self.add_layer_variable(v_lyr, {'layer_name' : v_lyr.name()})
+            v_lyr.setName(layer_config['name_alias'])
+            for field_conf in layer_config['attr_alias']:
+                field_idx = v_lyr.fields().indexOf(field_conf["nome"])
+                if field_idx > 0:
+                    v_lyr.setFieldAlias(field_idx, field_conf["alias"])
+        
+
+    def load_layer(self, settings_data, layer_data, layer_config, is_menu):
+        workspace_name, workspace_wkt = self.get_workspace_data(settings_data)
+        filter_text = '' 
+        if workspace_wkt != '':
+            filter_text = self.get_spatial_filter(
+                layer_data['layer_name'], 
+                workspace_name, 
+                workspace_wkt
+            )
+        v_lyr, loaded = self.add_layer_on_canvas(
+            settings_data, 
+            layer_data, 
+            filter_text
+        )
+        if (is_menu and not(loaded)) or not(is_menu):    
+            self.add_layer_style(v_lyr, settings_data)
+            self.add_layer_values_map(v_lyr, layer_data)
+            self.add_layer_fields_custom(v_lyr)
+            self.add_layer_aliases(v_lyr, layer_config)
+            self.add_custom_action_layer(v_lyr, layer_config)
+            form_dump = self.add_layer_custom_form(
+                v_lyr, 
+                layer_data, 
+                self.postgresql.get_current_db_name()
+            )
+            self.add_layer_variable(
+                v_lyr,
+                {
+                    u"uiData" : form_dump,
+                    u"area_trabalho_nome" : workspace_name, 
+                    u"area_trabalho_poligono" : workspace_wkt
+                }
+            )
+            if self.rules:
+                self.rules.loadRulesOnlayer({
+                    u"vectorLayer" : v_lyr
+                })
+                self.rules.add_table_rules(v_lyr)
+        self.add_layer_default_values(v_lyr)
+        return v_lyr
+
+    def get_layers_data(self, layers_name):
+        def custom_sort(d):
+            if d['group_geom'] == 'PONTO':
+                return 0
+            elif d['group_geom'] == 'LINHA':
+                return 1
+            else:
+                return 2
+        layers_data = []
+        for name  in layers_name:
+            if name in self.layers_config['names']:
+                name = self.layers_config['names'][name]
+            layers_data.append(self.postgresql.get_layer_data(name))
+        return sorted(layers_data, key=custom_sort)
+
+    def get_layer_config(self, layer_name):
+        layer_config = {}
+        name = layer_name
+        values_config = list(self.layers_config['names'].values())
+        if layer_name in values_config:
+            keys_config = list(self.layers_config['names'].keys())
+            name = keys_config[values_config.index(layer_name)]
+            layer_config = {
+                'name_alias' : name, 
+                'attr_alias' : {},
+                'doc' : {}
+            }
+            if name in self.layers_config['attr']:
+                layer_config['attr_alias'] = self.layers_config['attr'][name]
+            if name in self.layers_config['doc']:
+                layer_config['doc'] = self.layers_config['doc'][name]
+        return layer_config
+
+    def load_layers(self, settings_data, is_menu=False):
         ManagerQgis(self.iface).save_project_var(
             'settings_user', 
             json.dumps(settings_data)
         )
-        self.create_rules(settings_data, db_data)
-        db_group = self.create_db_group(settings_data, db_data)
+        self.create_rules(settings_data)
+        db_group = self.create_db_group(settings_data)
         settings_data['db_group'] = db_group
-        layers_data = db_data['db_layers']
-        layers_data = layers_data[u'PONTO']+layers_data[u'LINHA']+layers_data[u'AREA']
-        layers_map = self.get_map_layers(layers_data)
-        layers_list = self.sort_layers_selected(settings_data[u'layers_name'])
+        layers_data = self.get_layers_data(settings_data[u'layers_name'])
         layers_vector = []
-        for layer_name in layers_list:
-            p = layers_map[layer_name]
-            layer_data = layers_data[p]
-            v_lyr = self.load_layer(
-                settings_data, 
-                db_data,
-                layer_data
-            )
-            self.add_layer_default_values(v_lyr)
+        for lyr_data in layers_data:
+            layer_config = self.get_layer_config(lyr_data['layer_name'])
+            v_lyr = self.load_layer(settings_data, lyr_data, layer_config, is_menu)
             layers_vector.append(v_lyr)
             self.frame.update_progressbar() if self.frame else ''
         if not(is_menu):

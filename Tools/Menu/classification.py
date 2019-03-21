@@ -19,6 +19,7 @@ class Classification(QtCore.QObject):
         self.ignore = False
         self.current_button_layer = None
         self.current_button_data = None
+        #self.attributeForm = None
     
     def connect_qgis_signals(self):
         iface = self.iface
@@ -65,7 +66,7 @@ class Classification(QtCore.QObject):
                 selectedIds = lyr.selectedFeatureIds()
                 layers_selected[lyrName] = [selectedIds, lyr]
         return layers_selected
-        
+     
     def run(self, layer_vector, button_data):
         self.connect_qgis_signals()
         self.current_button_layer = layer_vector
@@ -108,9 +109,12 @@ class Classification(QtCore.QObject):
         setup.setSuppress(QgsEditFormConfig.SuppressOff)
         layer_vector.setEditFormConfig(setup)
 
-    def set_attribute_feature(self, lyr, feat):
+    def set_attribute_feature(self, lyr, feat, clean_id=True):
         button_data = self.current_button_data
         fields = button_data['formValues']
+        if clean_id:
+            indx = lyr.fields().indexFromName(unicode('id'))
+            feat.setAttribute(indx, None) 
         for field in fields:
             indx = lyr.fields().indexFromName(unicode(field))
             if indx >0:
@@ -164,10 +168,11 @@ class Classification(QtCore.QObject):
                 if layer_origin:
                     ids = layers_selected[lyr_name][0]
                     iface.setActiveLayer(layer_origin)
-                    if lyr_name == current_layer.name():
+                    current_layer_name = current_layer.dataProvider().uri().table()
+                    if lyr_name == current_layer_name:
                         feats = current_layer.getFeatures(ids)
                         for feat in feats:
-                            self.set_attribute_feature(current_layer, feat)
+                            self.set_attribute_feature(current_layer, feat, clean_id=False)
                             current_layer.updateFeature(feat)
                     else:
                         layer_origin.removeSelection()
@@ -184,23 +189,19 @@ class Classification(QtCore.QObject):
 
     def set_acquisition_tool(self, tool_name):
         if  tool_name == u'Mão livre':
-            self.active_tool(u'DSGTools: Ferramenta de Aquisição à Mão Livre')
+            self.active_tool([
+                u'DSGTools: Ferramenta de Aquisição à Mão Livre',
+                u'DSGTools: Free Hand Acquisition'
+            ])
         elif tool_name == u'Angulor reto':  
-            self.active_tool(u'DSGTools: Ferramenta de Aquisição com Ângulos Retos')  
-        elif tool_name ==  u'Circulo':
-            self.active_tool(u'DSGTools: Ferramenta de Aquisição de Círculos')
+            self.active_tool([
+                u'DSGTools: Ferramenta de Aquisição com Ângulos Retos',
+                u'DSGTools: Right Degree Angle Digitizing'
+            ])  
     
     def active_tool(self, toolName):
         for a in self.iface.mainWindow().findChildren(QtWidgets.QToolBar):
             if a.objectName() == u'DsgTools':
                 for action in a.actions():
-                    if toolName == action.text():
+                    if action.text() in toolName:
                         action.trigger() 
-
-    
-
-    
-                    
-    
-                
-                

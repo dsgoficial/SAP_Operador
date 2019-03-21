@@ -47,13 +47,13 @@ class RoutinesFme(QtCore.QObject):
     def get_db_connection_data(self):
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
-            db_data = sap_data['dados']['atividade']['banco_dados']
-            db_name = db_data['nome']
-            db_host = db_data['servidor']
-            db_port = db_data['porta']
+            db_connection = sap_data['dados']['atividade']['banco_dados']
+            db_name = db_connection['nome']
+            db_host = db_connection['servidor']
+            db_port = db_connection['porta']
         else:
             postgresql = Postgresql()
-            db_connection = postgresql.load_data()['db_connection']
+            db_connection = postgresql.get_connection_config()
             db_name = db_connection['db_name']
             db_host = db_connection['db_host']
             db_port = db_connection['db_port']
@@ -67,7 +67,7 @@ class RoutinesFme(QtCore.QObject):
     def get_server(self, server=''):
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            if  sap_data['fme']:
+            if  sap_data['fme'] and sap_data['fme']['servidor']:
                 server = sap_data['fme']['servidor']
                 server = u"http://{0}".format(server)
         else:
@@ -85,10 +85,10 @@ class RoutinesFme(QtCore.QObject):
         else:
             workspace_name = settings_user['workspace_name']
             postgresql = Postgresql()
-            db_workspaces_wkt = postgresql.load_data()['db_workspaces_wkt']
+            frames_wkt = postgresql.get_frames_wkt()
             if not(workspace_name == u"Todas"):
-                workspace_wkt = db_data['db_workspaces_wkt'][workspace_name]
-                geometry = "'{0}'".format(workspace_wkt)
+                wkt = frames_wkt[workspace_name]
+                geometry = "'{0}'".format(wkt)
             return False
         return geometry
 

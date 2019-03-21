@@ -79,7 +79,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Carregar</string>
+        <string>Dados</string>
        </property>
        <property name="checkable">
         <bool>true</bool>

@@ -9,6 +9,21 @@ class ManagerQgis(QtCore.QObject):
         super(ManagerQgis, self).__init__()
         self.iface = iface
 
+    def get_loaded_layers(self):
+        return core.QgsProject.instance().mapLayers().values()
+
+    def count_modified_layer(self):
+        count = 0
+        for lyr in self.get_loaded_layers():
+            check = (
+                lyr.type() == core.QgsMapLayer.VectorLayer
+                and
+                lyr.isModified()
+            )
+            if check:
+                count+=1
+        return count
+
     def save_project_var(self, key, value):
         chiper_text = base64.b64encode(value.encode('utf-8'))
         core.QgsExpressionContextUtils.setProjectVariable(
@@ -99,7 +114,9 @@ class ManagerQgis(QtCore.QObject):
             u'shortcuts/Mostrar camadas selecionadas' : u'U',
             u'shortcuts/Show Selected Layers' : u'U',
             u'shortcuts/Esconder camadas selecionadas' : u'Y',
-            u'shortcuts/Hide Selected Layers' : u'Y'
+            u'shortcuts/Hide Selected Layers' : u'Y',
+            u'shortcuts/Toggle Snapping' : u'',
+            u'shortcuts/DSGTools: Ferramenta de Aquisição à Mão Livre' : u'L'
         }
         return variables
 

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, sys, psycopg2, base64, pickle, json, copy
 from PyQt5 import QtCore
-
+sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
+from utils import managerFile
 
 class Postgresql(QtCore.QObject):
 
@@ -11,15 +12,10 @@ class Postgresql(QtCore.QObject):
         self.path_data = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data.pickle')
 
     def dump_data(self, data):
-        with open(self.path_data, u"wb") as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        managerFile.dump_data(self.path_data, data)
 
     def load_data(self):
-        try:
-            with open(self.path_data, u"rb") as f:
-                return pickle.load(f)
-        except FileNotFoundError:
-            return False
+        return managerFile.load_data(self.path_data)
 
     def get_local_alias_db(self):
         conf = QtCore.QSettings().allKeys()
@@ -50,7 +46,7 @@ class Postgresql(QtCore.QObject):
                         'db_password' : settings.value(path_conf.format(alias, u"password"))
                     }
 
-    def get_dbs_name(self):
+    def get_dbs_names(self):
         return list(self.conns.keys())
 
     def get_workspaces_name(self, table_name):
@@ -113,8 +109,10 @@ class Postgresql(QtCore.QObject):
         return result
     
     def save_menu_profile(self, menu_data):
-        table_name = menu_data['menu_table_name']
-        schema_name = menu_data['menu_schema_name']
+        table_name = 'menu_profile'
+        schema_name = 'public'
+        conn = self.get_connection()
+        self.pg_cursor = conn.cursor()
         data = self.validate_table(table_name)
         if not data:
             sql = u"""CREATE TABLE {0}.{1} (
@@ -126,7 +124,7 @@ class Postgresql(QtCore.QObject):
                 ); GRANT ALL ON public.menu_profile TO public;""".format(
                 schema_name, table_name
             )
-            self.run_sql(sql)
+            self.run_sql(sql, returning=False)
         menu_name = menu_data['menu_name']
         menu_profile = menu_data['menu_profile']
         menu_order = menu_data['menu_order']
@@ -143,9 +141,10 @@ class Postgresql(QtCore.QObject):
                     schema_name,
                     table_name,
                     json.dumps(menu_profile),
-                    json.dumps(menu_order)
+                    json.dumps(menu_order),
+                    menu_name
             )
-            self.run_sql(sql)
+            self.run_sql(sql, returning=False)
         else:
             sql = u"""INSERT INTO {0}.{1} (
                 nome_do_perfil, perfil, ordem_menu
@@ -153,10 +152,18 @@ class Postgresql(QtCore.QObject):
                 schema_name,
                 table_name,
                 menu_name, 
-                menu_profile, 
-                menu_order
+                json.dumps(menu_profile),
+                json.dumps(menu_order)
             )
-            self.run_sql(sql)
+            self.run_sql(sql, returning=False)
+        self.pg_cursor.close()
+        self.update_db_data()
+        if menu_name in self.get_menu_profile_names():
+            return True
+        return False
+
+    def update_db_data(self):
+        self.load_db_json(self.current_db_name)
 
     def get_menu_profile(self, table_name):
         result = {}
@@ -235,7 +242,6 @@ class Postgresql(QtCore.QObject):
                 layer_all_data['group_class'] = group_class
                 db_json['db_layers'][group_geom].append(layer_all_data)
         self.dump_data( db_json )
-        del self.current_db_name
         self.pg_cursor.close()
         return db_json
         
@@ -301,13 +307,14 @@ class Postgresql(QtCore.QObject):
         conn.set_session(autocommit=True)
         return conn
 
-    def run_sql(self, sql):
-        try:
-            self.pg_cursor.execute(sql)
+    def run_sql(self, sql, returning=True):
+        result = True
+        self.pg_cursor.execute(sql)
+        if returning:
             result = self.pg_cursor.fetchall()
-        except:
-            return False
+            return result
         return result
+        
 
     def validate_table(self, table_name):
         result = {}
@@ -354,7 +361,7 @@ class Postgresql(QtCore.QObject):
                 FROM information_schema.columns
                 WHERE table_schema = '{0}'
                 AND table_name = '{1}'
-                AND column_name !~ 'geom' AND column_name !~ 'id';""".format(
+                AND NOT column_name='geom' AND NOT column_name='id';""".format(
                 data['schema_name'],
                 data['table_name']
             )
@@ -442,7 +449,8 @@ class Postgresql(QtCore.QObject):
             values = self.get_domain_values(domains[field], constraint[field])
         else:
             values = self.get_domain_values(domains[field])
-        values.update({u"IGNORAR" : 10000})
+        if values:
+            values.update({u"IGNORAR" : 10000})
         return values
 
     def get_workspaces_wkt(self, table_name):
@@ -457,6 +465,89 @@ class Postgresql(QtCore.QObject):
             if response:
                 result = {item : value for item, value in response}
         return result
+
+    def get_menu_profile_names(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        menu_data = db_data['db_menu']
+        profiles_name = [
+            menu_data[idx]['nome_do_perfil'] 
+            for idx in menu_data
+        ]
+        return profiles_name
+
+    def get_menu_profile_data(self, profile_name, db_data={}):
+        profile_data = {}
+        db_data = db_data if db_data else self.load_data()
+        for idx in db_data['db_menu']:
+            if db_data['db_menu'][idx]['nome_do_perfil'] == profile_name:
+                profile_data = db_data['db_menu'][idx]
+        return profile_data
+
+    def get_current_db_name(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        return db_data['db_name']
+
+    def get_frames_wkt(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        return db_data['db_workspaces_wkt']
+
+    def get_frames_names(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        return sorted(db_data['db_workspaces_name'])
+
+    def get_layers_names(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        layers_names = [ ]
+        for g in db_data['db_layers']:
+            for d in db_data['db_layers'][g]:
+                layers_names.append(d['layer_name'])
+        return layers_names
+
+    def get_connection_config(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        return db_data[u"db_connection"]
+
+    def get_styles_data(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        return db_data[u'db_styles']
+
+    def get_styles_names(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        styles_names = []
+        for d in db_data['db_styles'].keys():
+            styles_names.append(
+                d.split('|')[0] if '|' in d else d.split('_')[0]
+            )
+        styles_names = list(set(styles_names))
+        return styles_names
+
+    def get_rules_names(self, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        rules_names = []
+        for i in db_data['db_rules']:
+            rules_names.append(
+                db_data['db_rules'][i]['tipo_estilo'] 
+            )
+        rules_names = list(set(rules_names))
+        return rules_names
+
+    def get_rules_data(self, db_data={}):
+        db_data = db_data if db_data else self.load_data() 
+        return db_data['db_rules']
+
+    def get_layer_data(self, layer_name, db_data={}):
+        db_data = db_data if db_data else self.load_data()
+        layers_data = db_data['db_layers']
+        layers_data = layers_data[u'PONTO']+layers_data[u'LINHA']+layers_data[u'AREA']
+        layers_map = self.get_map_layers(layers_data)
+        idx = layers_map[layer_name]
+        return layers_data[idx]
+
+    def get_map_layers(self, layers_data):
+        return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
+
+    def get_loaddata_data(self):
+        pass
         
 
 

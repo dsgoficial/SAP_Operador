@@ -13,7 +13,7 @@ class AddFeatures(QtCore.QObject):
 
     def validate(self):
         layer = self.iface.activeLayer()
-        if layer:
+        if layer and layer.type() == core.QgsMapLayer.VectorLayer:
             features_added = layer.editBuffer().addedFeatures() if layer.editBuffer() else ''
             self.check_add_feature(features_added) if features_added else ''
 
