@@ -83,7 +83,7 @@ class Menu(QtCore.QObject):
             self.menu_dock.show_menu()
 
     def get_db_data(self, db_name):
-        self.postgresql.load_db_json(db_name)
+        self.postgresql.load_db_json(db_name, sap_mode=self.sap_mode)
         workspaces_name = sorted(self.postgresql.get_frames_names())
         workspaces_name = [u"Todas"] + workspaces_name
         profiles_name = self.get_profiles_name()
