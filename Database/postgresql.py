@@ -186,8 +186,13 @@ class Postgresql(QtCore.QObject):
         return result
             
     
-    def get_db_json(self):
+    def get_db_json(self, sap_mode=False):
         db_name = self.current_db_name
+        workspaces_name = []
+        workspaces_wkt = {}
+        if not(sap_mode):
+            workspaces_name = self.get_workspaces_name(u"aux_moldura_a")
+            workspaces_wkt = self.get_workspaces_wkt(u"aux_moldura_a")
         json_template = {
             u"db_name" : db_name,
             u"db_layers" : { 
@@ -196,8 +201,8 @@ class Postgresql(QtCore.QObject):
                 u"AREA" : []     
             },
             u"db_connection" : self.conns[db_name],
-            u"db_workspaces_name" : self.get_workspaces_name(u"aux_moldura_a"),
-            u"db_workspaces_wkt" : self.get_workspaces_wkt(u"aux_moldura_a"),
+            u"db_workspaces_name" : workspaces_name,
+            u"db_workspaces_wkt" : workspaces_wkt,
             u"db_menu" : self.get_menu_profile(u"menu_profile"),
             u"db_rules" : self.get_rules(u"layer_rules"),
             u"db_styles" : self.get_styles(u"layer_styles"),
@@ -205,11 +210,11 @@ class Postgresql(QtCore.QObject):
         }
         return json_template
 
-    def load_db_json(self, db_name, layers_name=[]):
+    def load_db_json(self, db_name, layers_name=[], sap_mode=False):
         self.current_db_name = db_name
         conn = self.get_connection()
         self.pg_cursor = conn.cursor()
-        db_json = self.get_db_json()
+        db_json = self.get_db_json(sap_mode)
         layers_data = self.get_all_layers(layers_name)
         table_with_filter = self.get_tables_by_column('filter')
         for data in layers_data:
