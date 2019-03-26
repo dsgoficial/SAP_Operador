@@ -36,7 +36,9 @@ class ToolsDialog(QtWidgets.QDialog):
         )
         
     def handler_options_btn(self):
-        button_name = self.sender().text()
+        if self.sender() is None:
+            return
+        button_name = self.sender().objectName()
         self.selected_option.emit({
             'name' : button_name
         })
