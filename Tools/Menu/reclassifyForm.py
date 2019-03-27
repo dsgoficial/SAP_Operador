@@ -19,10 +19,10 @@ class ReclassifyForm(QtWidgets.QDialog):
         self.vertical_layout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.ok_btn.clicked.connect(self.confirm)
 
-    def show_form(self, button_data, lyrs_selected):
+    def show_form(self, button_data, layer_data, lyrs_selected):
         self.resize(700, 600)
         self.lyrs_selected = lyrs_selected
-        fields = button_data['fields']
+        fields = layer_data['layer_fields']
         form_values_before = button_data['formValues']
         for name in lyrs_selected:
             checkBox = self.addCheckBox(
@@ -38,10 +38,10 @@ class ReclassifyForm(QtWidgets.QDialog):
                              'controle_id', 
                              'ultimo_usuario', 
                              'id']):
-                if fields[field] and (u'ValueMap' in fields[field]):
+                if fields[field] and (u'valueMap' in fields[field]):
                     self.addComboBox({
                         'label' : field,
-                        'items' : fields[field]['ValueMap'].keys(),
+                        'items' : fields[field]['valueMap'].keys(),
                         'valueDefault' : form_values_before[field],
                     })
                 elif not fields[field]:

@@ -127,7 +127,11 @@ class Menu(QtCore.QObject):
         form.reclassify.connect(
             self.classification.reclassify
         )
-        form.show_form(button_data, layers_selected)
+        print(button_data)
+        layer_data = self.get_layer_data(
+            button_data['formValues']['*Selecione camada:']
+        )
+        form.show_form(button_data, layer_data, layers_selected)
 
     def get_layer_data(self, layer_name):
         return self.postgresql.get_layer_data(layer_name)
