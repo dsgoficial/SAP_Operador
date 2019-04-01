@@ -154,7 +154,7 @@ class MenuDock(QtWidgets.QDockWidget):
         self.clean_menu()
         for tab_name in reversed(profile_data['orderMenu']['orderTab']):
             self.add_tab(tab_name)
-            for button_name in reversed(profile_data['orderMenu']['orderButton'][tab_name]):
+            for button_name in profile_data['orderMenu']['orderButton'][tab_name]:
                 if button_name in profile_data['perfil'][tab_name]:
                     button_data = profile_data['perfil'][tab_name][button_name]
                     self.add_button(button_data)
@@ -248,12 +248,12 @@ class MenuDock(QtWidgets.QDockWidget):
         tab_data = self.get_tab_widgets(tab_name)
         tab_scroll = tab_data['scroll']
         tab_layout = tab_data['layout']
-        count = tab_layout.count()
         button = QtWidgets.QPushButton(tab_scroll)
         button.setStyleSheet(
             self.get_button_style(layer_name)
         )
         button.button_data = button_data
+        count = tab_layout.count()
         tab_layout.addWidget(button)
         if count >=0 and count <= 8:
             button.setText("{0}_[{1}]".format(button_name, count+1))
