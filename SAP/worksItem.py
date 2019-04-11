@@ -26,7 +26,7 @@ class WorksItem(QtWidgets.QWidget):
         if 'observacao' in woks_data and woks_data['observacao']:
             self.observation = woks_data['observacao']
         if len(self.values_cbx) > 0:
-            self.close_works_btn.setEnabled(False)
+            self.parent.close_works_btn.setEnabled(False)
         self.load_activity()
 
     def get_checkbox(self, name, parent):
