@@ -23,6 +23,7 @@ class RoutinesLocal(QtCore.QObject):
         sap_data = ManagerSAP(self.iface).load_data()
         db_connection = sap_data['dados']['atividade']['banco_dados']
         db_name = db_connection['nome']
+        self.postgresql.current_db_name = db_name
         self.postgresql.set_connections_data({
             'db_name' : db_name,
             'db_host' : db_connection['servidor'],
@@ -63,7 +64,7 @@ class RoutinesLocal(QtCore.QObject):
                 f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
                 count_flags += self.run_not_simple_geometry(
                     flag_layer, 
-                    layer, 
+                    layer_name, 
                     f_ids
                 )
         elif u"outOfBoundsAngles" in routine_data:
@@ -77,7 +78,7 @@ class RoutinesLocal(QtCore.QObject):
                 f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
                 angle = param[u'angle']
                 count_flags += self.run_out_of_bounds_angles(
-                    layer, 
+                    layer_name, 
                     f_ids, 
                     angle, 
                     flag_layer, 
@@ -93,13 +94,13 @@ class RoutinesLocal(QtCore.QObject):
                 f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
                 count_flags += self.run_invalid_geometry(
                     flag_layer, 
-                    layer, 
+                    layer_name, 
                     f_ids
                 )
         html = u'''<p style="color:red">
             Rotina executada! Foram gerados {0} flags.
         </p>'''.format(count_flags)
-        self.message.show(html)
+        self.message.emit(html)
 
 
     def get_layer_by_name(self, layer_name):
@@ -119,7 +120,7 @@ class RoutinesLocal(QtCore.QObject):
         html = u'''<p style="color:red">
             Camada está vazia ou não foi carregada.
         </p>'''
-        msgBox.show(text=html, title=u"Erro", status='critical')
+        self.message.emit(html)
         return False
 
     def run_invalid_geometry(self, flag_layer, layer, f_ids):
