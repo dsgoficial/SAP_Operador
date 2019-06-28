@@ -80,7 +80,6 @@ class RoutinesFrame(QtWidgets.QFrame):
 
     def load(self, routines_data):
         self.clean()
-        print(routines_data)
         if routines_data['fme'] or routines_data['local']:
             for r in routines_data['fme']:
                 radio_btn = self.create_radio_btn(

@@ -127,7 +127,6 @@ class Menu(QtCore.QObject):
         form.reclassify.connect(
             self.classification.reclassify
         )
-        print(button_data)
         layer_data = self.get_layer_data(
             button_data['formValues']['*Selecione camada:']
         )

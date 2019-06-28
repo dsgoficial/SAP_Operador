@@ -10,6 +10,7 @@ class Postgresql(QtCore.QObject):
         super(Postgresql, self).__init__()
         self.conns = {}
         self.path_data = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data.pickle')
+        self.pg_cursor = None
 
     def dump_data(self, data):
         managerFile.dump_data(self.path_data, data)
@@ -29,7 +30,8 @@ class Postgresql(QtCore.QObject):
         ]))
         return alias_dbs
 
-    def set_connections_data(self, config_conn={}):
+    def set_connections_data(self, config_conn=None):
+        config_conn = {} if config_conn is None else config_conn
         if config_conn:
             self.conns[config_conn['db_name']] = config_conn
         else:
@@ -314,6 +316,9 @@ class Postgresql(QtCore.QObject):
 
     def run_sql(self, sql, returning=True):
         result = True
+        if self.pg_cursor is None:
+            conn = self.get_connection()
+            self.pg_cursor = conn.cursor()
         self.pg_cursor.execute(sql)
         if returning:
             result = self.pg_cursor.fetchall()
