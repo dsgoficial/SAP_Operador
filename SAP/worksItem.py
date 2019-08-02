@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from qgis import core, gui
+from textwrap import wrap
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
@@ -30,13 +31,16 @@ class WorksItem(QtWidgets.QWidget):
         self.load_activity()
 
     def get_checkbox(self, name, parent):
+        name = "\n".join(wrap(name))
         cbx = QtWidgets.QCheckBox(name, parent)
         parent.children()[0].addWidget(cbx)
         return cbx
 
     def load_activity(self):
         self.description_lb.setText(u"<h2>{0}</h2>".format(self.description))
-        self.observation_lb.setText(u"<br><br><h2>{0}</h2><br><br>".format(self.observation))
+        self.description_lb.setWordWrap(True)
+        self.observation_lb.setText(u"<h2>{0}</h2>".format(self.observation))
+        self.observation_lb.setWordWrap(True)
         for value in self.values_cbx:
             cbx = self.get_checkbox(value, self.cbx_gpb)
             cbx.clicked.connect(self.validate_checkbox)

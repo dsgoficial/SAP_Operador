@@ -145,7 +145,7 @@ class LoadDataFrame(QtWidgets.QFrame):
 
     def move_all_items(self, list_origin, list_destination):
         items_origin = [
-            list_origin.item(x) for x in range(list_origin.count())
+            list_origin.item(x) for x in range(list_origin.count()) if not list_origin.item(x).isHidden()
         ]
         items_destination = [
             list_destination.item(x) for x in range(list_destination.count())
@@ -216,7 +216,7 @@ class LoadDataFrame(QtWidgets.QFrame):
             list_items.item(x) for x in range(list_items.count())
         ]
         for item in items:
-            if not(text in item.text()):
+            if not(text.lower() in item.text()):
                 item.setHidden(True)
             else:
                 item.setHidden(False)

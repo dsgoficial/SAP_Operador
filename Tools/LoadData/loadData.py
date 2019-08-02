@@ -35,7 +35,6 @@ class LoadData(QtCore.QObject):
     def load_data(self, settings_data):
         self.load_layers(settings_data) if settings_data['layers_name'] else ''
         self.load_input_files(settings_data) if settings_data['input_files'] else ''
-        #show tool
     
     def get_frame(self):
         self.frame = LoadDataFrame(self.iface)
@@ -341,15 +340,6 @@ class LoadData(QtCore.QObject):
                 core.QgsField(u"area_otf", QtCore.QVariant.Double)
             )
 
-    def collapse_all(self, g1):
-        g1.setExpanded(False)
-        for g2 in g1.children():
-            g2.setExpanded(False)
-            for g3 in g2.children():
-                g3.setExpanded(False)
-                for g4 in g3.children():
-                    g4.setExpanded(False)
-
     def clean_empty_groups(self, g1):
         for g2 in g1.children():
             if g2.name() != u"MOLDURA":
@@ -545,7 +535,6 @@ class LoadData(QtCore.QObject):
             self.frame.update_progressbar() if self.frame else ''
         if not(is_menu):
             self.create_virtual_frame(db_group)
-            self.collapse_all(db_group)
         self.clean_empty_groups(db_group)
         self.rules = {}
         return layers_vector
@@ -553,22 +542,34 @@ class LoadData(QtCore.QObject):
     def load_input_files(self, settings_data):
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
-            paths_data = {
-                d['nome'] : d['caminho']
+            paths_data = [
+                { 
+                    'file_name' : d['nome'],
+                    'path_origin' : d['caminho'],
+                    'epsg' : d['epsg']
+                }
                 for d in sap_data['dados']['atividade']['insumos'] 
                 if d['nome'] in settings_data['input_files']
-            }
+            ]
             files_data = managerFile.download(paths_data)
             erro = []
-            for n in files_data:
-                file_path = files_data[n]
-                r = self.add_raster_layer(n, file_path)
+            for f_data in files_data:
+                path_file = f_data['path_file']
+                file_name = f_data['file_name']
+                epsg = f_data['epsg']
+                r = self.add_raster_layer(file_name, path_file, epsg)
                 if not(r):
-                    erro.append(file_path)
+                    erro.append(path_file)
             self.frame.show_erro(erro) if len(erro) > 0 else ''
 
-    def add_raster_layer(self, raster_name, raster_path):
+    def add_raster_layer(self, raster_name, raster_path, epsg):
+        s = QtCore.QSettings()
+        val_bkp = s.value("Projections/defaultBehavior")
+        s.setValue("Projections/defaultBehavior", "useGlobal")
+        crs = core.QgsCoordinateReferenceSystem(int(epsg))
         layer = core.QgsRasterLayer(raster_path, raster_name)
+        layer.setCrs(crs)
+        s.setValue("Projections/defaultBehavior", val_bkp)
         if layer.isValid():
             core.QgsProject.instance().addMapLayer(layer)
             return True

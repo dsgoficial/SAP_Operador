@@ -18,9 +18,12 @@ def load_data(path_data):
         return False
 
 def get_path_dest(parent):
-    return QtWidgets.QFileDialog.getExistingDirectory(
-        parent, u"Selecione pasta de destino dos insumos:"
+    path = QtWidgets.QFileDialog.getExistingDirectory(
+        parent, 
+        u"Selecione pasta de destino dos insumos:",
+        options=QtWidgets.QFileDialog.ShowDirsOnly
     )
+    return path
 
 def get_auth_smb(parent):
     auth_smb = AuthSmb(parent)
@@ -52,7 +55,7 @@ def download_file(path_origin, path_dest, parent):
             name_file = path_origin.split(u"\\")[-1]
             path_dest = path_dest.replace(u"/", u"\\")
             local_file_path = os.path.join(path_dest, name_file)
-            command = u"copy {0} {1}".format(
+            command = u'copy "{0}" "{1}"'.format(
                 path_origin,
                 path_dest
             )
@@ -65,7 +68,7 @@ def download_file(path_origin, path_dest, parent):
                 path_origin = path_origin.replace(u"\\", u"/")
                 name_file = path_origin.split(u"/")[-1] 
                 local_file_path = os.path.join(path_dest, name_file)
-                command = u"{0} {1} {2} {3} {4} {5} {6}".format(
+                command = u'{0} {1} {2} "{3}" {4} {5} {6}'.format(
                     get_python_version(),
                     get_script_path(),
                     "smb:{0}".format(path_origin),
@@ -87,15 +90,19 @@ def download_file(path_origin, path_dest, parent):
 
 def download(paths_data, parent=utils.iface.mainWindow()):
     erro = []
-    files_data = {}
+    files_data = []
     path_dest = get_path_dest(parent)
-    for n in paths_data:
-        p = paths_data[n]
-        r = download_file(p, path_dest, parent)
-        if r:
-            files_data[n] = r
+    for f_data in paths_data:
+        path_origin = f_data['path_origin']
+        path_file = download_file(path_origin, path_dest, parent)
+        if path_file:
+            files_data.append({
+                'path_file' : path_file,
+                'epsg' : f_data['epsg'],
+                'file_name' : f_data['file_name']
+            })
         else:
-            erro.append(p)
+            erro.append(path_file)
     show_erro(erro, parent) if len(erro) > 0 else ''
     return files_data
 
