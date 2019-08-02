@@ -14,6 +14,20 @@ class MessageSave(QtCore.QObject):
         self.iface = iface
         self.seconds = seconds
         self.is_visible = False
+        btns = [
+            self.iface.actionSaveAllEdits(),
+            self.iface.actionSaveActiveLayerEdits()
+        ]
+        for b in btns:
+            b.triggered.connect(self.reset_time)
+        
+
+    def reset_time(self):
+        self.worker.deleteLater()
+        self.thread.quit()
+        self.thread.deleteLater()
+        self.thread = self.worker = self.is_running = False
+        self.start()
 
     def show_message(self):
         m_qgis = ManagerQgis(self.iface)
@@ -23,7 +37,6 @@ class MessageSave(QtCore.QObject):
             msgBox.show(text=html, title=u"Aviso")
             self.is_visible = False
             
-
     def start(self):
         self.worker = Timer(self.seconds)
         self.thread = QtCore.QThread()

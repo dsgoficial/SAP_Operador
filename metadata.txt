@@ -1,10 +1,10 @@
 [general]
 name=Ferramentas de Produção
 email=me@example.com
-author=Jossan
+author=1cgeo
 qgisMinimumVersion=3.0
 description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
-version=version 3.1.11
+version=version 3.1.12
 repository=https://github.com/1cgeo/Ferramentas_Producao
 icon=icons/1cgeo.png
 ; end of mandatory metadata

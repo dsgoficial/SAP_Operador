@@ -60,11 +60,9 @@ class ToolsDialog(QtWidgets.QDialog):
             self.closed_tools_dialog.emit()
         return super(QtWidgets.QDialog, self).eventFilter(source, event)
 
-    def showEvent(self, e):
-        self.load_btn.click() 
-
     def show_(self):
         self.show()
+        self.controller_btn.click() 
         self.raise_()
         self.activateWindow()
 

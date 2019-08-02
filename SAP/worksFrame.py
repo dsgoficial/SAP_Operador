@@ -42,7 +42,7 @@ class WorksFrame(QtWidgets.QFrame):
         self.works_item.disable_btn.connect(lambda:self.close_works_btn.setEnabled(False))
         self.works_area.layout().addWidget(self.works_item)
         self.spacer_item = QtWidgets.QSpacerItem(
-            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+            20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
         )
         self.works_area.layout().addItem(self.spacer_item)
 

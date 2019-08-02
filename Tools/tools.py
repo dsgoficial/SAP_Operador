@@ -38,17 +38,17 @@ class Tools(QtCore.QObject):
         cursorWait.start()
         try:
             choose = option_data['name'] 
-            if choose == u"load_btn":
+            if choose == u"controller_btn" and self.sap_mode:
+                self.tool_selected = self.sap
+            elif choose == u"rotines_btn":
+                self.tool_selected = Routines(self.iface)
+                self.tool_selected.sap_mode = self.sap_mode
+            else:
                 self.tool_selected = LoadData(self.iface)
                 self.tool_selected.sap_mode = self.sap_mode
                 self.tool_selected.show_menu.connect(
                     self.menu.show_menu
                 )
-            elif choose == u"controller_btn" and self.sap_mode:
-                self.tool_selected = self.sap
-            elif choose == u"rotines_btn":
-                self.tool_selected = Routines(self.iface)
-                self.tool_selected.sap_mode = self.sap_mode
             self.interface.show_frame(
                 self.tool_selected.get_frame()
             )
