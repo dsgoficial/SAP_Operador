@@ -476,8 +476,8 @@ class Postgresql(QtCore.QObject):
                 result = {item : value for item, value in response}
         return result
 
-    def get_menu_profile_names(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_menu_profile_names(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         menu_data = db_data['db_menu']
         profiles_name = [
             menu_data[idx]['nome_do_perfil'] 
@@ -485,44 +485,44 @@ class Postgresql(QtCore.QObject):
         ]
         return profiles_name
 
-    def get_menu_profile_data(self, profile_name, db_data={}):
+    def get_menu_profile_data(self, profile_name, db_data=None):
         profile_data = {}
-        db_data = db_data if db_data else self.load_data()
+        db_data = db_data if db_data is not None else self.load_data()
         for idx in db_data['db_menu']:
             if db_data['db_menu'][idx]['nome_do_perfil'] == profile_name:
                 profile_data = db_data['db_menu'][idx]
         return profile_data
 
-    def get_current_db_name(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_current_db_name(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         return db_data['db_name']
 
-    def get_frames_wkt(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_frames_wkt(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         return db_data['db_workspaces_wkt']
 
-    def get_frames_names(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_frames_names(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         return sorted(db_data['db_workspaces_name'])
 
-    def get_layers_names(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_layers_names(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         layers_names = [ ]
         for g in db_data['db_layers']:
             for d in db_data['db_layers'][g]:
                 layers_names.append(d['layer_name'])
         return layers_names
 
-    def get_connection_config(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_connection_config(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         return db_data[u"db_connection"]
 
-    def get_styles_data(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_styles_data(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         return db_data[u'db_styles']
 
-    def get_styles_names(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_styles_names(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         styles_names = []
         for d in db_data['db_styles'].keys():
             styles_names.append(
@@ -531,8 +531,8 @@ class Postgresql(QtCore.QObject):
         styles_names = list(set(styles_names))
         return styles_names
 
-    def get_rules_names(self, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_rules_names(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         rules_names = []
         for i in db_data['db_rules']:
             rules_names.append(
@@ -541,12 +541,12 @@ class Postgresql(QtCore.QObject):
         rules_names = list(set(rules_names))
         return rules_names
 
-    def get_rules_data(self, db_data={}):
-        db_data = db_data if db_data else self.load_data() 
+    def get_rules_data(self, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data() 
         return db_data['db_rules']
 
-    def get_layer_data(self, layer_name, db_data={}):
-        db_data = db_data if db_data else self.load_data()
+    def get_layer_data(self, layer_name, db_data=None):
+        db_data = db_data if db_data is not None else self.load_data()
         layers_data = db_data['db_layers']
         layers_data = layers_data[u'PONTO']+layers_data[u'LINHA']+layers_data[u'AREA']
         layers_map = self.get_map_layers(layers_data)
@@ -555,10 +555,6 @@ class Postgresql(QtCore.QObject):
 
     def get_map_layers(self, layers_data):
         return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
-
-    def get_loaddata_data(self):
-        pass
-        
 
 
     
