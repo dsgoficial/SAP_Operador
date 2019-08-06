@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets
+from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .saveProfileDialog import SaveProfileDialog
+from .customComboBox import CustomComboBox
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox
 
@@ -141,11 +142,19 @@ class MenuConfigFrame(QtWidgets.QDialog):
         self.clean_table()
         self.load_form_tab(tag_name)
 
+    def update_order_btns(self, order_menu, tab_name, btn_name_before, btn_name):
+        index_before_btn = len(order_menu['orderButton'][tab_name])
+        if btn_name_before != 'Último':
+            index_before_btn = order_menu['orderButton'][tab_name].index(btn_name_before) + 1
+        order_menu['orderButton'][tab_name].insert(index_before_btn, btn_name)
+
     def update_btn_data(self, tag_name):
         current_profile_data = self.get_current_profile_data()
         order_menu = current_profile_data['orderMenu']
         profile = current_profile_data['perfil']
         tab_name = self.form_values['*Selecione aba:']
+        btn_name_before = self.form_values["*Adicionar após:"]
+        del self.form_values["*Adicionar após:"]
         if tag_name == 'add':
             btn_name = self.form_values['*Nome do botão:']
             valid_btn = (
@@ -157,7 +166,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 profile[tab_name][btn_name] = {
                     'formValues' : self.form_values
                 }
-                order_menu['orderButton'][tab_name].append(btn_name)
+                self.update_order_btns(order_menu, tab_name, btn_name_before, btn_name)
         elif tag_name == 'del':
             btn_name = self.form_values['*Selecione botão:']
             valid_btn = (
@@ -175,7 +184,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 and
                 old_name in profile[tab_name]
             )
-            if valid_btn: 
+            if valid_btn:
                 btn_name = self.form_values['*Nome do botão:']
                 temp = profile[tab_name][old_name]
                 del profile[tab_name][old_name]
@@ -183,8 +192,10 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 profile[tab_name][btn_name] = temp
                 order_btn = order_menu['orderButton'][tab_name]
                 order_menu['orderButton'][tab_name] = [
-                    n.replace(old_name, btn_name) for n in order_btn
+                    n for n in order_btn
+                    if n != old_name
                 ]
+                self.update_order_btns(order_menu, tab_name, btn_name_before, btn_name)
         self.parent.load_menu_profile(
             copy.deepcopy(current_profile_data)
         )
@@ -235,7 +246,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 lambda : self.update_form_widgets("add layers options")
             )
             field_name = u"*Selecione camada:"
-            layers_cb = self.add_widget_cell(field_name, [], type_field='cb')
+            layers_cb = self.add_widget_cell(field_name, [], type_field='custom_cb')
             layers_cb.currentIndexChanged.connect(
                 lambda : self.update_form_widgets("add button fields")
             )
@@ -258,17 +269,28 @@ class MenuConfigFrame(QtWidgets.QDialog):
         tabs_cb = self.config_table.cellWidget(0, col_input)
         tab_name = tabs_cb.currentText()
         options_cb = self.config_table.cellWidget(1, col_input)
-        if tag_name in ["add buttons options", "add layers options"]:
+        if tag_name in ["add buttons options"]:
             options_cb.clear()
             if tag_name == "add buttons options":
                 names = self.parent.get_all_buttons_name(tab_name)
             else:
                 names = self.parent.parent.get_layers_name()
-            options_cb.addItems(["<...>"]+names)
+            options_cb.addItems(["<...>"]+sorted(names))
+        elif tag_name in ["add layers options"]:
+            options_cb.clear()
+            if tag_name == "add buttons options":
+                names = self.parent.get_all_buttons_name(tab_name)
+            else:
+                names = self.parent.parent.get_layers_name()
+            options_cb.load_items(["<...>"]+sorted(names))
         elif (
                 tag_name in ["add button fields", "edit button fields"] 
                 and options_cb.currentIndex() > 0
+                and options_cb.findText(options_cb.currentText())
             ):
+            field_name = u"*Adicionar após:"
+            btns = self.parent.get_all_buttons_name(tab_name)
+            self.add_widget_cell(field_name, ['Último']+sorted(btns), type_field='cb')
             if tag_name == "edit button fields":
                 button_name = options_cb.currentText()
                 button_data = self.parent.get_button_data(tab_name, button_name)
@@ -361,6 +383,9 @@ class MenuConfigFrame(QtWidgets.QDialog):
         if type_field == 'cb':
             widget_input = self.get_cb(field_name, value)
             self.set_default_value_cb(widget_input, default_value)
+        elif type_field == 'custom_cb':
+            widget_input = self.get_custom_cb(field_name, value)
+            self.set_default_value_cb(widget_input, default_value)
         else:
             widget_input = self.get_le(field_name, value)
         if default_value and type_field == 'le':
@@ -389,6 +414,16 @@ class MenuConfigFrame(QtWidgets.QDialog):
         lb = QtWidgets.QLabel(self.config_table)
         lb.setText("<b>{0}</b>".format(text))
         return lb
+
+    def get_custom_cb(self, field_name, items=[]):
+        cb = CustomComboBox(self.config_table)
+        cb.load_items(items)
+        cb.setObjectName(field_name)
+        cb.currentIndexChanged.connect(
+            lambda: self.update_form_values(cb)
+        )
+        self.form_values[field_name] = cb.currentText()
+        return cb
     
     def get_cb(self, field_name, items=[]):
         cb = QtWidgets.QComboBox(self.config_table)
@@ -412,7 +447,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
 
     def update_form_values(self, obj_input):
         field_name = obj_input.objectName()
-        if type(obj_input) == QtWidgets.QComboBox:
+        if type(obj_input) in [QtWidgets.QComboBox, CustomComboBox]:
             self.form_values[field_name] = obj_input.currentText()
         else:
             self.form_values[field_name] = obj_input.text()

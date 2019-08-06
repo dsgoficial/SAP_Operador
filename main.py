@@ -18,7 +18,7 @@ class Main(QtCore.QObject):
         self.menu = Menu(self.iface)
         self.validate = ValidateOperations(self.iface)
         self.tools = Tools(self.iface, self.menu, self.sap)
-        self.msg_save = MessageSave(self.iface,30)#5*60)
+        self.msg_save = MessageSave(self.iface, 1000*150)
 
     def initGui(self):
         self.sap.add_action_qgis(True)
