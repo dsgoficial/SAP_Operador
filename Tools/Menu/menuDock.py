@@ -336,6 +336,13 @@ class MenuDock(QtWidgets.QDockWidget):
         }
         if default:
             return default_styles[layer_name.split('_')[-1]]
-        return click_styles[layer_name.split('_')[-1]]       
+        return click_styles[layer_name.split('_')[-1]]      
+
+    def show_message(self, text):
+        QtWidgets.QMessageBox.information(
+            self,
+            "Aviso",
+            text
+        )
 
     
