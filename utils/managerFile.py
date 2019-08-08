@@ -92,6 +92,8 @@ def download(paths_data, parent=utils.iface.mainWindow()):
     erro = []
     files_data = []
     path_dest = get_path_dest(parent)
+    if path_dest == '':
+        return files_data
     for f_data in paths_data:
         path_origin = f_data['path_origin']
         path_file = download_file(path_origin, path_dest, parent)
