@@ -18,6 +18,7 @@ class Tools(QtCore.QObject):
         self.sap = sap
         self.sap_mode = False
         self.interface = None
+        self.loadData = LoadData(self.iface)
 
     def __del__(self):
         LoadData(self.iface).clean_forms_custom()
@@ -31,6 +32,9 @@ class Tools(QtCore.QObject):
         self.interface.selected_option.connect(
             self.load_frame
         )
+        if self.sap_mode:
+            self.loadData.sap_mode = self.sap_mode
+            self.loadData.update_frame()
         self.interface.show_()
         return self.interface
 
@@ -44,8 +48,7 @@ class Tools(QtCore.QObject):
                 self.tool_selected = Routines(self.iface)
                 self.tool_selected.sap_mode = self.sap_mode
             else:
-                self.tool_selected = LoadData(self.iface)
-                self.tool_selected.sap_mode = self.sap_mode
+                self.tool_selected = self.loadData
                 self.tool_selected.show_menu.connect(
                     self.menu.show_menu
                 )
