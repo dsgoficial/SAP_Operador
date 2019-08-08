@@ -11,7 +11,6 @@ class ReportDialog(QtWidgets.QDialog):
         'reportDialog.ui'
     )
 
-
     def __init__(self, report_config, parent):
         super(ReportDialog, self).__init__()
         uic.loadUi(self.dialog_path, self)
