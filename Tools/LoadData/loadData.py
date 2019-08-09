@@ -125,6 +125,14 @@ class LoadData(QtCore.QObject):
                 'db_password' : sap_data['password'] 
             })
         self.postgresql.load_db_json(db_name, sap_mode=self.sap_mode)
+        if not self.sap_mode:
+            self.frame.load({
+                'rules' : self.get_rules_list(),
+                'layers' : self.get_layers_list(),
+                'styles' : self.get_styles_list(),
+                'input_files' : self.get_input_files_list(),
+                'workspaces' : self.get_workspaces_list()
+            })
         
     def add_group_layer(self, group_name, group=None):
         if group:
