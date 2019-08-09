@@ -35,6 +35,8 @@ class Tools(QtCore.QObject):
         if self.sap_mode:
             self.loadData.sap_mode = self.sap_mode
             self.loadData.update_frame()
+        else:
+            self.loadData = LoadData(self.iface)
         self.interface.show_()
         return self.interface
 
