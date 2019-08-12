@@ -37,9 +37,8 @@ class RoutinesFrame(QtWidgets.QFrame):
         routine_data = self.get_selected_routines()
         if routine_data and not(self.is_running):
             self.is_running = True
-            #self.routines_progress.setMaximum(100)
-            #self.routines_progress.setValue(50)
             self.routines_progress.setRange(0,0)
+            self.routines_progress.setValue(50)
             self.run_routine.emit(routine_data)
 
     @QtCore.pyqtSlot(str)

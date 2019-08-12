@@ -37,6 +37,7 @@ class Tools(QtCore.QObject):
             self.loadData.update_frame()
         else:
             self.loadData = LoadData(self.iface)
+            self.interface.controller_btn.setVisible(False)
         self.interface.show_()
         return self.interface
 
@@ -44,7 +45,7 @@ class Tools(QtCore.QObject):
         cursorWait.start()
         try:
             choose = option_data['name'] 
-            if choose == u"controller_btn" and self.sap_mode:
+            if choose == u"controller_btn":
                 self.tool_selected = self.sap
             elif choose == u"rotines_btn":
                 self.tool_selected = Routines(self.iface)

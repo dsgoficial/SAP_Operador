@@ -25,6 +25,7 @@ class Routines(QtCore.QObject):
             self.frame.config_sap_mode()
             self.load_routines()
         else:
+            self.load_routines()
             self.frame.load_routines.connect(
                 self.load_routines
             )
