@@ -241,7 +241,6 @@ class Rules(QtCore.QObject):
         self.rulesToTable = rulesToCase
     
     def createRules(self, rulesData):
-        print(rulesData)
         self.rulesData =  rulesData
         self.formatRulesToCaseExpression()
         self.formatRulesToConditionalStyle()
