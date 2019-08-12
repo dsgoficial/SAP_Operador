@@ -7,6 +7,7 @@ from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
 from utils import network, msgBox
 from utils.managerQgis import ManagerQgis
+import processing, json
 
 class RoutinesLocal(QtCore.QObject):
 
@@ -38,9 +39,9 @@ class RoutinesLocal(QtCore.QObject):
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             local_routines = sap_data['rotinas']
             description = {
-                u"notSimpleGeometry" : u"Identifica geometrias não simples.",
-                u"outOfBoundsAngles" : u"Identifica ângulos fora da tolerância.",
-                u"invalidGeometry" : u"Identifica geometrias inválidas."
+                "notSimpleGeometry" : u"Identifica geometrias não simples.",
+                "outOfBoundsAngles" : u"Identifica ângulos fora da tolerância.",
+                "invalidGeometry" : u"Identifica geometrias inválidas.",
             }
             for name in local_routines:
                 d = {
@@ -49,11 +50,73 @@ class RoutinesLocal(QtCore.QObject):
                     'type_routine' : 'local'
                 }
                 local_routines_formated.append(d)
+        if not(self.sap_mode) or (self.sap_mode and sap_data['regras']) :
+            d = {
+                'ruleStatistics' : [], 
+                'description' : u"Estatísticas de regras.",
+                'type_routine' : 'local'
+            }
+            local_routines_formated.append(d)
         return local_routines_formated
+
+    def run_rule_statistics(self, routine_data):
+        html = ''
+        rules_data = self.postgresql.get_rules_data()
+        parameters = self.get_paremeters_rule_statistics(rules_data)
+        if not parameters['INPUTLAYERS']:
+            html += '''<p style="color:red">
+                    Não há camadas carregadas.
+                </p>'''
+        if not parameters['RULEDATA']:
+            html += '''<p style="color:red">
+                    Não há regras no banco.
+                </p>'''
+        if not html:
+            proc = processing.run(
+                "dsgtools:rulestatistics", 
+                parameters
+            )
+            for line in proc['RESULT'].split('\n\n'):
+                if '[regras]' in line.lower():
+                    html+='<h3>{0}</h3>'.format(line)
+                elif 'passaram' in line.lower():
+                    html += u"<p style=\"color:green\">{0}</p>".format(line)
+                else:
+                    html += u"<p style=\"color:red\">{0}</p>".format(line)   
+        self.message.emit(html)
+
+    def get_paremeters_rule_statistics(self, rules_data):
+        parameters = { 
+            'INPUTLAYERS' : [], 
+            'RULEFILE' : '.json', 
+            'RULEDATA' : json.dumps(rules_data) 
+        }
+        m_qgis = ManagerQgis(self.iface)
+        layers = m_qgis.get_loaded_layers()
+        for lyr in layers:
+            data_provider = lyr.dataProvider().uri()
+            if not data_provider.database():
+                continue
+            parameters['INPUTLAYERS'].append(
+                'dbname=\'{0}\' host={1} port={2} user=\'{3}\' password=\'{4}\' key=\'id\' table=\"{5}\".\"{6}\" (geom) sql={7}'.format(
+                    data_provider.database(),
+                    data_provider.host(),
+                    data_provider.port(),
+                    data_provider.username(),
+                    data_provider.password(),
+                    data_provider.schema(),
+                    data_provider.table(),
+                    data_provider.sql()
+                )
+            )
+        return parameters
 
     def run(self, routine_data):
         self.init_postgresql()
         count_flags = 0
+        if u"ruleStatistics" in routine_data:
+            self.run_rule_statistics(routine_data)
+            return
         if u"notSimpleGeometry" in routine_data:    
             for param in routine_data[u"notSimpleGeometry"]:
                 layer_name = param['camada']
