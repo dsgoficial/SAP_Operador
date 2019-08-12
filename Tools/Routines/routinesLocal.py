@@ -50,7 +50,7 @@ class RoutinesLocal(QtCore.QObject):
                     'type_routine' : 'local'
                 }
                 local_routines_formated.append(d)
-        if not(self.sap_mode) or (self.sap_mode and sap_data['regras']) :
+        if self.is_active_rules_statistics() and not(self.sap_mode) or (self.sap_mode and sap_data['regras']) :
             d = {
                 'ruleStatistics' : [], 
                 'description' : u"Estatísticas de regras.",
@@ -58,6 +58,12 @@ class RoutinesLocal(QtCore.QObject):
             }
             local_routines_formated.append(d)
         return local_routines_formated
+
+    def is_active_rules_statistics(self):
+        for alg in core.QgsApplication.processingRegistry().algorithms():
+            if "dsgtools:rulestatistics" == alg.id():
+                return True
+        return False
 
     def run_rule_statistics(self, routine_data):
         html = ''
