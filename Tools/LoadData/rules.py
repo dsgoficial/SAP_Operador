@@ -167,11 +167,11 @@ class Rules(QtCore.QObject):
         rulesToForm = {}
         rulesToForm["order_rules"] = {}
         for i in rulesData:
-            styleType = rulesData[i]['tipo_estilo']#.encode("utf-8")
-            ruleType = rulesData[i]['tipo_regra']#.decode("utf-8")
-            ruleCamada = rulesData[i]['camada']#.decode("utf-8")
-            cor_rgb = rulesData[i]['cor_rgb']#.decode("utf-8")
-            field = rulesData[i]['atributo']#.decode("utf-8")
+            styleType = rulesData[i]['tipo_estilo']
+            ruleType = rulesData[i]['tipo_regra']
+            ruleCamada = rulesData[i]['camada']
+            cor_rgb = rulesData[i]['cor_rgb']
+            field = rulesData[i]['atributo']
             description = rulesData[i]['descricao']
             rule = rulesData[i]['regra']
             order = rulesData[i]['ordem']
@@ -241,6 +241,7 @@ class Rules(QtCore.QObject):
         self.rulesToTable = rulesToCase
     
     def createRules(self, rulesData):
+        print(rulesData)
         self.rulesData =  rulesData
         self.formatRulesToCaseExpression()
         self.formatRulesToConditionalStyle()
