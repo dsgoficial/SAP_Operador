@@ -35,9 +35,11 @@ class Tools(QtCore.QObject):
         if self.sap_mode:
             self.loadData.sap_mode = self.sap_mode
             self.loadData.update_frame()
+            self.interface.controller_btn.click()
         else:
             self.loadData = LoadData(self.iface)
             self.interface.controller_btn.setVisible(False)
+            self.interface.load_btn.click()
         self.interface.show_()
         return self.interface
 

@@ -19,6 +19,7 @@ class Main(QtCore.QObject):
         self.validate = ValidateOperations(self.iface)
         self.tools = Tools(self.iface, self.menu, self.sap)
         self.msg_save = MessageSave(self.iface, 1000*150)
+        self.sap_mode = False
 
     def initGui(self):
         self.sap.add_action_qgis(True)
@@ -58,9 +59,11 @@ class Main(QtCore.QObject):
             
     def closed_tools_dialog(self):
         self.sap.enable_action_qgis(True)
-        self.validate.restart()
+        if self.sap_mode:
+            self.validate.restart()
                 
     def show_tools_dialog(self, sap_mode):
+        self.sap_mode = sap_mode
         self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode
