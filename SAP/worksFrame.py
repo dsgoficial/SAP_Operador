@@ -53,27 +53,28 @@ class WorksFrame(QtWidgets.QFrame):
         )
         self.activity_area.layout().addItem(self.spacer_item)
         lineage = {}
-        for d in self.sap_data['dados']['atividade']['linhagem']:
-            date_end = self.text_to_timestamp(d['data_fim'])
-            date_begin = self.text_to_timestamp(d['data_inicio'])
-            d['date_end'] = date_end
-            d['date_begin'] = date_begin
-            lineage[date_end] = d
-        for i, k in enumerate(sorted(list(lineage.keys()))):
-            text = "Etapa : {0}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
-                lineage[k]['etapa'], 
-                lineage[k]['date_begin'].strftime('%H:%M %d-%m-%Y') ,
-                lineage[k]['date_end'].strftime('%H:%M %d-%m-%Y'), 
-                lineage[k]['posto_grad'], 
-                lineage[k]['nome_guerra']
+        if 'linhagem' in self.sap_data['dados']['atividade']:
+            for d in self.sap_data['dados']['atividade']['linhagem']:
+                date_end = self.text_to_timestamp(d['data_fim'])
+                date_begin = self.text_to_timestamp(d['data_inicio'])
+                d['date_end'] = date_end
+                d['date_begin'] = date_begin
+                lineage[date_end] = d
+            for i, k in enumerate(sorted(list(lineage.keys()))):
+                text = "Etapa : {0}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
+                    lineage[k]['etapa'], 
+                    lineage[k]['date_begin'].strftime('%H:%M %d-%m-%Y') ,
+                    lineage[k]['date_end'].strftime('%H:%M %d-%m-%Y'), 
+                    lineage[k]['posto_grad'], 
+                    lineage[k]['nome_guerra']
+                )
+                lb = QtWidgets.QLabel(text)
+                lb.setStyleSheet('QLabel { background-color: white }')
+                self.lineage_area.layout().addWidget(lb)
+            self.spacer_item2 = QtWidgets.QSpacerItem(
+                20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
             )
-            lb = QtWidgets.QLabel(text)
-            lb.setStyleSheet('QLabel { background-color: white }')
-            self.lineage_area.layout().addWidget(lb)
-        self.spacer_item2 = QtWidgets.QSpacerItem(
-            20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
-        )
-        self.lineage_area.layout().addItem(self.spacer_item2)
+            self.lineage_area.layout().addItem(self.spacer_item2)
 
     @QtCore.pyqtSlot(bool)
     def on_close_works_btn_clicked(self, b):
