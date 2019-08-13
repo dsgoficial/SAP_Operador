@@ -233,7 +233,7 @@ class RoutinesLocal(QtCore.QObject):
         return len(result)
 
     def run_out_of_bounds_angles(self, layer, f_ids, angle, flag_layer, geom_type):
-        if geom_type == core.QGis.Line: 
+        if geom_type == core.QgsWkbTypes.LineGeometry: 
             SQL = u"""
             WITH result AS (
                 SELECT 
@@ -275,7 +275,7 @@ class RoutinesLocal(QtCore.QObject):
                 returning *;""".format(
                     flag_layer, u'Ângulo fora do limite', layer, f_ids, angle
             )
-        elif geom_type == core.QGis.Polygon:
+        elif geom_type == core.QgsWkbTypes.PolygonGeometry:
             SQL = u"""
             WITH result AS (
                 SELECT 
