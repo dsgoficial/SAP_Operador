@@ -49,12 +49,12 @@ class Routines(QtCore.QObject):
             self.routine_selected = RoutinesFme(self.iface)
         else:
             self.routine_selected = RoutinesLocal(self.iface)
+            self.routine_selected.show_rules_statistics.connect(
+                self.frame.show_rules_statistics
+            )
         self.routine_selected.sap_mode = self.sap_mode
         self.routine_selected.message.connect(
             self.frame.show_message
-        )
-        self.routine_selected.show_rules_statistics.connect(
-            self.frame.show_rules_statistics
         )
         self.routine_selected.run(routine_data)
 
