@@ -354,11 +354,9 @@ class LoadData(QtCore.QObject):
                     if len(g3.children()) == 0 and g3.name() != u"MOLDURA":
                         g2.removeChildNode(g3)
 
-    def search_layer(self, layer_name):
+    def search_layer(self, layer_name, settings_data):
         db_name = self.postgresql.get_connection_config()['db_name']
-        m_qgis = ManagerQgis(self.iface)
-        layers = m_qgis.get_loaded_layers()
-        for layer in layers:
+        for layer in [ t.layer() for t in settings_data['db_group'].findLayers()]:
             data_source = layer.dataProvider().uri()
             test = (
                 (db_name == data_source.database()) 
@@ -371,7 +369,7 @@ class LoadData(QtCore.QObject):
 
     def add_layer_on_canvas(self, settings_data, layer_data, filter_text):
         layer_name = layer_data['layer_name']
-        result = self.search_layer(layer_name)
+        result = self.search_layer(layer_name, settings_data)
         if result:
             v_lyr = result
             v_lyr.setSubsetString(filter_text)

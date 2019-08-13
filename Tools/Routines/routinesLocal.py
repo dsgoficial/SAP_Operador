@@ -12,6 +12,7 @@ import processing, json
 class RoutinesLocal(QtCore.QObject):
 
     message = QtCore.pyqtSignal(str)
+    show_rules_statistics = QtCore.pyqtSignal(str)
 
     def __init__(self, iface):
         super(RoutinesLocal, self).__init__()
@@ -50,7 +51,7 @@ class RoutinesLocal(QtCore.QObject):
                     'type_routine' : 'local'
                 }
                 local_routines_formated.append(d)
-        if self.is_active_rules_statistics() and not(self.sap_mode) or (self.sap_mode and sap_data['regras']) :
+        if self.is_active_rules_statistics() and ( not(self.sap_mode) or (self.sap_mode and sap_data['regras']) ):
             d = {
                 'ruleStatistics' : [], 
                 'description' : u"Estatísticas de regras.",
@@ -82,13 +83,18 @@ class RoutinesLocal(QtCore.QObject):
                 "dsgtools:rulestatistics", 
                 parameters
             )
-            for line in proc['RESULT'].split('\n\n'):
-                if '[regras]' in line.lower():
-                    html+='<h3>{0}</h3>'.format(line)
-                elif 'passaram' in line.lower():
-                    html += u"<p style=\"color:green\">{0}</p>".format(line)
-                else:
-                    html += u"<p style=\"color:red\">{0}</p>".format(line)   
+            if proc['RESULT']:
+                for line in proc['RESULT'].split('\n\n'):
+                    if '[regras]' in line.lower():
+                        html+='<h3>{0}</h3>'.format(line)
+                    elif 'passaram' in line.lower():
+                        html += u"<p style=\"color:green\">{0}</p>".format(line)
+                    else:
+                        html += u"<p style=\"color:red\">{0}</p>".format(line)
+                self.show_rules_statistics.emit(html)
+                return
+            else:
+                html = "<p style=\"color:red\">{0}</p>".format('Não há regras para as camadas carregadas!')
         self.message.emit(html)
 
     def get_paremeters_rule_statistics(self, rules_data):

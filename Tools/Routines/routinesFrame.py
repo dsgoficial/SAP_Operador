@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys, json
 from PyQt5 import QtCore, uic, QtWidgets
+from .rulesStatisticsDialog import RulesStatisticsDialog
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox
 
@@ -119,4 +120,10 @@ class RoutinesFrame(QtWidgets.QFrame):
     def show_message(self, html):
         self.is_running = False
         msgBox.show(text=html, title=u"Aviso", parent=self)
+        self.routines_progress.setRange(0,1)
+
+    def show_rules_statistics(self, html):
+        self.is_running = False
+        self.rulesStatisticsDlg = RulesStatisticsDialog(html)
+        self.rulesStatisticsDlg.show()
         self.routines_progress.setRange(0,1)
