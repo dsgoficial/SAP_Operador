@@ -153,8 +153,9 @@ class MenuConfigFrame(QtWidgets.QDialog):
         order_menu = current_profile_data['orderMenu']
         profile = current_profile_data['perfil']
         tab_name = self.form_values['*Selecione aba:']
-        btn_name_before = self.form_values["*Adicionar após:"]
-        del self.form_values["*Adicionar após:"]
+        if not( tag_name == 'del' ):
+            btn_name_before = self.form_values["*Adicionar após:"]
+            del self.form_values["*Adicionar após:"]
         if tag_name == 'add':
             btn_name = self.form_values['*Nome do botão:']
             valid_btn = (
