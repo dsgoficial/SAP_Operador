@@ -105,7 +105,9 @@ class Menu(QtCore.QObject):
             workspace_name = sap_data['unidade_trabalho']
         else:
             workspace_name = button_data['settings_user']['workspace_name']
-        layer_vector = load_data.search_layer(layer_name)
+        info = {'workspace_name' : workspace_name}
+        info['db_group']  = load_data.create_db_group(info)
+        layer_vector = load_data.search_layer(layer_name, info)
         if layer_vector:
             self.classification.run(
                 layer_vector,
@@ -116,18 +118,6 @@ class Menu(QtCore.QObject):
                 '''<p style="color: red">A camada "{0}" utilizada por esse botão não está carregada.
                     Carregue a camada!</p>'''.format(layer_name)
             )
-        """ result = load_data.load_layers(
-            {
-                'workspace_name' : workspace_name,
-                'style_name' : "",
-                'with_geom' : False,
-                'layers_name' : [layer_name],
-                'rules_name' : [],
-                'input_files' : []
-            },
-            True
-        )
-        layer_vector = result[0] """
 
     def open_reclassify_form(self, button_data, layers_selected):
         form = ReclassifyForm()
