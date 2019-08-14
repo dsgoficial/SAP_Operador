@@ -39,6 +39,18 @@ class Menu(QtCore.QObject):
         menu_data['menu_name'] = profile_data['nome_do_perfil']
         menu_data['menu_profile'] = profile_data['perfil']
         menu_data['menu_order'] = profile_data['orderMenu']
+        if self.sap_mode:
+            sap_data = ManagerSAP(self.iface).load_data()
+            db_connection = sap_data['dados']['atividade']['banco_dados']
+            db_name = db_connection['nome']
+            self.postgresql.set_connections_data({
+                'db_name' : db_name,
+                'db_host' : db_connection['servidor'],
+                'db_port' : db_connection['porta'],
+                'db_user' : sap_data['user'],
+                'db_password' : sap_data['password'] 
+            })
+            self.postgresql.current_db_name = db_name
         return self.postgresql.save_menu_profile(menu_data)
          
 

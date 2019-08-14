@@ -7,7 +7,7 @@ from Database.postgresql import Postgresql
 from SAP.managerSAP import ManagerSAP
 from utils import network, msgBox
 from utils.managerQgis import ManagerQgis
-import processing, json
+import processing, json, platform
 
 class RoutinesLocal(QtCore.QObject):
 
@@ -110,7 +110,8 @@ class RoutinesLocal(QtCore.QObject):
             if not data_provider.database():
                 continue
             parameters['INPUTLAYERS'].append(
-                'dbname=\'{0}\' host={1} port={2} user=\'{3}\' password=\'{4}\' key=\'id\' table=\"{5}\".\"{6}\" (geom) sql={7}'.format(
+                'dbname=\'{0}\' host={1} port={2} user=\'{3}\' password=\'{4}\' \
+                key=\'id\' {8}table=\"{5}\".\"{6}\" (geom) sql={7}'.format(
                     data_provider.database(),
                     data_provider.host(),
                     data_provider.port(),
@@ -118,7 +119,8 @@ class RoutinesLocal(QtCore.QObject):
                     data_provider.password(),
                     data_provider.schema(),
                     data_provider.table(),
-                    data_provider.sql()
+                    data_provider.sql(),
+                    'checkPrimaryKeyUnicity=\'1\' ' if platform.system() == 'Windows' else ''
                 )
             )
         return parameters
