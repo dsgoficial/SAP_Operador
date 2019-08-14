@@ -124,7 +124,7 @@ class LoadData(QtCore.QObject):
                 'db_user' : sap_data['user'],
                 'db_password' : sap_data['password'] 
             })
-        self.postgresql.load_db_json(db_name, sap_mode=self.sap_mode)
+        self.postgresql.load_db_json(db_name, sap_mode=self.sap_mode) if db_name else ''
         if not self.sap_mode:
             self.frame.load({
                 'rules' : self.get_rules_list(),
