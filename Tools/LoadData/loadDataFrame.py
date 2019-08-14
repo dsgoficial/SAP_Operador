@@ -54,6 +54,7 @@ class LoadDataFrame(QtWidgets.QFrame):
         self.db_label.setVisible(False)
         self.workspace_options.setVisible(False)
         self.workspace_label.setVisible(False)
+        self.only_geometry.setVisible(False)
         self.send_all_btn_1.click()
         btns_layer = [
             self.call_all_btn_1, 
