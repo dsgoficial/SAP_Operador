@@ -42,13 +42,13 @@ class ReclassifyForm(QtWidgets.QDialog):
                     self.addComboBox({
                         'label' : field,
                         'items' : fields[field]['valueMap'].keys(),
-                        'valueDefault' : form_values_before[field],
+                        'valueDefault' : form_values_before[field] if field in form_values_before else '',
                     })
                 elif not fields[field]:
                     self.addLineEdit({
                         'label' : field,
                         'valueDefault' :  u'',
-                        'valueDefault' : form_values_before[field],
+                        'valueDefault' : form_values_before[field] if field in form_values_before else '',
                     })
         self.vertical_layout.addItem(
             QtWidgets.QSpacerItem(

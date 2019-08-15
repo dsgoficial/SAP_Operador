@@ -121,14 +121,12 @@ class Classification(QtCore.QObject):
                     valueMap = config['map']
                     if fields[field] in valueMap:
                         feat.setAttribute(indx, valueMap[fields[field]])
-                elif fields[field] and not(fields[field] in [u"NULL"]):
+                elif fields[field] and not(fields[field] in ['NULL', 'IGNORAR']):
                     value  = fields[field]
                     if re.match('^\@value\(".+"\)$', value):
                         variable = value.split('"')[-2]
                         value = ProjectQgis(self.iface).getVariableProject(variable)
-                    feat.setAttribute(indx, value)
-                elif not(is_map_value):
-                    feat.setAttribute(indx, "")          
+                    feat.setAttribute(indx, value)       
 
     def open_form(self, fid, lyr, feat):
         self.set_attribute_feature(lyr, feat)
