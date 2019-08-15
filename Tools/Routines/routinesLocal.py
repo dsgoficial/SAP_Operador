@@ -79,7 +79,6 @@ class RoutinesLocal(QtCore.QObject):
                     Não há regras no banco.
                 </p>'''
         if not html:
-            print(parameters)
             proc = processing.run(
                 "dsgtools:rulestatistics", 
                 parameters
@@ -99,7 +98,6 @@ class RoutinesLocal(QtCore.QObject):
         self.message.emit(html)
 
     def get_paremeters_rule_statistics(self, rules_data):
-        uri_template = 'dbname=\'{0}\' host={1} port={2} user=\'{3}\' password=\'{4}\' key=\'id\' {8}table=\"{5}\".\"{6}\" (geom) sql={7}'
         parameters = { 
             'INPUTLAYERS' : [], 
             'RULEFILE' : '.json', 
@@ -111,18 +109,9 @@ class RoutinesLocal(QtCore.QObject):
             data_provider = lyr.dataProvider().uri()
             if not data_provider.database():
                 continue
+            layer_uri = lyr.dataProvider().uri().uri()
             parameters['INPUTLAYERS'].append(
-                uri_template.format(
-                    data_provider.database(),
-                    data_provider.host(),
-                    data_provider.port(),
-                    data_provider.username(),
-                    data_provider.password(),
-                    data_provider.schema(),
-                    data_provider.table(),
-                    data_provider.sql(),
-                    'checkPrimaryKeyUnicity=\'1\' ' if platform.system() == 'Windows' else ''
-                )
+                layer_uri if platform.system() == 'Windows' else layer_uri.replace('checkPrimaryKeyUnicity=\'1\' ' , '')
             )
         return parameters
 
