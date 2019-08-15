@@ -75,6 +75,8 @@ class WorksFrame(QtWidgets.QFrame):
                 20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
             )
             self.lineage_area.layout().addItem(self.spacer_item2)
+        else:
+            self.tabWidget.removeTab(1)
 
     @QtCore.pyqtSlot(bool)
     def on_close_works_btn_clicked(self, b):
