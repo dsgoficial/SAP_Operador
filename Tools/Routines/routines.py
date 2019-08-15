@@ -6,6 +6,7 @@ from .routinesFme import RoutinesFme
 import sys, os
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import network, msgBox
+from utils.managerQgis import ManagerQgis
 
 class Routines(QtCore.QObject):
 
@@ -46,6 +47,11 @@ class Routines(QtCore.QObject):
     def run_routine(self, routine_data):
         type_routine = routine_data['type_routine']
         if type_routine == 'fme':
+            m_qgis = ManagerQgis(self.iface)
+            if m_qgis.count_modified_layer() > 0:
+                html = u'<p style="color:red">Salve todas suas alterações antes de executar essa rotina!</p>'
+                msgBox.show(text=html, title=u"Aviso", parent=self.frame)
+                return
             self.routine_selected = RoutinesFme(self.iface)
         else:
             self.routine_selected = RoutinesLocal(self.iface)
@@ -56,6 +62,9 @@ class Routines(QtCore.QObject):
         self.routine_selected.message.connect(
             self.frame.show_message
         )
+        self.frame.is_running = True
+        self.frame.routines_progress.setRange(0,0)
+        self.frame.routines_progress.setValue(50)
         self.routine_selected.run(routine_data)
 
         
