@@ -3,8 +3,9 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import msgBox
+from utils.shortcutsDialog import ShortcutsDialog
 
-class ToolsDialog(QtWidgets.QDialog):
+class ToolsDialog(QtWidgets.QMainWindow):
 
     dialog_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 
@@ -22,7 +23,16 @@ class ToolsDialog(QtWidgets.QDialog):
         self.grid = None
         self.grid = QtWidgets.QGridLayout(self.tools_area)
         self.installEventFilter(self)
+        toolbar = QtWidgets.QToolBar()
+        button_action = QtWidgets.QAction("Atalhos", self)
+        button_action.triggered.connect(self.show_shortcuts_dialog)
+        toolbar.addAction(button_action)
+        self.addToolBar(toolbar)
         self.connect_signals()
+        
+    def show_shortcuts_dialog(self, s):
+        self.shortcutDlg = ShortcutsDialog()
+        self.shortcutDlg.show()
         
     def connect_signals(self):
         self.controller_btn.clicked.connect(
@@ -58,7 +68,8 @@ class ToolsDialog(QtWidgets.QDialog):
     def eventFilter(self, source , event):
         if event.type() in [QtCore.QEvent.KeyPress, QtCore.QEvent.KeyRelease] and event.key() == QtCore.Qt.Key_Escape:
             self.closed_tools_dialog.emit()
-        return super(QtWidgets.QDialog, self).eventFilter(source, event)
+            self.close()
+        return super(QtWidgets.QMainWindow, self).eventFilter(source, event)
 
     def show_(self):
         self.show()

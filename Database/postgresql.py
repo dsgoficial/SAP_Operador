@@ -3,6 +3,7 @@ import os, sys, psycopg2, base64, pickle, json, copy
 from PyQt5 import QtCore
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 from utils import managerFile
+import re
 
 class Postgresql(QtCore.QObject):
 
@@ -525,9 +526,9 @@ class Postgresql(QtCore.QObject):
         db_data = db_data if db_data is not None else self.load_data()
         styles_names = []
         for d in db_data['db_styles'].keys():
-            styles_names.append(
-                d.split('|')[0] if '|' in d else d.split('_')[0]
-            )
+            styles_names.append( 
+                re.compile("/|_|\|").split(d)[0]
+             )
         styles_names = list(set(styles_names))
         return styles_names
 

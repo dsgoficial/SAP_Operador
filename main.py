@@ -13,6 +13,7 @@ from .utils.messageSave import MessageSave
 class Main(QtCore.QObject):
     def __init__(self, iface):
         super(Main, self).__init__()
+        self.plugin_dir = os.path.dirname(__file__)
         self.iface = iface
         self.sap = ManagerSAP(self.iface)
         self.menu = Menu(self.iface)
@@ -32,7 +33,8 @@ class Main(QtCore.QObject):
         core.QgsProject.instance().readProject.connect(
             self.load_qgis_project
         )
-        ManagerQgis(self.iface).load_custom_config()
+        self.mQ = ManagerQgis(self.iface)
+        self.mQ.load_custom_config()
         
     def unload(self):
         self.sap.add_action_qgis(False)

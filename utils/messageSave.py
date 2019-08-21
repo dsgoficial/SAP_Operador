@@ -14,6 +14,7 @@ class MessageSave(QtCore.QObject):
         self.seconds = seconds
         self.is_visible = False
         self.half = False
+        self.time = QtCore.QTimer()
         btns = [
             self.iface.actionSaveAllEdits(),
             self.iface.actionSaveActiveLayerEdits()
@@ -37,7 +38,6 @@ class MessageSave(QtCore.QObject):
             self.half = True
             
     def start(self):
-        self.time = QtCore.QTimer()
         self.time.timeout.connect(self.show_message)
         self.time.start(self.seconds)
         self.is_running = True
