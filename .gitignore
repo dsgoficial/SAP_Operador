@@ -2,6 +2,7 @@
 *.sql
 Tools/LoadData/forms/*.ui
 *.pyc
+*.bkp
 .pyc
 .DS_Store
 .vscode

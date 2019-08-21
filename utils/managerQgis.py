@@ -1,11 +1,29 @@
 # -*- coding: utf-8 -*-
-from PyQt5 import QtCore 
+from PyQt5 import QtCore, QtWidgets, QtGui 
 from qgis import gui, core
-import base64
+import base64, os
 
 class ManagerQgis(QtCore.QObject):
 
-    def __init__(self, iface):
+    path_icon_on_off = os.path.join(
+        os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            ".."
+        )),
+        'icons',
+        'on_off.png'
+    )
+
+    path_icon_vertex = os.path.join(
+        os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            ".."
+        )),
+        'icons',
+        'vertex.png'
+    )
+
+    def __init__(self, iface=None):
         super(ManagerQgis, self).__init__()
         self.iface = iface
 
@@ -54,6 +72,7 @@ class ManagerQgis(QtCore.QObject):
         qsettings = QtCore.QSettings()
         for var_qgis in configs:
             qsettings.setValue(var_qgis, configs[var_qgis])
+        self.create_shortcut_actions()
         
     def clean_custom_config(self):
         qsettings = QtCore.QSettings()
@@ -63,6 +82,18 @@ class ManagerQgis(QtCore.QObject):
 
     def get_custom_config(self):
         variables = {
+            u'qgis/parallel_rendering' : u'true',
+            u'qgis/max_threads' : 8,
+            u'qgis/simplifyDrawingHints': u'0',            
+            u'qgis/digitizing/marker_only_for_selected' : u'false',
+            'qgis/digitizing/default_snapping_tolerance' : '10',
+            'qgis/digitizing/default_snap_enabled' : 'true', 
+            u'qgis/digitizing/default_snap_type' : u'Vertex',
+            'Map/scales' : '1:250000,1:100000,1:50000,1:25000,1:10000,1:5000,1:2000,1:1000,1:500,1:250',
+            'qgis/digitizing/line_width' : '3',
+            'qgis/digitizing/line_color_alpha' : '63',
+            'qgis/digitizing/fill_color_alpha' : '40',
+            u'qgis/default_selection_color_alpha': u'63',
             u'shortcuts/Sair do QGIS' : u'',
             u'shortcuts/Exit QGIS' : u'',
             u'shortcuts/Mesclar fei\xe7\xf5es selecionadas' : u'M',
@@ -91,13 +122,7 @@ class ManagerQgis(QtCore.QObject):
             u'shortcuts/DSGTools: Seletor Gen\xe9rico': u'S',
             u'shortcuts/DSGTools: Right Degree Angle Digitizing': u'E',
             u'shortcuts/DSGTools: Ferramenta de aquisi\xe7\xe3o com \xe2ngulos retos': u'E',
-            u'Qgis/parallel_rendering' : u'true',
-            u'Qgis/max_threads' : 8,
-            u'Qgis/simplifyDrawingHints': u'0',
-            u'cache/size': 1048576,
-            u'Qgis/digitizing/marker_only_for_selected' : u'true',
-            u'Qgis/digitizing/default_snap_mode' : u'to vertex and segment',
-            u'Qgis/default_selection_color_alpha': u'127',
+            'shortcuts/Topological Editing' : 'H',
             u'shortcuts/Salvar' : u'',
             u'shortcuts/Save' : u'',
             u'shortcuts/Select Feature(s)' : u'V',
@@ -111,12 +136,55 @@ class ManagerQgis(QtCore.QObject):
             u'shortcuts/Desfazer' : u'',
             u'shortcuts/Undo' : u'',
             u'shortcuts/Undo' : u'',
-            u'shortcuts/Mostrar camadas selecionadas' : u'U',
-            u'shortcuts/Show Selected Layers' : u'U',
-            u'shortcuts/Esconder camadas selecionadas' : u'Y',
-            u'shortcuts/Hide Selected Layers' : u'Y',
+            u'shortcuts/Mostrar camadas selecionadas' : u'',
+            u'shortcuts/Show Selected Layers' : u'',
+            u'shortcuts/Esconder camadas selecionadas' : u'',
+            u'shortcuts/Hide Selected Layers' : u'',
             u'shortcuts/Toggle Snapping' : u'',
-            u'shortcuts/DSGTools: Ferramenta de Aquisição à Mão Livre' : u'L'
+            'shortcuts/DSGTools: Toggle all labels visibility' : 'L',
+            u'shortcuts/DSGTools: Ferramenta de Aquisição à Mão Livre' : 'F',
+            'shortcuts/DSGTools: Free Hand Acquisition' : 'F',
+            'shortcuts/DSGTools: Free Hand Reshape' : 'Shift+R'
+
         }
         return variables
 
+    def create_shortcut_actions(self):
+        action_on_off_lyr = QtWidgets.QAction(
+            QtGui.QIcon(self.path_icon_on_off),
+            u"Ligar/Desligar camada.",
+            self.iface.mainWindow()
+        )
+        action_on_off_lyr.setShortcut(QtCore.Qt.Key_Y)
+        action_on_off_lyr.setCheckable(True)
+        action_on_off_lyr.toggled.connect(self.on_off_layers)
+        self.iface.digitizeToolBar().addAction(
+            action_on_off_lyr
+        )
+
+        action_show_hide_vtx = QtWidgets.QAction(
+            QtGui.QIcon(self.path_icon_vertex),
+            u"Mostrar/Esconder marcadores para feições selecionadas.",
+            self.iface.mainWindow()
+        )
+        action_show_hide_vtx.setShortcut(QtCore.Qt.Key_B)
+        action_show_hide_vtx.setCheckable(True)
+        action_show_hide_vtx.toggled.connect(self.show_markers_only_selected_feat)
+        self.iface.digitizeToolBar().addAction(
+            action_show_hide_vtx
+        )
+        
+
+    def on_off_layers(self, b):
+        if b:
+            self.iface.actionHideSelectedLayers().trigger()
+        else:
+            self.iface.actionShowSelectedLayers().trigger()
+
+    def show_markers_only_selected_feat(self, b):
+        qsettings = QtCore.QSettings()
+        if b:
+            qsettings.setValue(u'qgis/digitizing/marker_only_for_selected', u'true')
+        else:
+            qsettings.setValue(u'qgis/digitizing/marker_only_for_selected', u'false')
+        self.iface.mapCanvas().refresh()
