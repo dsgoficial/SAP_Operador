@@ -2,8 +2,7 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .menuConfigFrame import MenuConfigFrame
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox, cursorWait
+from Ferramentas_Producao.utils import msgBox, cursorWait
 
 class MenuDock(QtWidgets.QDockWidget):
 

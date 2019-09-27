@@ -3,9 +3,8 @@ from PyQt5 import QtCore, QtWidgets
 from .loginAction import LoginAction
 from .loginDialog import LoginDialog
 import sys, os
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox, cursorWait
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.utils import msgBox, cursorWait
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 
 class Login(QtCore.QObject):
 

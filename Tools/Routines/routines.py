@@ -4,9 +4,8 @@ from .routinesFrame import RoutinesFrame
 from .routinesLocal import RoutinesLocal
 from .routinesFme import RoutinesFme
 import sys, os
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import network, msgBox
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.utils import msgBox
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 
 class Routines(QtCore.QObject):
 

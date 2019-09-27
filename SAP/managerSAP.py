@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore
 import sys, os, pickle
+from qgis import core, gui
 from .worksFrame import WorksFrame
 from .Login.login import Login
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import network, msgBox, managerFile
-from utils.managerQgis import ManagerQgis
-
+from Ferramentas_Producao.utils import msgBox, managerFile
+from Ferramentas_Producao.utils.network import Network
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
+from qgis.utils import plugins
+from configparser import ConfigParser
 
 class ManagerSAP(QtCore.QObject):
 
     show_tools = QtCore.pyqtSignal(bool)
     close_tools = QtCore.pyqtSignal()
+    close_work = QtCore.pyqtSignal()
 
     def __init__(self, iface):
         super(ManagerSAP, self).__init__()
@@ -25,7 +28,7 @@ class ManagerSAP(QtCore.QObject):
         self.login_sap.local.connect(
             self.show_tools.emit
         )
-        self.net = network
+        self.net = Network(self.login_sap.dialog)
 
     def add_action_qgis(self, b):
         if b:
@@ -33,18 +36,50 @@ class ManagerSAP(QtCore.QObject):
         else:
             self.login_sap.action.remove_from_qgis()
 
+    def get_plugins_versions(self):
+        plugins_versions = []
+        for name, plugin in plugins.items():
+            try:
+                metadata_path = os.path.join(
+                    plugin.plugin_dir,
+                    'metadata.txt'
+                )
+                
+                with open(metadata_path) as mf:
+                    cp = ConfigParser()
+                    cp.readfp(mf)
+                    plugins_versions.append(
+                        {
+                            'nome' : name,
+                            'versao' : cp.get('general', 'version').split('-')[0]
+                        }
+                    )
+            except:
+                pass
+        return plugins_versions
+
     def enable_action_qgis(self, b):
         self.login_sap.action.setEnabled(b)
+
+    def load_sap_activity_from_data(self, data):
+        self.dump_data(data)
+        self.show_tools.emit(True)
         
     def login(self, server, user, password):
         sucess = False
+        qgis_version = core.QgsExpressionContextUtils.globalScope().variable('qgis_version').split('-')[0]
         post_data = {
-            u"usuario" : user,
-            u"senha" : password
+            "usuario" : user,
+            "senha" : password,
+            'plugins' : self.get_plugins_versions(),
+            'qgis' : qgis_version
         }
         url = u"{0}/login".format(server)
         response = self.net.POST(server, url, post_data)
         if response and response.json()['sucess']:
+            if not( 'version' in response.json()['dados'] and int(response.json()['dados']['version']) == 2):
+                self.show_message('erro version')
+                return
             token = response.json()['dados']['token']
             data = self.get_current_works(server, user, password, token)
             if data and "dados" in data:
@@ -106,29 +141,28 @@ class ManagerSAP(QtCore.QObject):
             header = {'authorization' : token}
             url = u"{0}/distribuicao/inicia".format(server)
             response = self.net.POST(server, url, header=header)
-            data = response.json()
-            if data['sucess'] and 'dados' in data:
-                self.update_sap_data(
-                    data, 
-                    server, 
-                    user, 
-                    password, 
-                    token
-                )
-                return True
+            if response:
+                data = response.json()
+                if data['sucess'] and 'dados' in data:
+                    self.update_sap_data(
+                        data, 
+                        server, 
+                        user, 
+                        password, 
+                        token
+                    )
+                    return True
             self.show_message("no activity")
             return False
 
     def close_works(self):
         sap_data = self.load_data()
-        works_data = sap_data['dados']['atividade']
-        unit_id = works_data['unidade_trabalho_id']
-        fase_id = works_data['subfase_etapa_id']
         server = sap_data['server']
         token = sap_data['token']
+        activity_id = sap_data['dados']['atividade']['id']
         post_data = {
-            'subfase_etapa_id' : fase_id,
-            'unidade_trabalho_id': unit_id
+            'atividade_id' : activity_id,
+            'sem_correcao' : False,
         }
         header = { 
             'authorization' : token
@@ -141,6 +175,7 @@ class ManagerSAP(QtCore.QObject):
             self.next_work(server, user, password)
 
     def next_work(self, server, user, password):
+        self.close_work.emit()
         self.iface.actionNewProject().trigger()
         self.login(server, user, password)
 
@@ -191,6 +226,13 @@ class ManagerSAP(QtCore.QObject):
         elif "no activity" == tag:
             html = u'''<p>Não há nenhum trabalho cadastrado para você.</p>
                         <p>Procure seu chefe de seção.</p>'''
+            msgBox.show(
+                text=html, 
+                title=u"AVISO!", 
+                parent=dialog
+            )
+        elif "erro version" == tag:
+            html = u'''<p>Versão do 'SAP' incorreta!</p>'''
             msgBox.show(
                 text=html, 
                 title=u"AVISO!", 

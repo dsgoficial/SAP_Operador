@@ -150,28 +150,36 @@ class ManagerQgis(QtCore.QObject):
         return variables
 
     def create_shortcut_actions(self):
-        action_on_off_lyr = QtWidgets.QAction(
+        self.action_on_off_lyr = QtWidgets.QAction(
             QtGui.QIcon(self.path_icon_on_off),
             u"Ligar/Desligar camada.",
             self.iface.mainWindow()
         )
-        action_on_off_lyr.setShortcut(QtCore.Qt.Key_Y)
-        action_on_off_lyr.setCheckable(True)
-        action_on_off_lyr.toggled.connect(self.on_off_layers)
+        self.action_on_off_lyr.setShortcut(QtCore.Qt.Key_Y)
+        self.action_on_off_lyr.setCheckable(True)
+        self.action_on_off_lyr.toggled.connect(self.on_off_layers)
         self.iface.digitizeToolBar().addAction(
-            action_on_off_lyr
+            self.action_on_off_lyr
         )
 
-        action_show_hide_vtx = QtWidgets.QAction(
+        self.action_show_hide_vtx = QtWidgets.QAction(
             QtGui.QIcon(self.path_icon_vertex),
             u"Mostrar/Esconder marcadores para feições selecionadas.",
             self.iface.mainWindow()
         )
-        action_show_hide_vtx.setShortcut(QtCore.Qt.Key_B)
-        action_show_hide_vtx.setCheckable(True)
-        action_show_hide_vtx.toggled.connect(self.show_markers_only_selected_feat)
+        self.action_show_hide_vtx.setShortcut(QtCore.Qt.Key_B)
+        self.action_show_hide_vtx.setCheckable(True)
+        self.action_show_hide_vtx.toggled.connect(self.show_markers_only_selected_feat)
         self.iface.digitizeToolBar().addAction(
-            action_show_hide_vtx
+            self.action_show_hide_vtx
+        )
+
+    def delete_shortcut_actions(self):
+        self.iface.digitizeToolBar().removeAction(
+            self.action_show_hide_vtx
+        )
+        self.iface.digitizeToolBar().removeAction(
+            self.action_on_off_lyr
         )
         
 

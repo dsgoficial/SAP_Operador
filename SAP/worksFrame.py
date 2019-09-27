@@ -4,9 +4,8 @@ from PyQt5 import QtCore, uic, QtWidgets
 from .worksItem import WorksItem
 from .worksCloseDialog import WorksCloseDialog
 from .reportDialog import ReportDialog
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox, cursorWait
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.utils import msgBox, cursorWait
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 from datetime import datetime
 
 class WorksFrame(QtWidgets.QFrame):
@@ -53,20 +52,15 @@ class WorksFrame(QtWidgets.QFrame):
         )
         self.activity_area.layout().addItem(self.spacer_item)
         lineage = {}
-        if 'linhagem' in self.sap_data['dados']['atividade']:
+        if 'linhagem' in self.sap_data['dados']['atividade'] and self.sap_data['dados']['atividade']['linhagem']:
             for d in self.sap_data['dados']['atividade']['linhagem']:
-                date_end = self.text_to_timestamp(d['data_fim'])
-                date_begin = self.text_to_timestamp(d['data_inicio'])
-                d['date_end'] = date_end
-                d['date_begin'] = date_begin
-                lineage[date_end] = d
-            for i, k in enumerate(sorted(list(lineage.keys()))):
-                text = "Etapa : {0}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
-                    lineage[k]['etapa'], 
-                    lineage[k]['date_begin'].strftime('%H:%M %d-%m-%Y') ,
-                    lineage[k]['date_end'].strftime('%H:%M %d-%m-%Y'), 
-                    lineage[k]['posto_grad'], 
-                    lineage[k]['nome_guerra']
+                text = "Etapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
+                    d['etapa'] if 'etapa' in d and d['etapa'] else '-', 
+                    d['data_inicio'] if 'data_inicio' in d and d['data_inicio'] else '-', 
+                    d['data_fim'] if 'data_fim' in d and d['data_fim'] else '-', 
+                    d['posto_grad'] if 'posto_grad' in d and d['posto_grad'] else '-', 
+                    d['nome_guerra'] if 'nome_guerra' in d and d['nome_guerra'] else '-',
+                    d['situacao'] if 'situacao' in d and d['situacao'] else '-'
                 )
                 lb = QtWidgets.QLabel(text)
                 lb.setStyleSheet('QLabel { background-color: white }')

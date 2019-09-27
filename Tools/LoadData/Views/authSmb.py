@@ -2,7 +2,7 @@
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from qgis import core, gui
 import sys, os
-from utils import msgBox
+from Ferramentas_Producao.utils import msgBox
 
 
 class AuthSmb(QtWidgets.QDialog):

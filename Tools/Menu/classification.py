@@ -3,7 +3,6 @@ from qgis import core, gui
 from qgis.core import QgsEditFormConfig
 from PyQt5 import QtCore, QtGui, QtWidgets
 import re, sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
 class Classification(QtCore.QObject):
 
@@ -48,6 +47,13 @@ class Classification(QtCore.QObject):
     def get_layers_to_reclassify(self):
         layers_selected = {}
         currentLayer = self.current_button_layer
+        ewkt = core.QgsExpressionContextUtils.layerScope(currentLayer).variable(
+            'area_trabalho_poligono'
+        )
+        geom = None
+        if ewkt:
+            wkt = ewkt.split(';')[1]
+            geom = core.QgsGeometry.fromWkt(wkt)
         current_uri = currentLayer.dataProvider().uri()
         mapCanvas = self.iface.mapCanvas()
         for lyr in mapCanvas.layers():
@@ -62,9 +68,14 @@ class Classification(QtCore.QObject):
                 (current_uri.port() == lyr_uri.port())
             )
             if validate_layer:
-                lyrName = lyr.name()
-                selectedIds = lyr.selectedFeatureIds()
-                layers_selected[lyrName] = [selectedIds, lyr]
+                lyrName = lyr_uri.table()
+                if not( current_uri.table() == lyrName ):
+                    for feat in lyr.getSelectedFeatures():
+                        if geom and geom.intersects( feat.geometry() ) == True:
+                            lyr.deselect(feat.id())
+                if lyr.selectedFeatureCount() > 0:
+                    selectedIds = lyr.selectedFeatureIds()
+                    layers_selected[lyrName] = [selectedIds, lyr]
         return layers_selected
      
     def run(self, layer_vector, button_data):
@@ -197,6 +208,6 @@ class Classification(QtCore.QObject):
     def active_tool(self, toolName):
         for a in self.iface.mainWindow().findChildren(QtWidgets.QToolBar):
             if a.objectName() == u'DsgTools':
-                for action in a.actions():
+                for action in a.findChildren(QtWidgets.QToolButton):
                     if action.text() in toolName:
-                        action.trigger() 
+                        action.click() 

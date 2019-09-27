@@ -2,12 +2,12 @@
 from qgis import core, gui
 from PyQt5 import QtCore
 import re, sys, os, json
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
-from Database.postgresql import Postgresql
-from SAP.managerSAP import ManagerSAP
-from utils import network, msgBox
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.Database.postgresql import Postgresql
+from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
+from Ferramentas_Producao.utils import msgBox
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 import processing, json, platform
+from qgis.PyQt.QtXml import QDomDocument
 
 class RoutinesLocal(QtCore.QObject):
 
@@ -33,28 +33,38 @@ class RoutinesLocal(QtCore.QObject):
             'db_user' : sap_data['user'],
             'db_password' : sap_data['password'] 
         })
+
     
     def get_routines_data(self):
         local_routines_formated = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            local_routines = sap_data['rotinas']
-            description = {
-                "notSimpleGeometry" : u"Identifica geometrias não simples.",
-                "outOfBoundsAngles" : u"Identifica ângulos fora da tolerância.",
-                "invalidGeometry" : u"Identifica geometrias inválidas.",
-            }
-            for name in local_routines:
+            if 'models_qgis' in sap_data:
+                models_qgis = sap_data['models_qgis']
+                for model_data in models_qgis:
+                    d = {
+                        'description' : model_data['descricao'],
+                        'type_routine' : 'local',
+                        'model_xml' : model_data['model_xml']
+                    }
+                    local_routines_formated.append(d)
+            if self.is_active_rules_statistics() and 'regras' in sap_data and sap_data['regras']:
+                format_rules_data = {}
+                for i, d in enumerate(sap_data['regras']):
+                    d['tipo_estilo'] = d['grupo_regra']
+                    r, g, b = d['cor_rgb'].split(',')
+                    d['corRgb'] = [ int(r), int(g), int(b) ]
+                    format_rules_data[i] = d
                 d = {
-                    name : local_routines[name], 
-                    'description' : description[name],
+                    'ruleStatistics' : format_rules_data, 
+                    'description' : "Estatísticas de regras.",
                     'type_routine' : 'local'
                 }
                 local_routines_formated.append(d)
-        if self.is_active_rules_statistics() and ( not(self.sap_mode) or (self.sap_mode and sap_data['regras']) ):
+        elif self.is_active_rules_statistics():
             d = {
                 'ruleStatistics' : [], 
-                'description' : u"Estatísticas de regras.",
+                'description' : "Estatísticas de regras.",
                 'type_routine' : 'local'
             }
             local_routines_formated.append(d)
@@ -66,9 +76,8 @@ class RoutinesLocal(QtCore.QObject):
                 return True
         return False
 
-    def run_rule_statistics(self, routine_data):
+    def run_rule_statistics(self, rules_data):
         html = ''
-        rules_data = self.postgresql.get_rules_data()
         parameters = self.get_paremeters_rule_statistics(rules_data)
         if not parameters['INPUTLAYERS']:
             html += '''<p style="color:red">
@@ -117,193 +126,22 @@ class RoutinesLocal(QtCore.QObject):
 
     def run(self, routine_data):
         self.init_postgresql()
-        count_flags = 0
-        if u"ruleStatistics" in routine_data:
-            self.run_rule_statistics(routine_data)
-            return
-        if u"notSimpleGeometry" in routine_data:    
-            for param in routine_data[u"notSimpleGeometry"]:
-                layer_name = param['camada']
-                flag_layer = param['camada_apontamento']
-                v_layer = self.get_layer_by_name(layer_name)
-                if not(v_layer):
-                    return
-                f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
-                count_flags += self.run_not_simple_geometry(
-                    flag_layer, 
-                    layer_name, 
-                    f_ids
-                )
-        elif u"outOfBoundsAngles" in routine_data:
-            for param in routine_data[u"outOfBoundsAngles"]:
-                layer_name = param['camada']
-                flag_layer = param['camada_apontamento']
-                v_layer = self.get_layer_by_name(layer_name)
-                if not(v_layer):
-                    return
-                geom_type = v_layer.geometryType()
-                f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
-                angle = param[u'angle']
-                count_flags += self.run_out_of_bounds_angles(
-                    layer_name, 
-                    f_ids, 
-                    angle, 
-                    flag_layer, 
-                    geom_type
-                )
-        elif u"invalidGeometry" in routine_data:
-            for param in routine_data[u"invalidGeometry"]:
-                layer_name = param['camada']
-                flag_layer = param['camada_apontamento']
-                v_layer = self.get_layer_by_name(layer_name)
-                if not(v_layer):
-                    return
-                f_ids = ",".join([str(int(item)) for item in v_layer.allFeatureIds()])
-                count_flags += self.run_invalid_geometry(
-                    flag_layer, 
-                    layer_name, 
-                    f_ids
-                )
-        html = u'''<p style="color:red">
-            Rotina executada! Foram gerados {0} flags.
-        </p>'''.format(count_flags)
-        self.message.emit(html)
-
-
-    def get_layer_by_name(self, layer_name):
-        db_name = self.postgresql.load_data()['db_name']
-        m_qgis = ManagerQgis(self.iface)
-        result = m_qgis.get_loaded_layers()
-        for layer in result:
-            uri_class = core.QgsDataSourceUri(layer.styleURI())
-            test = (
-                (db_name == layer.source().split(' ')[0][8:-1]) and
-                (layer_name == uri_class.table()) and
-                layer.allFeatureIds()
-            )
-            if test:
-                self.iface.setActiveLayer(layer)
-                return self.iface.activeLayer()
-        html = u'''<p style="color:red">
-            Camada está vazia ou não foi carregada.
-        </p>'''
-        self.message.emit(html)
-        return False
-
-    def run_invalid_geometry(self, flag_layer, layer, f_ids):
-        SQL = u'''
-            INSERT INTO edgv."{0}"(geom, observacao) 
-            SELECT 
-                st_asewkt(ST_Multi(ST_SetSrid(ST_Buffer(location(ST_IsValidDetail(f.geom, 0)), 1), ST_Srid(f.geom)))) AS geom,
-                '{1}' as observacao 
-            FROM (
-                SELECT 
-                    id, 
-                    geom 
-                FROM ONLY edgv."{2}" 
-                WHERE ST_IsValid(geom) = 'f' AND id IN ({3})
-            ) AS f returning *;'''.format(flag_layer, u'Geometria inválida', layer, f_ids)
-        result = self.postgresql.run_sql(SQL)
-        return len(result)
+        if "ruleStatistics" in routine_data:
+            if self.sap_mode:
+                self.run_rule_statistics(routine_data['ruleStatistics'])
+            else:
+                self.run_rule_statistics(self.postgresql.get_rules_data())
+        if 'model_xml' in routine_data:
+            self.run_processing_model(routine_data['model_xml'])
     
-    def run_not_simple_geometry(self, flag_layer, layer, f_ids):
-        SQL = u'''
-            INSERT INTO edgv."{0}"(geom, observacao) 
-            SELECT 
-                st_asewkt(ST_MULTI(ST_SetSrid(st_buffer(st_startpoint(foo.geom),1), st_srid(foo.geom)))) AS geom,
-                '{1}' AS obs 
-            FROM (
-                SELECT
-                    id,
-                    (ST_Dump(ST_Node(ST_MakeValid(geom)))).geom AS geom
-                FROM edgv."{2}"  
-                WHERE ST_IsSimple(geom) = 'f' AND id IN ({3})) AS foo 
-            WHERE st_equals(st_startpoint(foo.geom), st_endpoint(foo.geom)) returning *;'''.format(
-                flag_layer, u'Geometria inválida', layer, f_ids
-            )
-        result = self.postgresql.run_sql(SQL)
-        return len(result)
+    def run_processing_model(self, model_xml):
+        doc = QDomDocument()
+        doc.setContent(model_xml)
+        model = core.QgsProcessingModelAlgorithm()
+        model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
+        processing.runAndLoadResults(model, {})
+        html = "<p style=\"color:red\">{0}</p>".format('Rotina executada!')
+        self.message.emit(html)
 
-    def run_out_of_bounds_angles(self, layer, f_ids, angle, flag_layer, geom_type):
-        if geom_type == core.QgsWkbTypes.LineGeometry: 
-            SQL = u"""
-            WITH result AS (
-                SELECT 
-                    points.id, 
-                    points.anchor, 
-                    (
-                        degrees(
-                            ST_Azimuth(points.anchor, points.pt1) 
-                            - ST_Azimuth(points.anchor, points.pt2)
-                        )::decimal + 360
-                    ) % 360 AS angle
-                FROM
-                (
-                    SELECT
-                        ST_PointN(geom, generate_series(1, ST_NPoints(geom)-2)) as pt1, 
-                        ST_PointN(geom, generate_series(2, ST_NPoints(geom)-1)) as anchor,
-                        ST_PointN(geom, generate_series(3, ST_NPoints(geom))) as pt2,
-                        linestrings.id as id 
-                    FROM
-                        (
-                            SELECT 
-                                id, 
-                                (ST_Dump(geom)).geom as geom
-                            FROM ONLY edgv."{2}"
-                            WHERE id IN ({3}) 
-                        ) AS linestrings 
-                    WHERE ST_NPoints(linestrings.geom) > 2 
-                ) as points
-            )
-            INSERT INTO edgv."{0}"(geom, observacao) 
-            SELECT 
-                DISTINCT 
-                st_asewkt(ST_MULTI(ST_SetSRID(ST_Buffer(anchor, 1), ST_Srid(anchor)))) as geom, 
-                '{1}' as obs 
-            FROM result 
-            WHERE 
-                (result.angle % 360) < {4} 
-                OR result.angle > (360.0 - ({4} % 360.0)) 
-                returning *;""".format(
-                    flag_layer, u'Ângulo fora do limite', layer, f_ids, angle
-            )
-        elif geom_type == core.QgsWkbTypes.PolygonGeometry:
-            SQL = u"""
-            WITH result AS (
-                SELECT 
-                    points.id, 
-                    points.anchor, 
-                    (
-                        degrees(
-                                ST_Azimuth(points.anchor, points.pt1) 
-                                - ST_Azimuth(points.anchor, points.pt2)
-                        )::decimal + 360
-                    ) % 360 AS angle
-                FROM (
-                    SELECT
-                        ST_PointN(geom, generate_series(1, ST_NPoints(geom)-1)) AS pt1,
-                        ST_PointN(geom, generate_series(1, ST_NPoints(geom)-1) %  (ST_NPoints(geom)-1)+1) AS anchor,
-                        ST_PointN(geom, generate_series(2, ST_NPoints(geom)) %  (ST_NPoints(geom)-1)+1) AS pt2,
-                        linestrings.id AS id
-                    FROM (
-                        SELECT 
-                            id, 
-                            (ST_Dump(ST_Boundary(ST_ForceRHR((ST_Dump(geom)).geom)))).geom AS geom
-                        FROM only edgv."{2}" 
-                        WHERE id IN ({3}) 
-                    ) AS linestrings 
-                    WHERE ST_NPoints(linestrings.geom) > 2 
-                ) AS points
-            )
-            INSERT INTO edgv."{0}"(geom, observacao) 
-            SELECT 
-                DISTINCT 
-                st_asewkt(ST_MULTI(ST_SetSRID(ST_Buffer(anchor, 1), ST_Srid(anchor)))) as geom, 
-                '{1}' as obs
-            FROM result 
-            WHERE (result.angle % 360) < {4} OR result.angle > (360.0 - ({4} % 360.0)) returning *;""".format( 
-                flag_layer, u'Ângulo fora do limite', layer, f_ids, angle
-            )
-        result = self.postgresql.run_sql(SQL)
-        return len(result)
-       
+        
+        

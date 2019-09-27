@@ -3,7 +3,7 @@ from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from qgis import core, gui
 from textwrap import wrap
 import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
+#sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
 
 class WorksItem(QtWidgets.QWidget):
@@ -20,12 +20,12 @@ class WorksItem(QtWidgets.QWidget):
         super(WorksItem, self).__init__()
         uic.loadUi(self.dialog_path, self)
         self.parent = parent
-        woks_data = sap_data['dados']['atividade']
-        self.description = woks_data['nome']
-        self.values_cbx = woks_data['requisitos'] if 'requisitos' in woks_data else []
+        self.woks_data = sap_data['dados']['atividade']
+        self.description = self.woks_data['nome']
+        self.values_cbx = self.woks_data['requisitos'] if 'requisitos' in self.woks_data else []
         self.observation = ''
-        if 'observacao' in woks_data and woks_data['observacao']:
-            self.observation = woks_data['observacao']
+        if 'observacao' in self.woks_data and self.woks_data['observacao']:
+            self.observation = self.woks_data['observacao']
         if len(self.values_cbx) > 0:
             self.parent.close_works_btn.setEnabled(False)
         self.load_activity()
@@ -37,10 +37,19 @@ class WorksItem(QtWidgets.QWidget):
         return cbx
 
     def load_activity(self):
-        self.description_lb.setText(u"<h2>{0}</h2>".format(self.description))
-        self.description_lb.setWordWrap(True)
-        self.observation_lb.setText(u"<h2>{0}</h2>".format(self.observation))
-        self.observation_lb.setWordWrap(True)
+        if self.description:
+            self.description_lb.setText("<h2>{0}</h2>".format(self.description))
+            self.description_lb.setWordWrap(True)
+        else:
+            self.observation_lb.setVisible(False)
+        if self.observation:
+            self.observation_lb.setText("<h2>{0}</h2>".format(self.observation))
+            self.observation_lb.setWordWrap(True)
+        else:
+            self.observation_lb.setVisible(False)
+        for obs in [ 'observacao_subfase', 'observacao_etapa', 'observacao_unidade_trabalho', 'observacao_atividade' ]:
+            lb = QtWidgets.QLabel(self.woks_data[obs], self.cbx_gpb)
+            self.observation_frame.layout().addWidget(lb)
         for value in self.values_cbx:
             cbx = self.get_checkbox(value, self.cbx_gpb)
             cbx.clicked.connect(self.validate_checkbox)

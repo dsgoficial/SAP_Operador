@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox, cursorWait
+from Ferramentas_Producao.utils import msgBox, cursorWait
 
 class LoginDialog(QtWidgets.QDialog):
 
@@ -18,7 +17,7 @@ class LoginDialog(QtWidgets.QDialog):
         super(LoginDialog, self).__init__()
         self.iface = iface
         uic.loadUi(self.dialog_path, self)
-        self.version_text.setText(u"<b>versão: 3.4.14</b>")
+        self.version_text.setText(u"<b>versão: 3.5.7</b>")
         
     @QtCore.pyqtSlot(int)
     def on_localhost_check_stateChanged(self, state):
@@ -36,7 +35,7 @@ class LoginDialog(QtWidgets.QDialog):
             and  
             self.user_input.text() 
             and 
-            self.password_input.text() 
+            self.password_input.text()
         )
         return test
 

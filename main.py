@@ -3,12 +3,13 @@
 import os, sys
 from qgis import core, gui
 from PyQt5 import QtCore
-from .SAP.managerSAP import ManagerSAP
-from .Tools.tools import Tools
-from .Tools.Menu.menu import Menu
-from .Validate.validateOperations import ValidateOperations
-from .utils.managerQgis import ManagerQgis
-from .utils.messageSave import MessageSave
+from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
+from Ferramentas_Producao.Tools.tools import Tools
+from Ferramentas_Producao.Tools.Menu.menu import Menu
+from Ferramentas_Producao.Validate.validateOperations import ValidateOperations
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.utils.messageSave import MessageSave
+from Ferramentas_Producao.Microcontroller.monitoring import Monitoring
 
 class Main(QtCore.QObject):
     def __init__(self, iface):
@@ -21,6 +22,7 @@ class Main(QtCore.QObject):
         self.tools = Tools(self.iface, self.menu, self.sap)
         self.msg_save = MessageSave(self.iface, 1000*150)
         self.sap_mode = False
+        self.monitoring = Monitoring(self.iface)
 
     def initGui(self):
         self.sap.add_action_qgis(True)
@@ -49,8 +51,11 @@ class Main(QtCore.QObject):
             self.load_qgis_project
         )
         self.validate.stop()
+        self.monitoring.stop()
         del self.sap
         del self.validate
+        del self.monitoring
+        self.mQ.delete_shortcut_actions()
 
     def load_qgis_project(self):
         value = ManagerQgis(self.iface).load_project_var("settings_user")
@@ -61,14 +66,20 @@ class Main(QtCore.QObject):
             
     def closed_tools_dialog(self):
         self.sap.enable_action_qgis(True)
+
+    def restart_validate(self):
         if self.sap_mode:
             self.validate.restart()
                 
     def show_tools_dialog(self, sap_mode):
+        self.monitoring.start() if sap_mode else self.monitoring.stop()
         self.sap_mode = sap_mode
         self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode
+        self.tools.restart_validate.connect(
+            self.restart_validate
+        )
         self.tools.show_dialog().closed_tools_dialog.connect(
             self.closed_tools_dialog 
         )

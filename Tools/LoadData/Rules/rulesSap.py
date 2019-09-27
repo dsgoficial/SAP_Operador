@@ -2,9 +2,9 @@
 from PyQt5 import QtCore, QtGui
 from qgis import core, gui
 
-class Rules(QtCore.QObject):
+class RulesSap(QtCore.QObject):
     def __init__(self, iface):
-        super(Rules, self).__init__()
+        super(RulesSap, self).__init__()
         self.iface = iface
         self.rulesToTable = None
         self.rulesToForm = None
@@ -12,7 +12,7 @@ class Rules(QtCore.QObject):
     def format_selected_rules(self):
         rules = {}
         for rule_name in self.rules_selected:
-            rules[rule_name] = self.rulesToTable[rule_name.encode('utf-8')]
+            rules[rule_name] = self.rulesToTable[rule_name]
         return rules
 
     def get_rules_form(self, layer_name):
@@ -51,19 +51,16 @@ class Rules(QtCore.QObject):
         statisticRules = data['statisticRules']
         layerLoaded = [lyr.name() for lyr in data['treeLayers'] ]
         for ruleNameType in statisticRules:
-            for i in data['rules']:
-                if ruleNameType == data['rules'][i]['tipo_estilo']:
-                    layerName = data['rules'][i]['camada']
+            for data in data['rules']:
+                if ruleNameType == data['tipo_estilo']:
+                    layerName = data['camada']
                     if layerName in layerLoaded:
                         if not(layerName in statisticRules[ruleNameType]):
                             statisticRules[ruleNameType][layerName] = {
                                 'allRules' : [],
                                 'okRules' : 0,
                             }
-                        statisticRules[ruleNameType][layerName]\
-                                      ['allRules'].append(
-                            data['rules'][i]['regra']
-                        )
+                        statisticRules[ruleNameType][layerName]['allRules'].append(data['regra'])
         return statisticRules
 
     def checkRulesOnLayers(self, statisticRules, treeLayers):
@@ -162,19 +159,25 @@ class Rules(QtCore.QObject):
                     vlayer.conditionalStyles()\
                         .setRowStyles(rules[ruleType][field])
 
+    def createRules(self, rulesData):
+        self.rulesData =  rulesData
+        self.formatRulesToCaseExpression()
+        self.formatRulesToConditionalStyle()
+        self.formatRulesToForm()
+    
     def formatRulesToForm(self):
         rulesData = self.rulesData 
         rulesToForm = {}
         rulesToForm["order_rules"] = {}
-        for i in rulesData:
-            styleType = rulesData[i]['tipo_estilo']
-            ruleType = rulesData[i]['tipo_regra']
-            ruleCamada = rulesData[i]['camada']
-            cor_rgb = rulesData[i]['cor_rgb']
-            field = rulesData[i]['atributo']
-            description = rulesData[i]['descricao']
-            rule = rulesData[i]['regra']
-            order = rulesData[i]['ordem']
+        for data in rulesData:
+            styleType = data['grupo_regra']
+            ruleType = data['tipo_regra']
+            ruleCamada = data['camada']
+            cor_rgb = data['cor_rgb']
+            field = data['atributo']
+            description = data['descricao']
+            rule = data['regra']
+            order = data['ordem']
             if not order in rulesToForm:
                 rulesToForm["order_rules"][styleType] = order
             if not styleType in rulesToForm:
@@ -194,15 +197,15 @@ class Rules(QtCore.QObject):
         rulesData = self.rulesData
         rules = {}
         rules["order_rules"] = {}
-        for i in rulesData:
-            styleType = rulesData[i]['tipo_estilo']
-            ruleType = rulesData[i]['tipo_regra']
-            ruleCamada = rulesData[i]['camada']
-            cor_rgb = rulesData[i]['cor_rgb']
-            field = rulesData[i]['atributo']
-            description = rulesData[i]['descricao']
-            rule = rulesData[i]['regra']
-            order = rulesData[i]['ordem']
+        for data in rulesData:
+            styleType = data['grupo_regra']
+            ruleType = data['tipo_regra']
+            ruleCamada = data['camada']
+            cor_rgb = data['cor_rgb']
+            field = data['atributo']
+            description = data['descricao']
+            rule = data['regra']
+            order = data['ordem']
             if not order in rules:
                 rules["order_rules"][styleType] = order
             if not styleType in rules:
@@ -213,21 +216,21 @@ class Rules(QtCore.QObject):
                 rules[styleType][ruleType][ruleCamada] = {}
             if not field in rules[styleType][ruleType][ruleCamada]:
                 rules[styleType][ruleType][ruleCamada][field] = []
-            conditionalStyle = self.createConditionalStyle(rulesData[i])
+            conditionalStyle = self.createConditionalStyle(data)
             rules[styleType][ruleType][ruleCamada][field].append(conditionalStyle)
         self.conditionalStyleRules = rules 
 
     def formatRulesToCaseExpression(self):
         rulesData = self.rulesData
         rulesToCase = {} 
-        for i in rulesData:
-            styleType = rulesData[i]['tipo_estilo'].encode("utf-8")
-            ruleType = rulesData[i]['tipo_regra']
-            ruleCamada = rulesData[i]['camada']
-            cor_rgb = rulesData[i]['cor_rgb']
-            field = rulesData[i]['atributo']
-            description = rulesData[i]['descricao']
-            rule = rulesData[i]['regra']
+        for data in rulesData:
+            styleType = data['grupo_regra']
+            ruleType = data['tipo_regra']
+            ruleCamada = data['camada']
+            cor_rgb = data['cor_rgb']
+            field = data['atributo']
+            description = data['descricao']
+            rule = data['regra']
             if not styleType in rulesToCase:
                 rulesToCase[styleType] = {}
             if not ruleCamada in rulesToCase[styleType]:
@@ -239,24 +242,13 @@ class Rules(QtCore.QObject):
                 'description' : description,
             })
         self.rulesToTable = rulesToCase
-    
-    def createRules(self, rulesData):
-        self.rulesData =  rulesData
-        self.formatRulesToCaseExpression()
-        self.formatRulesToConditionalStyle()
-        self.formatRulesToForm()        
 
     def createConditionalStyle(self, data):
         conditionalStyle = core.QgsConditionalStyle()
         conditionalStyle.setName( data['descricao'] )
         conditionalStyle.setRule( data['regra'] )
-        conditionalStyle.setBackgroundColor(
-            QtGui.QColor(
-                data['corRgb'][0],
-                data['corRgb'][1],
-                data['corRgb'][2]
-            ) 
-        )
+        r, g, b = data['cor_rgb'].split(',')
+        conditionalStyle.setBackgroundColor(QtGui.QColor(int(r), int(g), int(b)))
         return conditionalStyle
         
     def cleanRules(self, groupDbName):

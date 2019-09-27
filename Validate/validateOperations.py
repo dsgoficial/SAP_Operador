@@ -1,11 +1,11 @@
 import os, sys
 from PyQt5 import QtCore
 from qgis import core, gui
-from .Operations.addFeatures import AddFeatures
-from .Operations.changedGeometry import ChangedGeometry
-from .Operations.openProject import OpenProject
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.Validate.Operations.addFeatures import AddFeatures
+from Ferramentas_Producao.Validate.Operations.delFeatures import DelFeatures
+from Ferramentas_Producao.Validate.Operations.changedGeometry import ChangedGeometry
+from Ferramentas_Producao.Validate.Operations.openProject import OpenProject
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 
 
 class ValidateOperations(QtCore.QObject):
@@ -54,6 +54,7 @@ class ValidateOperations(QtCore.QObject):
         self.addFeatures = AddFeatures(self.iface)
         self.changedGeometry = ChangedGeometry(self.iface)
         self.openProject = OpenProject(self.iface)
+        #self.delFeatures = DelFeatures(self.iface)
 
     def finish_operations(self):
         del self.addFeatures
@@ -62,6 +63,7 @@ class ValidateOperations(QtCore.QObject):
     def check_operations(self):
         self.addFeatures.validate()
         self.changedGeometry.validate()
+        #self.delFeatures.validate()
 
     def disconnect_layers(self):
         for lyr in self.track_list:

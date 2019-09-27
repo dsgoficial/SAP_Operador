@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import network, msgBox
+from Ferramentas_Producao.utils import msgBox
 
 class ReportDialog(QtWidgets.QDialog):
 
@@ -44,7 +43,7 @@ class ReportDialog(QtWidgets.QDialog):
     def show_message(self, tag):
         dialog = self
         if "report" == tag:
-            html = u"<p>Reportando um problema sua atividade atual será finalizada.</p>"
+            html = u"<p>Reportando um problema sua atividade atual será pausada, e você receberá uma nova atividade.</p>"
             result = msgBox.show(
                 text=html, 
                 title=u"AVISO!", 

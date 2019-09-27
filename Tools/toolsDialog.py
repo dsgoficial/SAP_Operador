@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox
-from utils.shortcutsDialog import ShortcutsDialog
+from Ferramentas_Producao.utils import msgBox
+from .shortcutsDialog import ShortcutsDialog
 
 class ToolsDialog(QtWidgets.QMainWindow):
 
