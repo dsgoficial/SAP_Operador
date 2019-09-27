@@ -2,8 +2,7 @@
 import os, sys, json
 from PyQt5 import QtCore, uic, QtWidgets
 from .rulesStatisticsDialog import RulesStatisticsDialog
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox
+from Ferramentas_Producao.utils import msgBox
 
 class RoutinesFrame(QtWidgets.QFrame):
 
@@ -110,7 +109,7 @@ class RoutinesFrame(QtWidgets.QFrame):
     def clean(self):
         layout = self.routines_area.layout()
         for idx in range(layout.count()):
-            if type(layout.itemAt(idx).widget()) == QtWidgets.QPushButton:
+            if type(layout.itemAt(idx).widget()) in [ QtWidgets.QPushButton, QtWidgets.QRadioButton]:
                 layout.itemAt(idx).widget().deleteLater()
         layout.removeItem(self.routines_spacer) if self.routines_spacer else ''
     

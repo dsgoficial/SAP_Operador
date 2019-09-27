@@ -4,11 +4,12 @@ from .toolsDialog import ToolsDialog
 from .LoadData.loadData import LoadData
 from .Routines.routines import Routines
 import sys, os
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from SAP.managerSAP import ManagerSAP
-from utils import cursorWait
+from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
+from Ferramentas_Producao.utils import cursorWait
 
 class Tools(QtCore.QObject):
+
+    restart_validate = QtCore.pyqtSignal()
 
     def __init__(self, iface, menu, sap):
         super(Tools, self).__init__()
@@ -18,7 +19,17 @@ class Tools(QtCore.QObject):
         self.sap = sap
         self.sap_mode = False
         self.interface = None
+        self.sap.close_work.connect(
+            self.menu.close_dock
+        )
         self.loadData = LoadData(self.iface)
+        self.loadData.restart_validate.connect(
+            self.restart_validate.emit
+        )
+        self.loadData.show_menu.connect(
+            self.menu.show_menu
+        )
+        self.routines = Routines(self.iface)
 
     def __del__(self):
         LoadData(self.iface).clean_forms_custom()
@@ -37,7 +48,8 @@ class Tools(QtCore.QObject):
             self.loadData.update_frame()
             self.interface.controller_btn.click()
         else:
-            self.loadData = LoadData(self.iface)
+            self.loadData.sap_mode = self.sap_mode
+            #self.loadData = LoadData(self.iface)
             self.interface.controller_btn.setVisible(False)
             self.interface.load_btn.click()
         self.interface.show_()
@@ -50,13 +62,10 @@ class Tools(QtCore.QObject):
             if choose == u"controller_btn":
                 self.tool_selected = self.sap
             elif choose == u"rotines_btn":
-                self.tool_selected = Routines(self.iface)
+                self.tool_selected = self.routines
                 self.tool_selected.sap_mode = self.sap_mode
             else:
                 self.tool_selected = self.loadData
-                self.tool_selected.show_menu.connect(
-                    self.menu.show_menu
-                )
             self.interface.show_frame(
                 self.tool_selected.get_frame()
             )

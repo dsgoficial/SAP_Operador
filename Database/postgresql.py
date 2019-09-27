@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys, psycopg2, base64, pickle, json, copy
 from PyQt5 import QtCore
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import managerFile
+from Ferramentas_Producao.utils import managerFile
 import re
 
 class Postgresql(QtCore.QObject):
@@ -36,10 +35,11 @@ class Postgresql(QtCore.QObject):
         if config_conn:
             self.conns[config_conn['db_name']] = config_conn
         else:
+            self.conns = {}
             aliases = self.get_local_alias_db()
             settings = QtCore.QSettings()
             path_conf = u"PostgreSQL/connections/{0}/{1}"
-            for alias in aliases:
+            for alias in aliases:                                                                                                     
                 if settings.value(path_conf.format(alias, u"database")):
                     self.conns[alias] = {
                         'db_name' : settings.value(path_conf.format(alias, u"database")),
@@ -50,6 +50,7 @@ class Postgresql(QtCore.QObject):
                     }
 
     def get_dbs_names(self):
+        self.set_connections_data()
         return list(self.conns.keys())
 
     def get_workspaces_name(self, table_name):
@@ -69,6 +70,7 @@ class Postgresql(QtCore.QObject):
         result = {}
         data = self.validate_table(table_name)
         if data:
+            # f_table_schema, f_table_name -- stylename já está resumido (modo local)
             sql = u"""SELECT stylename, id 
                     FROM {0}.{1};""".format(
                         data['schema_name'],
@@ -427,6 +429,8 @@ class Postgresql(QtCore.QObject):
             for item in response:
                 field = item[0]
                 text = item[1]
+                if not(field and text):
+                    return 
                 code_list = []
                 for code in " ".join(" ".join(text.split("(")).split(")")).split(" "):
                     try:
@@ -546,16 +550,18 @@ class Postgresql(QtCore.QObject):
         db_data = db_data if db_data is not None else self.load_data() 
         return db_data['db_rules']
 
-    def get_layer_data(self, layer_name, db_data=None):
+    def get_layer_data(self, layer_data, db_data=None):
         db_data = db_data if db_data is not None else self.load_data()
         layers_data = db_data['db_layers']
         layers_data = layers_data[u'PONTO']+layers_data[u'LINHA']+layers_data[u'AREA']
-        layers_map = self.get_map_layers(layers_data)
-        idx = layers_map[layer_name]
-        return layers_data[idx]
-
-    def get_map_layers(self, layers_data):
-        return { data[u'layer_name'] : idx for idx, data in enumerate(layers_data)}
+        if 'schema' in layer_data:
+            for data in layers_data:
+                if layer_data['nome'] == data['layer_name'] and layer_data['schema'] == data['layer_schema']:
+                    return data
+        else:
+            for data in layers_data:
+                if layer_data['nome'] == data['layer_name']:
+                    return data
 
 
     

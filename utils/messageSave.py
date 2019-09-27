@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore, QtWidgets
 from qgis import core, gui
-from utils import msgBox
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.utils import msgBox
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 
 class MessageSave(QtCore.QObject):
 
@@ -22,6 +22,9 @@ class MessageSave(QtCore.QObject):
         for b in btns:
             b.triggered.connect(self.reset_time)
 
+    def check_tool(self):
+        return not( str(type(self.iface.mapCanvas().mapTool())) == "<class 'DsgTools.gui.ProductionTools.MapTools.FreeHandTool.models.acquisitionFree.AcquisitionFree'>" )
+
     def reset_time(self):
         self.time.stop()
         self.time.start(self.seconds)
@@ -29,7 +32,7 @@ class MessageSave(QtCore.QObject):
         
     def show_message(self):
         m_qgis = ManagerQgis(self.iface)
-        if m_qgis.count_modified_layer() > 0 and not(self.is_visible) and self.half:
+        if m_qgis.count_modified_layer() > 0 and not(self.is_visible) and self.half and self.check_tool():
             html = u'<p style="color:red">Salve suas alterações!</p>'
             self.is_visible = True
             msgBox.show(text=html, title=u"Aviso")

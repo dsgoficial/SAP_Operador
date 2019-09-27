@@ -1,10 +1,9 @@
 import os, sys
 from PyQt5 import QtCore
 from qgis import core, gui
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils.managerQgis import ManagerQgis
-from utils import msgBox
-from SAP.managerSAP import ManagerSAP
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.utils import msgBox
+from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
 
 class OpenProject(QtCore.QObject):
     def __init__(self, iface):

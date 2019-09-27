@@ -40,7 +40,9 @@ class ShortcutsDialog(QtWidgets.QDialog):
             'Desenhar Forma': 'G',
             'Liga/Desliga todas as labels' : 'L',
             'Ferramenta de Aquisição à Mão Livre' : 'F',
-            'Remodelar feições mão livre' : 'Shift+R'
+            'Remodelar feições mão livre' : 'Shift+R',
+            'Ligar/Desligar camada' : 'Y',
+            'Mostrar/Esconder marcadores para feições selecionadas ' : 'B'
         }
         for descr in shortcuts_info:
             html += self.tag_tamplate(descr, shortcuts_info[descr])

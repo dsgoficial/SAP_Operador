@@ -3,8 +3,7 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .saveProfileDialog import SaveProfileDialog
 from .customComboBox import CustomComboBox
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox
+from Ferramentas_Producao.utils import msgBox
 
 class MenuConfigFrame(QtWidgets.QDialog):
 
@@ -326,7 +325,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
                 ]
             },
             { 
-                'field_name' : u"Definir palavras chaves:",
+                'field_name' : 'Definir palavras chaves(separar com ";"):',
                 'field_values' : ''
             }
         ]
@@ -345,7 +344,7 @@ class MenuConfigFrame(QtWidgets.QDialog):
             )
 
     def load_fields_btn(self, tab_name, layer_name, button_data):
-        layer_data = self.parent.parent.get_layer_data(layer_name)
+        layer_data = self.parent.parent.get_layer_data({'nome' : layer_name})
         layer_fields = layer_data['layer_fields']
         for field_name in layer_fields:
             if not(field_name in [

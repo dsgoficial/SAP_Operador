@@ -3,8 +3,7 @@
 import os, sys
 from PyQt5 import QtCore
 from qgis import core, gui
-sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
-from utils import msgBox
+from Ferramentas_Producao.utils import msgBox
 
 class ChangedGeometry(QtCore.QObject):
     def __init__(self, iface):

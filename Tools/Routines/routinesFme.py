@@ -3,11 +3,11 @@ from qgis import core, gui
 from PyQt5 import QtCore
 from .statusRoutine import StatusRoutine
 import re, sys, os, json
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
-from Database.postgresql import Postgresql
-from SAP.managerSAP import ManagerSAP
-from utils import network, msgBox
-from utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.Database.postgresql import Postgresql
+from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
+from Ferramentas_Producao.utils import msgBox
+from Ferramentas_Producao.utils.network import Network
+from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 
 class RoutinesFme(QtCore.QObject):
 
@@ -18,31 +18,47 @@ class RoutinesFme(QtCore.QObject):
         self.iface = iface 
         self.sap_mode = False
         self.parent = parent
-        self.net = network
-        self.net.CONFIG['parent'] = self.parent
+        self.net = Network(self.parent)
         self.is_running = False
+    
+    def get_server(self):
+        m_qgis = ManagerQgis(self.iface)
+        return m_qgis.load_qsettings_var('FME/server')
+
+    def save_server(self, server):
+        m_qgis = ManagerQgis(self.iface)
+        m_qgis.save_qsettings_var('FME/server', server)
 
     def get_routines_data(self, server=''):
-        data = {}
-        server = self.get_server(server)
-        if server:
-            cat = ''
-            if self.sap_mode:
-                sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-                if  sap_data['fme']:
-                    cat = sap_data['fme']['categoria']
-                    cat = u"&category={0}".format(cat)
-            url = u"{0}/versions?last=true{1}".format(
-                server,
-                cat
-            )
-            response = self.net.GET(server, url)
-            if response:
-                data = response.json()['data']
-                for r in data:
-                    r['description'] = r['workspace_description']
-                    r['type_routine'] = 'fme'
-        return data
+        fme_routines = []
+        if self.sap_mode:
+            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
+            if  'fme' in sap_data and sap_data['fme']:
+                
+                for rout_data in sap_data['fme']:
+                    server = u"http://{0}:{1}".format( rout_data['servidor'], rout_data['porta'] )
+                    cat = u"&workspace={0}".format( rout_data['rotina'] )
+                    url = u"{0}/versions?last=true{1}".format( server, cat )
+                    response = self.net.GET(server, url)
+                    if response:
+                        routines = response.json()['data']
+                        for r in routines:
+                            r['description'] = r['workspace_description']
+                            r['type_routine'] = 'fme'
+                        fme_routines.append(r)
+        else:            
+            if server:
+                cat = ''
+                url = u"{0}/versions?last=true{1}".format( server, cat )
+                response = self.net.GET(server, url)
+                if response:
+                    routines = response.json()['data']
+                    for r in routines:
+                        r['description'] = r['workspace_description']
+                        r['type_routine'] = 'fme'
+                    fme_routines.append(r)
+        self.save_server( server )
+        return fme_routines
 
     def get_db_connection_data(self):
         if self.sap_mode:
@@ -63,20 +79,6 @@ class RoutinesFme(QtCore.QObject):
             'db_host' : db_host
         }
         return db_connection_data
-
-    def get_server(self, server=''):
-        if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            if  sap_data['fme'] and sap_data['fme']['servidor']:
-                server = sap_data['fme']['servidor']
-                server = u"http://{0}".format(server)
-        else:
-            m_qgis = ManagerQgis(self.iface)
-            if server:
-                m_qgis.save_qsettings_var('FME/server', server)
-            else:
-                server = m_qgis.load_qsettings_var('FME/server')
-        return server
 
     def get_workspace_geometry(self, settings_user):
         if self.sap_mode:
