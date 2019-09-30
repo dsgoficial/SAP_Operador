@@ -17,7 +17,7 @@ class LoginDialog(QtWidgets.QDialog):
         super(LoginDialog, self).__init__()
         self.iface = iface
         uic.loadUi(self.dialog_path, self)
-        self.version_text.setText(u"<b>versão: 3.5.7</b>")
+        self.version_text.setText(u"<b>versão: 3.5.7.1</b>")
         
     @QtCore.pyqtSlot(int)
     def on_localhost_check_stateChanged(self, state):
