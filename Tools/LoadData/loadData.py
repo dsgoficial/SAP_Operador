@@ -72,9 +72,10 @@ class LoadData(QtCore.QObject):
                 if 'alias' in d:
                     name = d['alias']
                     self.layers_config['names'][name] = lyr_name
-                    self.layers_config['attr'][name] = d['atributos']
                 else:
                     name = lyr_name
+                if 'atributos' in d:
+                    self.layers_config['attr'][name] = d['atributos']
                 if 'documentacao' in d:
                     self.layers_config['doc'][name] = d['documentacao']
                 layers_list.append(name) if lyr_name in layers_names else ''
