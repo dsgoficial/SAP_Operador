@@ -181,6 +181,7 @@ class LoadLayers:
 
     def get_workspace_filter(self, settings_data, layer_name):
         wkt_total = ''
+        workspace_name = self.get_workspace_name(settings_data) 
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             wkt_total = sap_data['geom']
