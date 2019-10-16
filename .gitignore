@@ -1,6 +1,6 @@
 *.log
 *.sql
-Tools/LoadData/forms/*.ui
+Tools/LoadData/Layers/forms/*.ui
 *.pyc
 *.bkp
 .pyc

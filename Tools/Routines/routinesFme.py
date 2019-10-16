@@ -46,17 +46,16 @@ class RoutinesFme(QtCore.QObject):
                             r['description'] = r['workspace_description']
                             r['type_routine'] = 'fme'
                         fme_routines.append(r)
-        else:            
+        else:
             if server:
-                cat = ''
-                url = u"{0}/versions?last=true{1}".format( server, cat )
+                url = u"{0}/versions?last=true".format( server )
                 response = self.net.GET(server, url)
                 if response:
                     routines = response.json()['data']
                     for r in routines:
                         r['description'] = r['workspace_description']
                         r['type_routine'] = 'fme'
-                    fme_routines.append(r)
+                        fme_routines.append(r)
         self.save_server( server )
         return fme_routines
 
