@@ -92,8 +92,8 @@ class RoutinesLocal(QtCore.QObject):
                 "dsgtools:rulestatistics", 
                 parameters
             )
-            if proc['RESULT']:
-                for line in proc['RESULT'].split('\n\n'):
+            if 'OUTPUT' in proc and proc['OUTPUT']:
+                for line in proc['OUTPUT'].split('\n\n'):
                     if '[regras]' in line.lower():
                         html+='<h3>{0}</h3>'.format(line)
                     elif 'passaram' in line.lower():
