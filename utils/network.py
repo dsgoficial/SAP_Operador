@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 from qgis import gui, core
 from platform import system 
 import os, requests, sys, re, subprocess, json
-from Ferramentas_Gerencia.utils import msgBox
+from Ferramentas_Producao.utils import msgBox
 
 
 class Network:
