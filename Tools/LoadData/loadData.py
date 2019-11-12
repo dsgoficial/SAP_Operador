@@ -49,7 +49,7 @@ class LoadData(QtCore.QObject):
         [ os.remove(os.path.join(directory_path, name)) for name in file_name_list]
     
     def load_data(self, settings_data):
-        load_layers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame)
+        load_layers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame, self.layers_config)
         load_layers.load(settings_data) if settings_data['layers_name'] else ''
         LoadInputs(self.iface, self.postgresql, load_layers, self.frame).load(settings_data) if settings_data['input_files'] and self.sap_mode else ''
         self.restart_validate.emit()

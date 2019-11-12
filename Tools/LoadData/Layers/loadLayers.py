@@ -14,17 +14,13 @@ from Ferramentas_Producao.Tools.LoadData.Rules.rules import Rules
 from Ferramentas_Producao.Tools.LoadData.Rules.rulesSap import RulesSap
 
 class LoadLayers:
-    def __init__(self, sap_mode, postgresql, iface, frame):
+    def __init__(self, sap_mode, postgresql, iface, frame, layers_config):
         self.iface = iface
         self.sap_mode = sap_mode
         self.rules = None
         self.postgresql = postgresql
         self.frame = frame
-        self.layers_config = {
-            'names' : {},
-            'attr' : {},
-            'doc' : {}
-        }
+        self.layers_config = layers_config
         self.db_group = None
 
     def load(self, settings_data, is_menu=False):
@@ -109,14 +105,13 @@ class LoadLayers:
                 name = data['nome']
                 if  name in self.layers_config['names']:
                     name = self.layers_config['names'][name]
-                layers_data.append( self.postgresql.get_layer_data( 
-                    { 
+                layer_data = self.postgresql.get_layer_data({ 
                         'nome' : name,
                         'schema' : data['schema'] 
-                    } 
-                ) )
-                layers_data = sorted(layers_data, key=sort_group_class)
-                layers_data = sorted(layers_data, key=sort_group_geom)
+                })
+                layers_data.append( layer_data ) if layer_data else ''
+            layers_data = sorted(layers_data, key=sort_group_class)
+            layers_data = sorted(layers_data, key=sort_group_geom)
         else:
             for name  in layers_name:
                 if name in self.layers_config['names']:
