@@ -155,12 +155,12 @@ class LoadData(QtCore.QObject):
             })
         
     def reload_forms_custom(self):
-        LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame).reload_forms_custom()
+        LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame, self.layers_config).reload_forms_custom()
 
     def create_db_group(self, settings):
-        load_layers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame)
+        load_layers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame, self.layers_config)
         return load_layers.create_db_group(settings)
 
     def search_layer(self, layer_name, settings_data):
-        load_layers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame)
+        load_layers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame, self.layers_config)
         return load_layers.search_layer(layer_name, settings_data)
