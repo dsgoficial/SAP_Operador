@@ -56,11 +56,14 @@ class Postgresql(QtCore.QObject):
         result = []
         data = self.validate_table(table_name)
         if data:
-            sql = u"""SELECT mi FROM {0}.{1};""".format(
-                data['schema_name'],
-                data['table_name']
-            )
-            response = self.run_sql(sql)
+            try:
+                sql = u"""SELECT mi FROM {0}.{1};""".format(
+                    data['schema_name'],
+                    data['table_name']
+                )
+                response = self.run_sql(sql)
+            except:
+                response = []
             if response:
                 result = list(set([item[0] for item in response]))
         return result
