@@ -155,6 +155,8 @@ class Classification(QtCore.QObject):
                 sucess = self.open_form(fid, lyr, feat)
             else:
                 self.set_attribute_feature(lyr, feat)
+                indx = lyr.fields().indexFromName('id')
+                feat.setAttribute(indx, None) if indx >=0 else ""
                 sucess = True
             if sucess:
                 self.ignore = True
