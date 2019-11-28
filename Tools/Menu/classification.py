@@ -130,18 +130,27 @@ class Classification(QtCore.QObject):
 
     def open_form(self, fid, lyr, feat):
         self.set_attribute_feature(lyr, feat)
-        self.iface.openFeatureForm(lyr, feat)
+        result = self.iface.openFeatureForm(lyr, feat)
+        return result
 
     def edit_feature(self, fid):
-        if fid < 0 and fid != self.fid_before:
+        if fid < 0 and fid != self.fid_before and not(self.ignore):
             self.fid_before = fid
             lyr = self.current_button_layer
             feat = lyr.getFeature(fid)
+            lyr.deleteFeature(fid)
+            sucess = False
             if self.with_form:
-                self.open_form(fid, lyr, feat)
+                sucess = self.open_form(fid, lyr, feat)
             else:
                 self.set_attribute_feature(lyr, feat)
-            lyr.updateFeature(feat)
+                indx = lyr.fields().indexFromName('id')
+                feat.setAttribute(indx, None) if indx >=0 else ""
+                sucess = True
+            if sucess:
+                self.ignore = True
+                lyr.addFeature(feat)
+                self.ignore = False
      
     def reclassify(self, formValues, layers_selected):
         self.current_button_data = {'formValues' : formValues}
