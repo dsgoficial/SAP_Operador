@@ -50,7 +50,7 @@ class RemoteLayersWidget(QtWidgets.QWidget):
             for i in range(self.rules_list_input.count())
         ]
         workspaces = [ ]
-        only_with_geometry = False
+        only_with_geometry = self.only_geometry.isChecked()
         return layers, input_files, rules, workspaces, only_with_geometry
 
     def restart(self):
