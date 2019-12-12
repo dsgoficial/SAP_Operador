@@ -20,17 +20,6 @@
    <enum>QFrame::Raised</enum>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="0" colspan="2">
-    <widget class="QFrame" name="layers_frame">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout"/>
-    </widget>
-   </item>
    <item row="4" column="1">
     <widget class="QPushButton" name="load_btn">
      <property name="text">
@@ -70,13 +59,6 @@
      </widget>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QProgressBar" name="progress_load">
-     <property name="value">
-      <number>0</number>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QSplitter" name="splitter_2">
      <property name="orientation">
@@ -109,10 +91,40 @@
      </widget>
     </widget>
    </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QFrame" name="layers_frame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout"/>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QProgressBar" name="progress_load">
+     <property name="value">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0">
-    <widget class="QCheckBox" name="load_menu">
+    <widget class="QPushButton" name="load_menu">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>30</height>
+      </size>
+     </property>
      <property name="text">
-      <string>Carregar menu</string>
+      <string>Adicionar Menu</string>
      </property>
     </widget>
    </item>

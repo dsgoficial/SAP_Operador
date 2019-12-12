@@ -34,7 +34,7 @@ class Menu(QtCore.QObject):
 
     def load_data(self):
         return managerFile.load_data(self.path_data)
-    
+         
     def save_profile_on_db(self, profile_name):
         profile_data = self.load_data()
         profile_data['nome_do_perfil'] = profile_name

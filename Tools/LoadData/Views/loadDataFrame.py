@@ -42,9 +42,9 @@ class LoadDataFrame(QtWidgets.QFrame):
         self.styles_options.addItems(data['styles'])
         self.layers_widget.load(data)
             
-    @QtCore.pyqtSlot(int)
-    def on_load_menu_stateChanged(self, state):
-        self.menu_selected.emit() if state else ''
+    @QtCore.pyqtSlot(bool)
+    def on_load_menu_clicked(self):
+        self.menu_selected.emit()
 
     @QtCore.pyqtSlot(int)
     def on_db_options_currentIndexChanged(self, idx):
