@@ -13,6 +13,10 @@ class RemoteLayersWidget(QtWidgets.QWidget):
         super(RemoteLayersWidget, self).__init__()
         uic.loadUi(self.dialog_path, self)
         self.buttons = [
+            self.call_all_btn_1,
+            self.call_selected_btn_1,
+            self.send_all_btn_1,
+            self.send_selected_btn_1,
             self.call_all_btn_2,
             self.call_selected_btn_2,
             self.send_all_btn_2,
@@ -64,7 +68,7 @@ class RemoteLayersWidget(QtWidgets.QWidget):
 
     def load(self, data):
         self.clean_lists()
-        self.rules_list.addItems(data['rules'])
+        self.rules_list_input.addItems(data['rules'])
         self.layers_list_input.addItems(data['layers'])
         self.files_list.addItems(data['input_files'])
     
