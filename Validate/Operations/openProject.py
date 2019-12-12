@@ -16,13 +16,12 @@ class OpenProject(QtCore.QObject):
         user = m_qgis.load_project_var('user')
         password = m_qgis.load_project_var('password')
         works = m_qgis.load_project_var('works')
-        token = m_qgis.load_project_var('token')
         if user and password and works:
             server = m_qgis.load_qsettings_var('login/server')
             valid = False
             if server:
                 m_sap = ManagerSAP(self.iface)
-                data = m_sap.get_current_works(server, user, password, token)
+                data = m_sap.getWork(server, user, password)
                 if data and 'dados' in data and data['dados']['atividade']['nome'] == works:
                     valid = True
             if not(valid):

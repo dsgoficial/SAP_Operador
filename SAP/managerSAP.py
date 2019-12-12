@@ -100,6 +100,24 @@ class ManagerSAP(QtCore.QObject):
             self.close_tools.emit()
             self.login_sap.dialog.show_()
 
+    def getWork(self, server, user, password):
+        sucess = False
+        qgis_version = core.QgsExpressionContextUtils.globalScope().variable('qgis_version').split('-')[0]
+        post_data = {
+            "usuario" : user,
+            "senha" : password,
+            'plugins' : self.get_plugins_versions(),
+            'qgis' : qgis_version
+        }
+        url = u"{0}/login".format(server)
+        response = self.net.POST(server, url, post_data)
+        if response and response.json()['sucess']:
+            if not( 'version' in response.json()['dados'] and int(response.json()['dados']['version']) == 2):
+                self.show_message('erro version')
+                return
+            token = response.json()['dados']['token']
+            return self.get_current_works(server, user, password, token)
+            
     def get_frame(self):
         self.frame = WorksFrame(self.iface, self)
         self.frame.close_works.connect(
