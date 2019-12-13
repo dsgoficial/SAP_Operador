@@ -68,6 +68,7 @@ class ManagerQgis(QtCore.QObject):
 
     def load_custom_config(self):
         self.clean_custom_config()
+        self.clean_actions_conflicts()
         configs = self.get_custom_config()
         qsettings = QtCore.QSettings()
         for var_qgis in configs:
@@ -79,6 +80,11 @@ class ManagerQgis(QtCore.QObject):
         for var_qgis in qsettings.allKeys():
             if (u'shortcuts' in var_qgis):
                 qsettings.setValue(var_qgis, u'')
+
+    def clean_actions_conflicts(self):
+        for a in gui.QgsGui.shortcutsManager().listActions():
+            if 'EnableSnappingAction'.lower() in a.objectName().lower():
+                a.setShortcut('')
 
     def get_custom_config(self):
         variables = {
