@@ -22,8 +22,8 @@ class MessageSave(QtCore.QObject):
         for b in btns:
             b.triggered.connect(self.reset_time)
 
-    def check_tool(self):
-        return not( str(type(self.iface.mapCanvas().mapTool())) == "<class 'DsgTools.gui.ProductionTools.MapTools.FreeHandTool.models.acquisitionFree.AcquisitionFree'>" )
+    def isActiveFreeHand(self):
+        return str(type(self.iface.mapCanvas().mapTool())) == "<class 'DsgTools.gui.ProductionTools.MapTools.FreeHandTool.models.acquisitionFree.AcquisitionFree'>"
 
     def reset_time(self):
         self.time.stop()
@@ -32,7 +32,7 @@ class MessageSave(QtCore.QObject):
         
     def show_message(self):
         m_qgis = ManagerQgis(self.iface)
-        if m_qgis.count_modified_layer() > 0 and not(self.is_visible) and self.half and self.check_tool():
+        if m_qgis.count_modified_layer() > 0 and not(self.is_visible) and self.half and not self.isActiveFreeHand():
             html = u'<p style="color:red">Salve suas alterações!</p>'
             self.is_visible = True
             msgBox.show(text=html, title=u"Aviso")
