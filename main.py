@@ -35,23 +35,35 @@ class Main(QtCore.QObject):
         core.QgsProject.instance().readProject.connect(
             self.load_qgis_project
         )
+        self.iface.actionNewProject().triggered.connect(
+            self.new_qgis_project
+        )
         self.mQ = ManagerQgis(self.iface)
         self.mQ.load_custom_config()
         
     def unload(self):
         self.sap.add_action_qgis(False)
-        self.sap.show_tools.disconnect(
-            self.show_tools_dialog
-        )
-        self.sap.close_tools.disconnect(
-            self.tools.close_dialog
-        )
+        try:
+            self.sap.show_tools.disconnect(
+                self.show_tools_dialog
+            )
+        except:
+            pass
+        try:
+            self.sap.close_tools.disconnect(
+                self.tools.close_dialog
+            )
+        except:
+            pass
         del self.tools
-        core.QgsProject.instance().readProject.disconnect(
-            self.load_qgis_project
-        )
+        try:
+            core.QgsProject.instance().readProject.disconnect(
+                self.load_qgis_project
+            )
+        except:
+            pass
         self.validate.stop()
-        self.monitoring.stop()
+        self.monitoring.stopCanvas()
         del self.sap
         del self.validate
         del self.monitoring
@@ -63,6 +75,9 @@ class Main(QtCore.QObject):
             self.msg_save.start() if not(self.msg_save.is_running) else ''
             self.tools.reload_project_qgis()
             self.validate.start()
+
+    def new_qgis_project(self):
+        self.monitoring.stopCanvas()
             
     def closed_tools_dialog(self):
         self.sap.enable_action_qgis(True)
@@ -72,7 +87,7 @@ class Main(QtCore.QObject):
             self.validate.restart()
                 
     def show_tools_dialog(self, sap_mode):
-        self.monitoring.start() if sap_mode else self.monitoring.stop()
+        self.monitoring.startCanvas() if sap_mode else self.monitoring.stopCanvas()
         self.sap_mode = sap_mode
         self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode

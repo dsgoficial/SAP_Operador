@@ -1,68 +1,34 @@
-# -*- coding: utf-8 -*-
-
-import os, sys
+import os, sys, time, requests, json
 from PyQt5 import QtCore
 from qgis import core, gui
 from Ferramentas_Producao.utils.network import Network
 from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
 
-class Canvas(QtCore.QObject):
-    def __init__(self, iface):
-        self.iface = iface
-        self.network = Network()
-        self.time = QtCore.QTimer()
-        self.is_active_canvas = False
-        self.seconds = 1000 * 60
+class Canvas(QtCore.QThread):
 
-    def connect_signals(self):
-        self.time.timeout.connect(
-            lambda: self.send_info()
-        )
-        self.iface.mapCanvas().mapCanvasRefreshed.connect(
-            lambda: self.set_active_canvas()
-        )
+    def __init__(self, parent=None):
+        super(Canvas, self).__init__(parent)
+        self.running = True
+        self.sendMessage = False
 
-    def disconnect_signals(self):
-        try:
-            self.time.timeout.disconnect(
-                lambda: self.send_info()
-            )
-        except:
-            pass
-        try:
-            self.iface.mapCanvas().mapCanvasRefreshed.disconnect(
-                self.set_active_canvas
-            )
-        except:
-            pass
+    def on_source(self, server, token, activityId):
+        self.server = server
+        self.token = token
+        self.activityId = activityId
 
-    def start(self):
-        self.disconnect_signals()
-        self.connect_signals()
-        self.time.stop()        
-        self.time.start(self.seconds)
-
-    def stop(self):
-        self.disconnect_signals()
-        self.time.stop()
-
-    def set_active_canvas(self):
-        self.is_active_canvas = True
-        
-    def send_info(self):
-        if not self.is_active_canvas:
-            return
-        sap_data = ManagerSAP(self.iface).load_data()
-        host = sap_data['server']
-        token = sap_data['token']
-        activity_id = int(sap_data['dados']['atividade']['id'])
-        header = { 
-            'authorization' : token
-        }
-        url = "{0}/microcontrole/acao".format(host) 
-        postdata = {
-            "atividade_id": int(activity_id)
-        }
-        self.network.POST(host, url, postdata, header=header)
-        self.is_active_canvas = False
-     
+    def run(self):
+        while self.running:
+            if self.sendMessage:
+                header = { 
+                    'authorization' : self.token,
+                    'content-type' : 'application/json'
+                }
+                url = "{0}/microcontrole/acao".format(self.server) 
+                postData = {
+                    "atividade_id": int(self.activityId)
+                }
+                session = requests.Session()
+                session.trust_env = False
+                session.post(url, data=json.dumps(postData), headers=header)
+                self.sendMessage = False
+            time.sleep(2)
