@@ -103,6 +103,8 @@ class LoadLayers:
             sap_data = ManagerSAP(self.iface).load_data()
             for data  in sap_data['dados']['atividade']['camadas']:
                 name = data['nome']
+                if not name in layers_name:
+                    continue
                 if  name in self.layers_config['names']:
                     name = self.layers_config['names'][name]
                 layer_data = self.postgresql.get_layer_data({ 

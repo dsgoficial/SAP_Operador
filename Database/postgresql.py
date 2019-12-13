@@ -233,6 +233,7 @@ class Postgresql(QtCore.QObject):
                 domains = self.get_layer_domains(lyr_name)
                 for field in list(set(list(domains.keys()) + fields)):
                     layer_all_data['layer_fields'][field] = {}
+                    
                     if ( 
                             table_with_filter 
                             and (field in domains) 
