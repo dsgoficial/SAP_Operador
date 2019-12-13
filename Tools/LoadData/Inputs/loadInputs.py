@@ -93,7 +93,7 @@ class LoadInputs:
     def load_pg_layers(self, files_data):
         #loadLayers = LoadLayers(self.sap_mode, self.postgresql, self.iface, self.frame)
         for d in files_data:
-            self.add_pg_layer(d['path_origin'], d['file_name'])
+            self.add_pg_layer(d['path_origin'], d['file_name'], d['epsg'])
 
     def download(self, files_data):
         erro = []
@@ -203,8 +203,8 @@ class LoadInputs:
         )
         return script_path
 
-    def add_pg_layer(self, db_path, layer_name):
-        uri_text = self.get_uri_text(db_path)
+    def add_pg_layer(self, db_path, layer_name, epsg):
+        uri_text = self.get_uri_text(db_path, epsg)
         v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
         vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
         vl.setReadOnly(True)
@@ -220,7 +220,7 @@ class LoadInputs:
             group = root.addGroup(group_name)
         group.insertLayer(0, vl)
             
-    def get_uri_text(self, db_path):
+    def get_uri_text(self, db_path, epsg):
         sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
         db_address, db_name, db_schema, layer_name = db_path.split('/')
         db_host, db_port = db_address.split(':')
@@ -234,7 +234,7 @@ class LoadInputs:
             connection_config['db_password'],
             db_schema,
             layer_name,
-            u"""ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{}'))""".format(sap_data['geom'])
+            u"""ST_INTERSECTS(geom, ST_TRANSFORM(ST_GEOMFROMEWKT('{0}'), {1}))""".format(sap_data['geom'], epsg)
         )
         return uri_text
 
