@@ -79,7 +79,7 @@ class RoutinesFrame(QtWidgets.QFrame):
         if routines_data['fme'] or routines_data['local']:
             for r in routines_data['fme']:
                 radio_btn = self.create_radio_btn(
-                    r['description'],
+                    "{0} : {1}".format(r['workspace_name'], r['description']),
                     self.routines_area
                 )
                 radio_btn.routine_data = json.dumps(r)
