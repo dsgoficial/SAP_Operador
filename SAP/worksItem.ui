@@ -15,13 +15,6 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="description_lb">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QFrame" name="observation_frame">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -30,21 +23,6 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3"/>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="observation_lb">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="cbx_gpb">
-     <property name="title">
-      <string/>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2"/>
     </widget>
    </item>
   </layout>

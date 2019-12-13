@@ -37,16 +37,16 @@ class WorksItem(QtWidgets.QWidget):
         return cbx
 
     def load_activity(self):
-        if self.description:
+        """ if self.description:
             self.description_lb.setText("<h2>{0}</h2>".format(self.description))
             self.description_lb.setWordWrap(True)
         else:
-            self.observation_lb.setVisible(False)
+            self.description_lb.setVisible(False)
         if self.observation:
             self.observation_lb.setText("<h2>{0}</h2>".format(self.observation))
             self.observation_lb.setWordWrap(True)
         else:
-            self.observation_lb.setVisible(False)
+            self.observation_lb.setVisible(False) """
         for obs in [ 'observacao_subfase', 'observacao_etapa', 'observacao_unidade_trabalho', 'observacao_atividade' ]:
             lb = QtWidgets.QLabel(self.woks_data[obs], self.cbx_gpb)
             self.observation_frame.layout().addWidget(lb)
