@@ -142,13 +142,10 @@ class LoadLayers:
         return layer_config
 
 
-    def load_layer(self, settings_data, layer_data, layer_config, is_menu):
-        filter_text, wkt_total = self.get_workspace_filter(settings_data, layer_data['layer_name'])
-        v_lyr, loaded = self.add_layer_on_canvas(
+    def load_layer(self, settings_data, layer_data, layer_config, is_menu):        
+        v_lyr, loaded, wkt_total = self.add_layer_on_canvas(
             settings_data, 
-            layer_data, 
-            filter_text
-        )
+            layer_data        )
         if (is_menu and not(loaded)) or not(is_menu):    
             self.add_layer_style(v_lyr, settings_data)
             self.add_layer_values_map(v_lyr, layer_data)
@@ -176,25 +173,35 @@ class LoadLayers:
         self.add_layer_default_values(v_lyr)
         return v_lyr
 
-    def get_workspace_filter(self, settings_data, layer_name):
+    def get_workspace_filter(self, settings_data, layer_data, keyColumn):
         wkt_total = ''
         workspace_name = self.get_workspace_name(settings_data) 
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             wkt_total = sap_data['geom']
-            if layer_name == u"aux_moldura_a":
+            if layer_data['layer_name'] == u"aux_moldura_a":
                 filter_text = u""""mi" = '{}'""".format(workspace_name)
             else:
-                filter_text = u"""ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{}'))""".format(wkt_total)
+                filter_text = u"""ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+                    wkt_total,
+                    keyColumn,
+                    layer_data['layer_schema'],
+                    layer_data['layer_name']
+                )
         else:
             workspaces = settings_data['workspaces']
-            if layer_name == u"aux_moldura_a":
+            if layer_data['layer_name'] == u"aux_moldura_a":
                 filter_text = u''' "mi" in ( {0} ) '''.format( ', '.join([ "'{0}'".format(w) for w in workspaces]) )
             else:
                 frames_wkt = self.postgresql.get_frames_wkt()
                 wkts = [frames_wkt[w] for w in workspaces]
                 wkt_total = self.combine_wkts(wkts)
-                filter_text =  u"""ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{}'))""".format(wkt_total)
+                filter_text =  u"""ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+                    wkt_total,
+                    keyColumn,
+                    layer_data['layer_schema'],
+                    layer_data['layer_name']
+                )
         return filter_text, wkt_total
 
     def combine_wkts(self, wkts):
@@ -204,16 +211,15 @@ class LoadLayers:
         epsg = wkt.split(';')[0]
         return "{0};{1}".format(epsg, geoms.asWkt())
 
-    def add_layer_on_canvas(self, settings_data, layer_data, filter_text):
+    def add_layer_on_canvas(self, settings_data, layer_data):
         layer_name = layer_data['layer_name']
         result = self.search_layer(layer_name, settings_data)
         if result:
             v_lyr = result
-            v_lyr.setSubsetString(filter_text)
         else:
             class_group = self.get_class_group(layer_data, settings_data)
             connection_config = self.postgresql.get_connection_config()
-            uri_text = self.get_uri_text(connection_config, layer_data, filter_text)
+            uri_text = self.get_uri_text(connection_config, layer_data)
             v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
             if (
                 (v_lyr and settings_data['with_geom'] and v_lyr.allFeatureIds())
@@ -222,7 +228,10 @@ class LoadLayers:
                 ):
                 vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
                 class_group.addLayer(vl)
-        return v_lyr, bool(result)
+        keyColumn = v_lyr.dataProvider().uri().keyColumn()
+        filter_text, wkt_total = self.get_workspace_filter(settings_data, layer_data, keyColumn)
+        v_lyr.setSubsetString(filter_text)
+        return v_lyr, bool(result), wkt_total
 
 
     def search_layer(self, layer_name, settings_data):
@@ -244,7 +253,7 @@ class LoadLayers:
         class_group = self.add_group_layer(layer_data['group_class'], geom_group)
         return class_group
 
-    def get_uri_text(self, conn_data, layer_data, filter_text):
+    def get_uri_text(self, conn_data, layer_data, filter_text=''):
         template_uri = u"""dbname='{}' host={} port={} user='{}' password='{}' table="{}"."{}" (geom) sql={}"""
         uri_text = template_uri.format(
             conn_data['db_name'], 
