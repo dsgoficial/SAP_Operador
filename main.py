@@ -62,6 +62,12 @@ class Main(QtCore.QObject):
             )
         except:
             pass
+        try:
+            self.iface.actionNewProject().triggered.disconnect(
+                self.new_qgis_project
+            )
+        except:
+            pass
         self.validate.stop()
         self.monitoring.stopCanvas()
         del self.sap
