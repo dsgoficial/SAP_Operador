@@ -56,15 +56,15 @@ class WorksItem(QtWidgets.QWidget):
 
     def validate_checkbox(self):
         groupBox = self.cbx_gpb
-        qnt_cbx = groupBox.children()[0].count()
-        qnt_cbx_checked = 0
+        total = 0
+        checked = 0
         for idx in range(groupBox.children()[0].count()):
-            try:
-                if groupBox.children()[0].itemAt(idx).widget().isChecked():
-                    qnt_cbx_checked += 1
-            except:
-                pass
-        if qnt_cbx == qnt_cbx_checked:
+            widget = groupBox.children()[0].itemAt(idx).widget()
+            if type(widget) == QtWidgets.QCheckBox:
+                total += 1
+            if type(widget) == QtWidgets.QCheckBox and widget.isChecked():
+                checked += 1
+        if total == checked:
             self.enable_btn.emit()
         else:
             self.disable_btn.emit()

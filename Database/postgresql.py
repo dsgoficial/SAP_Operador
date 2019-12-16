@@ -427,19 +427,22 @@ class Postgresql(QtCore.QObject):
         )
         response = self.run_sql(sql)
         if response:
-            for item in response:
-                field = item[0]
-                text = item[1]
-                if not(field and text):
-                    return 
-                code_list = []
-                for code in " ".join(" ".join(text.split("(")).split(")")).split(" "):
-                    try:
-                        int(code)
-                        code_list.append(code)
-                    except:
-                        pass
-                result[field] = ",".join(code_list)
+            try:
+                for item in response:
+                    field = item[0]
+                    text = item[1]
+                    if not(field and text):
+                        return 
+                    code_list = []
+                    for code in " ".join(" ".join(text.split("(")).split(")")).split(" "):
+                        try:
+                            int(code)
+                            code_list.append(code)
+                        except:
+                            pass
+                    result[field] = ",".join(code_list)
+            except:
+                pass
         return result
 
     def get_domain_values(self, table_name, code_list=False):
