@@ -97,38 +97,39 @@ class RoutinesFme(QtCore.QObject):
         html = ''
         self.routine_data = routine_data
         settings_user = ManagerQgis(self.iface).load_project_var('settings_user')
-        if settings_user :
-            geometry = self.get_workspace_geometry(settings_user)
-            if geometry:
-                db_connection_data = self.get_db_connection_data()
-                post_json  = self.get_post_data(self.routine_data, geometry, db_connection_data)
-                routine_id =  self.routine_data['id']
-                post_data = { 'parameters' : post_json}
-                server  = self.get_server()
-                url = '{0}/versions/{1}/jobs'.format(
-                    server, 
-                    routine_id
-                )
-                response = self.net.POST(server, url, post_data)
-                url_get_status = '{0}/jobs/{1}'.format(
-                    server, 
-                    response.json()['data']['job_uuid']
-                )
-                self.running = True
-                self.worker = StatusRoutine(url_get_status, server)
-                self.thread = QtCore.QThread()
-                self.worker.moveToThread(self.thread)
-                self.worker.finish.connect(self.stop)
-                self.thread.started.connect(
-                    self.worker.run
-                )
-                self.thread.start()
-            else:
-                html = u"<p>Carregue uma unidade de trabalho para executar essa rotina.</p>"
-        else:
-            html = u"<p>Não há dados carregados nesse projeto!</p>"
-        if html:
-            self.message.emit(html)
+        if not settings_user :
+            self.message.emit(u"<p>Não há dados carregados nesse projeto!</p>")
+            return
+        geometry = self.get_workspace_geometry(settings_user)
+        if not geometry:
+            self.message.emit(u"<p>Carregue uma unidade de trabalho para executar essa rotina.</p>")
+            return
+        db_connection_data = self.get_db_connection_data()
+        post_json  = self.get_post_data(self.routine_data, geometry, db_connection_data)
+        routine_id =  self.routine_data['id']
+        post_data = { 'parameters' : post_json}
+        server  = self.get_server()
+        url = '{0}/versions/{1}/jobs'.format(
+            server, 
+            routine_id
+        )
+        response = self.net.POST(server, url, post_data)
+        if not response:
+            self.message.emit(u"<p>Erro ao iniciar rotina.</p>")
+            return
+        url_get_status = '{0}/jobs/{1}'.format(
+            server, 
+            response.json()['data']['job_uuid']
+        )
+        self.running = True
+        self.worker = StatusRoutine(url_get_status, server)
+        self.thread = QtCore.QThread()
+        self.worker.moveToThread(self.thread)
+        self.worker.finish.connect(self.stop)
+        self.thread.started.connect(
+            self.worker.run
+        )
+        self.thread.start()
 
     def stop(self, response_routine):
         if self.worker:
