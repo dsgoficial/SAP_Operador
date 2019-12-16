@@ -107,12 +107,11 @@ class Menu(QtCore.QObject):
         return db_data
 
     def get_profile_data(self, name):
-        #profile_data
+        profile_data = {}
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
             for menu_data in sap_data['menus']:
                 if menu_data['nome'] == name:
-                    profile_data = {}
                     profile_data['nome_do_perfil'] = menu_data['nome']
                     profile_data['perfil'] = json.loads(menu_data['definicao_menu'])
                     profile_data['orderMenu'] = json.loads(menu_data['ordem_menu'])
