@@ -362,7 +362,7 @@ class LoadLayers:
             u"uiData" : {
                     u"layer_data" : layer_data,
                     u"fields_sorted" : fields_sorted,
-                    u"form_name" : form_file.name
+                    u"form_name" : os.path.basename(form_file.name)
                 }
             }, 
             ensure_ascii=False
