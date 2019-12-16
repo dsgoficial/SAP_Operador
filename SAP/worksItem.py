@@ -40,16 +40,13 @@ class WorksItem(QtWidgets.QWidget):
         if self.description:
             lb = QtWidgets.QLabel("<h2>{0}</h2>".format(self.description), self.cbx_gpb)
             self.cbx_gpb.children()[0].addWidget(lb)
-            #self.observation_frame.layout().addWidget(lb)
         if self.observation:
             lb = QtWidgets.QLabel("<h2>{0}</h2>".format(self.observation), self.cbx_gpb)
             self.cbx_gpb.children()[0].addWidget(lb)
-            #self.observation_frame.layout().addWidget(lb)
         for obs in [ 'observacao_subfase', 'observacao_etapa', 'observacao_unidade_trabalho', 'observacao_atividade' ]:
             if self.woks_data[obs]:
                 lb = QtWidgets.QLabel(self.woks_data[obs], self.cbx_gpb)
                 self.cbx_gpb.children()[0].addWidget(lb)
-                #self.observation_frame.layout().addWidget(lb)
         for value in self.values_cbx:
             cbx = self.get_checkbox(value, self.cbx_gpb)
             cbx.clicked.connect(self.validate_checkbox)
