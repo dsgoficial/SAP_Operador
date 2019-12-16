@@ -3,6 +3,7 @@ import os, sys, json
 from PyQt5 import QtCore, uic, QtWidgets
 from .rulesStatisticsDialog import RulesStatisticsDialog
 from Ferramentas_Producao.utils import msgBox
+from textwrap import wrap
 
 class RoutinesFrame(QtWidgets.QFrame):
 
@@ -79,7 +80,7 @@ class RoutinesFrame(QtWidgets.QFrame):
         if routines_data['fme'] or routines_data['local']:
             for r in routines_data['fme']:
                 radio_btn = self.create_radio_btn(
-                    "{0} : {1}".format(r['workspace_name'], r['description']),
+                    "\n".join(wrap("{0} : {1}".format(r['workspace_name'], r['description']), 110)),
                     self.routines_area
                 )
                 radio_btn.routine_data = json.dumps(r)

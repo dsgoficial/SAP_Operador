@@ -31,25 +31,25 @@ class WorksItem(QtWidgets.QWidget):
         self.load_activity()
 
     def get_checkbox(self, name, parent):
-        name = "\n".join(wrap(name))
+        name = "\n".join(wrap(name, 100))
         cbx = QtWidgets.QCheckBox(name, parent)
         parent.children()[0].addWidget(cbx)
         return cbx
 
     def load_activity(self):
-        """ if self.description:
-            self.description_lb.setText("<h2>{0}</h2>".format(self.description))
-            self.description_lb.setWordWrap(True)
-        else:
-            self.description_lb.setVisible(False)
+        if self.description:
+            lb = QtWidgets.QLabel("<h2>{0}</h2>".format(self.description), self.cbx_gpb)
+            self.cbx_gpb.children()[0].addWidget(lb)
+            #self.observation_frame.layout().addWidget(lb)
         if self.observation:
-            self.observation_lb.setText("<h2>{0}</h2>".format(self.observation))
-            self.observation_lb.setWordWrap(True)
-        else:
-            self.observation_lb.setVisible(False) """
+            lb = QtWidgets.QLabel("<h2>{0}</h2>".format(self.observation), self.cbx_gpb)
+            self.cbx_gpb.children()[0].addWidget(lb)
+            #self.observation_frame.layout().addWidget(lb)
         for obs in [ 'observacao_subfase', 'observacao_etapa', 'observacao_unidade_trabalho', 'observacao_atividade' ]:
-            lb = QtWidgets.QLabel(self.woks_data[obs], self.cbx_gpb)
-            self.observation_frame.layout().addWidget(lb)
+            if self.woks_data[obs]:
+                lb = QtWidgets.QLabel(self.woks_data[obs], self.cbx_gpb)
+                self.cbx_gpb.children()[0].addWidget(lb)
+                #self.observation_frame.layout().addWidget(lb)
         for value in self.values_cbx:
             cbx = self.get_checkbox(value, self.cbx_gpb)
             cbx.clicked.connect(self.validate_checkbox)
@@ -59,8 +59,11 @@ class WorksItem(QtWidgets.QWidget):
         qnt_cbx = groupBox.children()[0].count()
         qnt_cbx_checked = 0
         for idx in range(groupBox.children()[0].count()):
-            if groupBox.children()[0].itemAt(idx).widget().isChecked():
-                qnt_cbx_checked += 1
+            try:
+                if groupBox.children()[0].itemAt(idx).widget().isChecked():
+                    qnt_cbx_checked += 1
+            except:
+                pass
         if qnt_cbx == qnt_cbx_checked:
             self.enable_btn.emit()
         else:
