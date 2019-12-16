@@ -50,10 +50,13 @@ class MenuDock(QtWidgets.QDockWidget):
                 geom_btn = button_widget.button_data['formValues'][u'*Selecione camada:'][-1:]
                 lyr = self.iface.activeLayer()
                 geom_lyr = lyr.name()[-1:] if lyr else '' 
-                word_list = [
-                    w.lower() for w in 
-                    button_widget.button_data['formValues'][u'Definir palavras chaves(separar com ";"):'].split(';')
-                ]
+                try:
+                    word_list = [
+                        w.lower() for w in 
+                        button_widget.button_data['formValues'][u'Definir palavras chaves(separar com ";"):'].split(';')
+                    ]
+                except:
+                    word_list = []
                 validate_with_geom = (
                     (geom_lyr.lower() in geom_btn.lower()) and 
                     (
