@@ -45,7 +45,7 @@ class Network:
         html = ""
         if "_erro" in response:
             html = u"<p>{}</p>".format(response['_erro'])
-        elif not(response.json()['sucess']):
+        elif not(response.json()['success']):
             html = "<p>{}</p>".format(response.json()['message'])
         if html:
             if self.parent:

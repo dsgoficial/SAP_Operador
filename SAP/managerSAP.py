@@ -72,12 +72,13 @@ class ManagerSAP(QtCore.QObject):
             "usuario" : user,
             "senha" : password,
             'plugins' : self.get_plugins_versions(),
-            'qgis' : qgis_version
+            'qgis' : qgis_version,
+            'cliente' : 'qgis'
         }
         url = u"{0}/login".format(server)
         response = self.net.POST(server, url, post_data)
-        if response and response.json()['sucess']:
-            if not( 'version' in response.json()['dados'] and int(response.json()['dados']['version']) == 2):
+        if response and response.json()['success']:
+            if not( 'version' in response.json() and response.json()['version'] == '2.0.0'):
                 self.show_message('erro version')
                 return
             token = response.json()['dados']['token']
@@ -107,12 +108,13 @@ class ManagerSAP(QtCore.QObject):
             "usuario" : user,
             "senha" : password,
             'plugins' : self.get_plugins_versions(),
-            'qgis' : qgis_version
+            'qgis' : qgis_version,
+            'cliente' : 'qgis'
         }
         url = u"{0}/login".format(server)
         response = self.net.POST(server, url, post_data)
-        if response and response.json()['sucess']:
-            if not( 'version' in response.json()['dados'] and int(response.json()['dados']['version']) == 2):
+        if response and response.json()['success']:
+            if not( 'version' in response.json() and int(response.json()['version'].split('.')[0]) == 2):
                 self.show_message('erro version')
                 return
             token = response.json()['dados']['token']
@@ -161,7 +163,7 @@ class ManagerSAP(QtCore.QObject):
             response = self.net.POST(server, url, header=header)
             if response:
                 data = response.json()
-                if data['sucess'] and 'dados' in data:
+                if data['success'] and 'dados' in data:
                     self.update_sap_data(
                         data, 
                         server, 

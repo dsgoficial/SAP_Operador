@@ -31,4 +31,4 @@ class Canvas(QtCore.QThread):
                 session.trust_env = False
                 session.post(url, data=json.dumps(postData), headers=header)
                 self.sendMessage = False
-            time.sleep(2)
+            time.sleep(60)

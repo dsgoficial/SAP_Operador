@@ -24,14 +24,15 @@ class RoutinesLocal(QtCore.QObject):
         self.postgresql = Postgresql()
         sap_data = ManagerSAP(self.iface).load_data()
         db_connection = sap_data['dados']['atividade']['banco_dados']
+        user = sap_data['dados']['login_info']
         db_name = db_connection['nome']
         self.postgresql.current_db_name = db_name
         self.postgresql.set_connections_data({
             'db_name' : db_name,
             'db_host' : db_connection['servidor'],
             'db_port' : db_connection['porta'],
-            'db_user' : sap_data['user'],
-            'db_password' : sap_data['password'] 
+            'db_user' : user['login'],
+            'db_password' : user['senha']
         })
 
     
