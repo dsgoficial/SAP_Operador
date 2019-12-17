@@ -30,7 +30,6 @@ class LoadData(QtCore.QObject):
         self.postgresql.set_connections_data()
         self.rules = None
         self.frame = None
-        self.hasMenu = []
         self.layers_config = {
             'names' : {},
             'attr' : {},
@@ -68,7 +67,8 @@ class LoadData(QtCore.QObject):
                 'input_files' : self.get_input_files_list(),
                 'workspaces' : self.get_workspaces_list()
             })
-            if not self.hasMenu:
+            sap_data = ManagerSAP(self.iface).load_data()
+            if not sap_data['dados']['atividade']['menus']:
                 self.frame.load_menu.setVisible(False)
             self.frame.config_sap_mode()
         else:

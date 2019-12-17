@@ -47,7 +47,6 @@ class Tools(QtCore.QObject):
             self.loadData.sap_mode = self.sap_mode
             self.loadData.update_frame()
             self.interface.controller_btn.click()
-            self.loadData.hasMenu = self.menu.load_data()
         else:
             self.loadData.sap_mode = self.sap_mode
             #self.loadData = LoadData(self.iface)
