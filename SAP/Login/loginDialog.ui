@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Login</string>
+   <string>Login Ferramenta de Produção</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>
