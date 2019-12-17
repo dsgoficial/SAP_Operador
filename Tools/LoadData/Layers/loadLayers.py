@@ -31,7 +31,10 @@ class LoadLayers:
         self.create_rules(settings_data)
         db_group = self.create_db_group(settings_data)
         settings_data['db_group'] = db_group
+        print(self.layers_config)
+        print(settings_data[u'layers_name'])
         layers_data = self.get_layers_data(settings_data[u'layers_name'])
+        print(layers_data)
         layers_vector = []
         for lyr_data in layers_data:
             layer_config = self.get_layer_config(lyr_data['layer_name'])
@@ -100,9 +103,10 @@ class LoadLayers:
             return d['group_class']
         layers_data = []
         if self.sap_mode:
+            print(layers_name)
             sap_data = ManagerSAP(self.iface).load_data()
             for data  in sap_data['dados']['atividade']['camadas']:
-                name = data['nome']
+                name = data['alias'] if 'alias' in data else data['nome']
                 if not name in layers_name:
                     continue
                 if  name in self.layers_config['names']:
