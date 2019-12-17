@@ -9,7 +9,7 @@ from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 class Login(QtCore.QObject):
 
     sap = QtCore.pyqtSignal(str, str, str)
-    local = QtCore.pyqtSignal(bool)
+    local = QtCore.pyqtSignal(bool, bool)
 
     def __init__(self, iface):
         super(Login, self).__init__()
@@ -28,7 +28,7 @@ class Login(QtCore.QObject):
 
     def login_local(self, login_data):
         self.dialog.accept()
-        self.local.emit(False)
+        self.local.emit(False, False)
        
     def login_remote(self, login_data):
         server = login_data['server']

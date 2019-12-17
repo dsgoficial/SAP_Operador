@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore
-import sys, os, pickle
+import sys, os, pickle, json
 from qgis import core, gui
 from .worksFrame import WorksFrame
 from .Login.login import Login
@@ -12,7 +12,7 @@ from configparser import ConfigParser
 
 class ManagerSAP(QtCore.QObject):
 
-    show_tools = QtCore.pyqtSignal(bool)
+    show_tools = QtCore.pyqtSignal(bool, bool)
     close_tools = QtCore.pyqtSignal()
     close_work = QtCore.pyqtSignal()
 
@@ -63,7 +63,7 @@ class ManagerSAP(QtCore.QObject):
 
     def load_sap_activity_from_data(self, data):
         self.dump_data(data)
-        self.show_tools.emit(True)
+        self.show_tools.emit(True, False)
         
     def login(self, server, user, password):
         sucess = False
@@ -95,7 +95,7 @@ class ManagerSAP(QtCore.QObject):
                 sucess = self.init_works(server, user, password, token)
         if sucess:
             self.login_sap.dialog.accept()
-            self.show_tools.emit(True)
+            self.show_tools.emit(True, True)
         else:
             self.close_tools.emit()
             self.login_sap.dialog.show_()
@@ -198,7 +198,7 @@ class ManagerSAP(QtCore.QObject):
         self.login(server, user, password)
 
     def dump_data(self, data):
-        print(data)
+        core.QgsMessageLog.logMessage(json.dumps(data, indent=4, sort_keys=True), 'Ferramenta_Producao', level=core.Qgis.Info)
         managerFile.dump_data(self.path_data, data)
 
     def load_data(self):
