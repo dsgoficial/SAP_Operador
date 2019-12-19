@@ -208,8 +208,10 @@ class LoadInputs:
         v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
         vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
         vl.setReadOnly(True)
-        layer_data = self.load_layers.get_layers_data([ vl.dataProvider().uri().table() ])[0]
-        self.load_layers.add_layer_values_map(vl, layer_data)
+        layers_data = self.load_layers.get_layers_data([ vl.dataProvider().uri().table() ])
+        if layers_data:
+            layer_data = layers_data[0]
+            self.load_layers.add_layer_values_map(vl, layer_data)
         group_name = 'MOLDURA_E_INSUMOS'
         if self.load_layers.db_group :
             group = self.load_layers.db_group.findGroup(group_name)
