@@ -32,6 +32,8 @@ class MessageSave(QtCore.QObject):
         
     def show_message(self):
         m_qgis = ManagerQgis(self.iface)
+        if m_qgis.count_modified_layer() == 0:
+            return
         if m_qgis.count_modified_layer() > 0 and not(self.is_visible) and self.half and not self.isActiveFreeHand():
             html = u'<p style="color:red">Salve suas alterações!</p>'
             self.is_visible = True
