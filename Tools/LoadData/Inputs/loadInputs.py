@@ -205,7 +205,6 @@ class LoadInputs:
 
     def add_pg_layer(self, db_path, layer_name, epsg):
         uri_text = self.get_uri_text(db_path, epsg)
-        print(uri_text, layer_name)
         v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
         vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
         vl.loadDefaultStyle()
