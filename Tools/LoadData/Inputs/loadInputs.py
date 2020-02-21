@@ -205,8 +205,10 @@ class LoadInputs:
 
     def add_pg_layer(self, db_path, layer_name, epsg):
         uri_text = self.get_uri_text(db_path, epsg)
+        print(uri_text, layer_name)
         v_lyr = core.QgsVectorLayer(uri_text, layer_name, u"postgres")
         vl = core.QgsProject.instance().addMapLayer(v_lyr, False)
+        vl.loadDefaultStyle()
         vl.setReadOnly(True)
         layers_data = self.load_layers.get_layers_data([ vl.dataProvider().uri().table() ])
         if layers_data:
@@ -227,7 +229,8 @@ class LoadInputs:
         db_address, db_name, db_schema, layer_name = db_path.split('/')
         db_host, db_port = db_address.split(':')
         connection_config = self.postgresql.get_connection_config()
-        template_uri = u"""dbname='{}' host={} port={} user='{}' password='{}' table="{}"."{}" (geom) sql={}"""
+        #identificar campo id da camada
+        template_uri = u"""dbname='{}' host={} port={} user='{}' password='{}' key=\'id\' checkPrimaryKeyUnicity=\'1\' table="{}"."{}" (geom) sql={}"""
         uri_text = template_uri.format(
             db_name, 
             db_host, 

@@ -208,10 +208,10 @@ class Postgresql(QtCore.QObject):
             u"db_connection" : self.conns[db_name],
             u"db_workspaces_name" : workspaces_name,
             u"db_workspaces_wkt" : workspaces_wkt,
-            u"db_menu" : self.get_menu_profile(u"menu_profile"),
-            u"db_rules" : self.get_rules(u"layer_rules"),
-            u"db_styles" : self.get_styles(u"layer_styles"),
-            u"db_srid" : self.get_layer_srid(u"aux_moldura_a"),
+            u"db_menu" : self.get_menu_profile(u"menu_profile") if not(sap_mode) else {},
+            u"db_rules" : self.get_rules(u"layer_rules") if not(sap_mode) else {},
+            u"db_styles" : self.get_styles(u"layer_styles") if not(sap_mode) else {},
+            u"db_srid" : self.get_layer_srid(u"aux_moldura_a") if not(sap_mode) else {}
         }
         return json_template
 

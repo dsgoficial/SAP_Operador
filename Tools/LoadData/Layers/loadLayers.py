@@ -254,7 +254,7 @@ class LoadLayers:
         return class_group
 
     def get_uri_text(self, conn_data, layer_data, filter_text=''):
-        template_uri = u"""dbname='{}' host={} port={} user='{}' password='{}' table="{}"."{}" (geom) sql={}"""
+        template_uri = u"""dbname='{}' host={} port={} user='{}' password='{}' checkPrimaryKeyUnicity=\'1\' table="{}"."{}" (geom) sql={}"""
         uri_text = template_uri.format(
             conn_data['db_name'], 
             conn_data['db_host'], 

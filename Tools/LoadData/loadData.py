@@ -85,7 +85,6 @@ class LoadData(QtCore.QObject):
         return self.frame
 
     def get_layers_list(self):
-        layers_names = self.postgresql.get_layers_names()
         layers_list = []
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
@@ -100,26 +99,28 @@ class LoadData(QtCore.QObject):
                     self.layers_config['attr'][name] = d['atributos']
                 if 'documentacao' in d:
                     self.layers_config['doc'][name] = d['documentacao']
-                layers_list.append(name) if lyr_name in layers_names else ''
+                layers_list.append(name)
         else:
-            layers_list = layers_names 
+            layers_names = self.postgresql.get_layers_names()
+            layers_list = layers_names
         return sorted(layers_list)
     
     def get_rules_list(self):
-        rules_names = self.postgresql.get_rules_names()
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
             rules_sap = sap_data['dados']['atividade']['regras']
             rules_names = list(set([ d['grupo_regra'] for d in rules_sap ]))
-        return sorted(rules_names)
+            return sorted(rules_names)
+        return sorted(self.postgresql.get_rules_names())
     
     def get_styles_list(self):
-        styles_names = self.postgresql.get_styles_names()
+        
         if self.sap_mode:
             sap_data = ManagerSAP(self.iface).load_data()
             styles_sap = sap_data['dados']['atividade']['estilos']
             styles_names = list(set([ d['stylename'] for d in styles_sap ]))
-        return sorted(styles_names)
+            return sorted(styles_names)
+        return sorted(self.postgresql.get_styles_names())
 
     def get_input_files_list(self):
         input_files_list = []
