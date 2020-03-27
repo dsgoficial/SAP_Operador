@@ -28,20 +28,24 @@ class LoadLayers:
             'settings_user', 
             json.dumps(settings_data)
         )
-        self.create_rules(settings_data)
-        db_group = self.create_db_group(settings_data)
-        settings_data['db_group'] = db_group
-        layers_data = self.get_layers_data(settings_data[u'layers_name'])
-        layers_vector = []
-        for lyr_data in layers_data:
-            layer_config = self.get_layer_config(lyr_data['layer_name'])
-            v_lyr = self.load_layer(settings_data, lyr_data, layer_config, is_menu)
-            layers_vector.append(v_lyr)
-            self.frame.update_progressbar() if self.frame else ''
-        if not(is_menu):
-            self.create_virtual_frame(db_group)
-        self.clean_empty_groups(db_group)
-        self.rules = {}
+        count = 2 if self.sap_mode else 1
+        settings_data['context'] = True
+        for _ in range(count):
+            self.create_rules(settings_data)
+            db_group = self.create_db_group(settings_data)
+            settings_data['db_group'] = db_group
+            layers_data = self.get_layers_data(settings_data[u'layers_name'])
+            layers_vector = []
+            for lyr_data in layers_data:
+                layer_config = self.get_layer_config(lyr_data['layer_name'])
+                v_lyr = self.load_layer(settings_data, lyr_data, layer_config, is_menu)
+                layers_vector.append(v_lyr)
+                self.frame.update_progressbar() if self.frame else ''
+            if not(is_menu):
+                self.create_virtual_frame(db_group)
+            self.clean_empty_groups(db_group)
+            self.rules = {}
+            settings_data['context'] = False
         return layers_vector
 
     def create_rules(self, settings_data):
@@ -61,9 +65,10 @@ class LoadLayers:
 
     def create_db_group(self, settings_data):
         workspace_name = self.get_workspace_name(settings_data) 
-        db_group_name = u"{}_{}".format(
+        db_group_name = u"{}_{}{}".format(
             self.postgresql.get_current_db_name(), 
-            workspace_name
+            workspace_name,
+            '_CONTEXTO' if 'context' in settings_data and settings_data['context'] else ''
         )
         db_group = self.add_group_layer(db_group_name)
         self.db_group = db_group
@@ -182,11 +187,12 @@ class LoadLayers:
             if layer_data['layer_name'] == u"aux_moldura_a":
                 filter_text = u""""mi" = '{}'""".format(workspace_name)
             else:
-                filter_text = u"""ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+                filter_text = u"""{4}ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
                     wkt_total,
                     keyColumn,
                     layer_data['layer_schema'],
-                    layer_data['layer_name']
+                    layer_data['layer_name'],
+                    'NOT ' if 'context' in settings_data and settings_data['context'] else ''
                 )
         else:
             workspaces = settings_data['workspaces']

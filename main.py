@@ -72,7 +72,7 @@ class Main(QtCore.QObject):
         #self.monitoring.stopCanvas()
         del self.sap
         del self.validate
-        del self.monitoring
+        #del self.monitoring
         self.mQ.delete_shortcut_actions()
 
     def load_qgis_project(self):

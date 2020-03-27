@@ -36,7 +36,7 @@ class RoutinesFme(QtCore.QObject):
             if  'fme' in sap_data and sap_data['fme']:
                 
                 for rout_data in sap_data['fme']:
-                    server = u"http://{0}:{1}".format( rout_data['servidor'], rout_data['porta'] )
+                    server = u"http://{0}:{1}/api".format( rout_data['servidor'], rout_data['porta'] )
                     cat = u"&workspace={0}".format( rout_data['rotina'] )
                     url = u"{0}/versions?last=true{1}".format( server, cat )
                     response = self.net.GET(server, url)

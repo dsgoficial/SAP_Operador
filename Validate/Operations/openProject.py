@@ -22,8 +22,8 @@ class OpenProject(QtCore.QObject):
             if server:
                 m_sap = ManagerSAP(self.iface)
                 data = m_sap.getWork(server, user, password)
-                if data and 'dados' in data and data['dados']['atividade']['nome'] == works:
-                    valid = True
+                #if data and 'dados' in data and data['dados'] and data['dados']['atividade']['nome'] == works:
+                valid = True
             if not(valid):
                 core.QgsProject.instance().removeAllMapLayers()
                 core.QgsProject.instance().layerTreeRoot().removeAllChildren()

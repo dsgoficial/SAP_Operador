@@ -23,7 +23,7 @@ class Canvas(QtCore.QThread):
                     'authorization' : self.token,
                     'content-type' : 'application/json'
                 }
-                url = "{0}/microcontrole/acao".format(self.server) 
+                url = "{0}/api/microcontrole/acao".format(self.server) 
                 postData = {
                     "atividade_id": int(self.activityId)
                 }

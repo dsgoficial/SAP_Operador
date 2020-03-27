@@ -30,6 +30,9 @@ class ManagerSAP(QtCore.QObject):
         )
         self.net = Network(self.login_sap.dialog)
 
+    def formatServer(self, server):
+        return "{0}/api".format(server)
+
     def add_action_qgis(self, b):
         if b:
             self.login_sap.action.add_on_qgis()
@@ -73,17 +76,18 @@ class ManagerSAP(QtCore.QObject):
             "senha" : password,
             'plugins' : self.get_plugins_versions(),
             'qgis' : qgis_version,
-            'cliente' : 'qgis'
+            'cliente' : 'sap_fp'
         }
+        server = self.formatServer(server)
         url = u"{0}/login".format(server)
         response = self.net.POST(server, url, post_data)
         if response and response.json()['success']:
-            if not( 'version' in response.json() and response.json()['version'] == '2.0.0'):
+            if not( 'version' in response.json() and response.json()['version'] == '2.0.1'):
                 self.show_message('erro version')
                 return
             token = response.json()['dados']['token']
             data = self.get_current_works(server, user, password, token)
-            if data and "dados" in data:
+            if data and "dados" in data and data['dados']:
                 self.update_sap_data(
                     data, 
                     server, 
@@ -109,8 +113,9 @@ class ManagerSAP(QtCore.QObject):
             "senha" : password,
             'plugins' : self.get_plugins_versions(),
             'qgis' : qgis_version,
-            'cliente' : 'qgis'
+            'cliente' : 'sap_fp'
         }
+        server = self.formatServer(server)
         url = u"{0}/login".format(server)
         response = self.net.POST(server, url, post_data)
         if response and response.json()['success']:
@@ -187,6 +192,7 @@ class ManagerSAP(QtCore.QObject):
         header = { 
             'authorization' : token
         }
+        server = self.formatServer(server)
         url = u"{0}/distribuicao/finaliza".format(server)
         response = self.net.POST(server, url, post_data, header)
         if response:
@@ -200,6 +206,7 @@ class ManagerSAP(QtCore.QObject):
         self.login(server, user, password)
 
     def dump_data(self, data):
+        print(data)
         core.QgsMessageLog.logMessage(json.dumps(data, indent=4, sort_keys=True), 'Ferramenta_Producao', level=core.Qgis.Info)
         managerFile.dump_data(self.path_data, data)
 
@@ -211,6 +218,7 @@ class ManagerSAP(QtCore.QObject):
         token = sap_data['token']
         server = sap_data['server']
         header = {'authorization' : token}
+        server = self.formatServer(server)
         url = u"{0}/distribuicao/tipo_problema".format(server)
         response = self.net.GET(server, url, header)
         return response.json()
@@ -225,6 +233,7 @@ class ManagerSAP(QtCore.QObject):
         token = sap_data['token']
         server = sap_data['server']
         header = {'authorization' : token}
+        server = self.formatServer(server)
         url = u"{0}/distribuicao/problema_atividade".format(server)
         response = self.net.POST(server, url, post_data, header)
         if response:
