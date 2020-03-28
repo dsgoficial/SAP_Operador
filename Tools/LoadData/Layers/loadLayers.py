@@ -53,8 +53,7 @@ class LoadLayers:
         if rules:
             if self.sap_mode:
                 self.rules = RulesSap(self.iface)
-                sap_data = ManagerSAP(self.iface).load_data()
-                rules_data = sap_data['dados']['atividade']['regras']
+                rules_data = ManagerSAP(self.iface).getRules()
             else:
                 self.rules = Rules(self.iface)
                 rules_data = self.postgresql.get_rules_data()
@@ -76,8 +75,7 @@ class LoadLayers:
 
     def get_workspace_name(self, settings_data):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            workspace_name = sap_data['unidade_trabalho']
+            workspace_name = ManagerSAP(self.iface).getWorkUnitName()
         else:
             workspace_name = '_'.join( settings_data['workspaces'] )
         return workspace_name
@@ -105,8 +103,7 @@ class LoadLayers:
             return d['group_class']
         layers_data = []
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            for data  in sap_data['dados']['atividade']['camadas']:
+            for data  in ManagerSAP(self.iface).getLayers():
                 name = data['alias'] if 'alias' in data else data['nome']
                 if not name in layers_name:
                     continue
@@ -182,8 +179,7 @@ class LoadLayers:
         wkt_total = ''
         workspace_name = self.get_workspace_name(settings_data) 
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            wkt_total = sap_data['geom']
+            wkt_total = ManagerSAP(self.iface).getWorkUnitGeometry()
             if layer_data['layer_name'] == u"aux_moldura_a":
                 filter_text = u""""mi" = '{}'""".format(workspace_name)
             else:
@@ -279,8 +275,7 @@ class LoadLayers:
         style_selected = settings_data[u"style_name"]
         style_xml = ''
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            for style_data in sap_data['dados']['atividade']['estilos']:
+            for style_data in ManagerSAP(self.iface).getStyles():
                 if ( 
                     style_data['stylename'] == style_selected
                     and 
@@ -377,10 +372,9 @@ class LoadLayers:
 
     def add_layer_default_values(self, v_lyr):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']
             idx = v_lyr.fields().indexOf('ultimo_usuario')
             confField = v_lyr.defaultValueDefinition(idx)
-            confField.setExpression("'{0}'".format(sap_data['usuario_id']))
+            confField.setExpression("'{0}'".format(ManagerSAP(self.iface).getUserId()))
             v_lyr.setDefaultValueDefinition(idx, confField)
     
 
@@ -460,9 +454,8 @@ class LoadLayers:
     
     def create_virtual_frame(self, db_group):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            srid = sap_data['geom'].split(';')[0].split('=')[1]
-            wkt = sap_data['geom'].split(';')[1]
+            srid = ManagerSAP(self.iface).getWorkUnitGeometry().split(';')[0].split('=')[1]
+            wkt = ManagerSAP(self.iface).getWorkUnitGeometry().split(';')[1]
             query = "?query=SELECT geom_from_wkt('{0}') as geometry&geometry=geometry:3:{1}".format(
                 wkt,
                 srid

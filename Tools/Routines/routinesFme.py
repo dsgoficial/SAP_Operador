@@ -32,10 +32,9 @@ class RoutinesFme(QtCore.QObject):
     def get_routines_data(self, server=''):
         fme_routines = []
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            if  'fme' in sap_data and sap_data['fme']:
+            if  ManagerSAP(self.iface).getFmeRoutines():
                 
-                for rout_data in sap_data['fme']:
+                for rout_data in ManagerSAP(self.iface).getFmeRoutines():
                     server = u"http://{0}:{1}/api".format( rout_data['servidor'], rout_data['porta'] )
                     cat = u"&workspace={0}".format( rout_data['rotina'] )
                     url = u"{0}/versions?last=true{1}".format( server, cat )
@@ -61,11 +60,9 @@ class RoutinesFme(QtCore.QObject):
 
     def get_db_connection_data(self):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            db_connection = sap_data['dados']['atividade']['banco_dados']
-            db_name = db_connection['nome']
-            db_host = db_connection['servidor']
-            db_port = db_connection['porta']
+            db_name = ManagerSAP(self.iface).getDatabaseName()
+            db_host = ManagerSAP(self.iface).getDatabaseServer()
+            db_port = ManagerSAP(self.iface).getDatabasePort()
         else:
             postgresql = Postgresql()
             db_connection = postgresql.get_connection_config()
@@ -81,8 +78,7 @@ class RoutinesFme(QtCore.QObject):
 
     def get_workspace_geometry(self, settings_user):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            geometry = "'{0}'".format(sap_data["geom"])
+            geometry = "'{0}'".format(ManagerSAP(self.iface).getWorkUnitGeometry())
         else:
             workspace_name = settings_user['workspace_name']
             postgresql = Postgresql()

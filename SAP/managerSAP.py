@@ -267,3 +267,63 @@ class ManagerSAP(QtCore.QObject):
                 title=u"AVISO!", 
                 parent=dialog
             )
+
+    def getTypeProductionData(self):
+        return self.load_data()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
+
+    def getMenus(self):
+        return self.load_data()['dados']['atividade']['menus']
+
+    def getLayers(self):
+        return self.load_data()['dados']['atividade']['camadas']
+
+    def getRules(self):
+        return self.load_data()['dados']['atividade']['regras']
+
+    def getStyles(self):
+        return self.load_data()['dados']['atividade']['regras']
+
+    def getInputs(self):
+        return self.load_data()['dados']['atividade']['insumos']
+
+    def getDatabaseLogin(self):
+        if self.getTypeProductionData() == 2:
+            return self.load_data()['dados']['login_info']
+        elif self.getTypeProductionData() == 3:
+            return {
+                'login': self.load_data()['user'],
+                'senha': self.load_data()['password']
+            }
+
+    def getDatabaseServer(self):
+        return self.load_data()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[0]
+
+    def getDatabasePort(self):
+        return self.load_data()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[1]
+
+    def getDatabaseName(self):
+        return self.load_data()['dados']['atividade']['dado_producao']['nome']
+
+    def getServer(self):
+        return self.load_data()['server']
+
+    def getToken(self):
+        return self.load_data()['token']
+    
+    def getActivityId(self):
+        return self.load_data()['dados']['atividade']['id']
+
+    def getWorkUnitGeometry(self):
+        return self.load_data()['dados']['atividade']['geom']
+
+    def getWorkUnitName(self):
+        return self.load_data()['dados']['atividade']['unidade_trabalho']
+
+    def getFmeRoutines(self):
+        return self.load_data()['dados']['atividade']['fme']
+
+    def getQgisModels(self):
+        return self.load_data()['dados']['atividade']['models_qgis']
+
+    def getUserId(self):
+        return self.load_data()['dados']['usuario_id']

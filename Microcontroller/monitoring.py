@@ -36,10 +36,9 @@ class Monitoring(QtCore.QObject):
     def startCanvas(self):
         self.stopCanvas()
         self.canvas = Canvas()
-        sap_data = ManagerSAP(self.iface).load_data()
-        server = sap_data['server']
-        token = sap_data['token']
-        activityId = int(sap_data['dados']['atividade']['id'])
+        server = ManagerSAP(self.iface).getServer()
+        token = ManagerSAP(self.iface).getToken()
+        activityId = int(ManagerSAP(self.iface).getActivityId())
         self.sendCanvasInfo.connect(self.canvas.on_source)
         self.sendCanvasInfo.emit(server, token, activityId)
         self.canvas.start()

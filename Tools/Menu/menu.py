@@ -43,14 +43,12 @@ class Menu(QtCore.QObject):
         menu_data['menu_profile'] = profile_data['perfil']
         menu_data['menu_order'] = profile_data['orderMenu']
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            db_connection = sap_data['dados']['atividade']['banco_dados']
-            user = sap_data['dados']['login_info']
-            db_name = db_connection['nome']
+            user = ManagerSAP(self.iface).getDatabaseLogin()
+            db_name = ManagerSAP(self.iface).getDatabaseName()
             self.postgresql.set_connections_data({
                 'db_name' : db_name,
-                'db_host' : db_connection['servidor'],
-                'db_port' : db_connection['porta'],
+                'db_host' : ManagerSAP(self.iface).getDatabaseServer(),
+                'db_port' : ManagerSAP(self.iface).getDatabasePort(),
                 'db_user' : user['login'],
                 'db_password' : user['senha']
             })
@@ -60,8 +58,7 @@ class Menu(QtCore.QObject):
 
     def get_profiles_name(self):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']        
-            profiles_name = [ d['nome'] for d in sap_data['menus'] ]
+            profiles_name = [ d['nome'] for d in ManagerSAP(self.iface).getMenus() ]
         else:
             profiles_name = self.postgresql.get_menu_profile_names()
         profiles_name = [u"<Vazio>"] + profiles_name
@@ -110,8 +107,8 @@ class Menu(QtCore.QObject):
     def get_profile_data(self, name):
         profile_data = {}
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            for menu_data in sap_data['menus']:
+            for menu_data in ManagerSAP(self.iface).getMenus():
+                print(menu_data)
                 if menu_data['nome'] == name:
                     profile_data['nome_do_perfil'] = menu_data['nome']
                     profile_data['perfil'] = json.loads(menu_data['definicao_menu'])
@@ -126,8 +123,7 @@ class Menu(QtCore.QObject):
         load_data = LoadData(self.iface)
         if self.sap_mode:
             load_data.sap_mode = self.sap_mode
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            workspace_name = sap_data['unidade_trabalho']
+            workspace_name = ManagerSAP(self.iface).getWorkUnitName()
         else:
             workspace_name = button_data['settings_user']['workspace_name']
         info = {'workspace_name' : workspace_name}

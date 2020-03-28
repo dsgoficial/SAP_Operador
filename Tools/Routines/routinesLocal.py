@@ -22,15 +22,13 @@ class RoutinesLocal(QtCore.QObject):
 
     def init_postgresql(self):
         self.postgresql = Postgresql()
-        sap_data = ManagerSAP(self.iface).load_data()
-        db_connection = sap_data['dados']['atividade']['banco_dados']
-        user = sap_data['dados']['login_info']
-        db_name = db_connection['nome']
+        user = ManagerSAP(self.iface).getDatabaseLogin()
+        db_name = ManagerSAP(self.iface).getDatabaseName()
         self.postgresql.current_db_name = db_name
         self.postgresql.set_connections_data({
             'db_name' : db_name,
-            'db_host' : db_connection['servidor'],
-            'db_port' : db_connection['porta'],
+            'db_host' : ManagerSAP(self.iface).getDatabaseServer(),
+            'db_port' : ManagerSAP(self.iface).getDatabasePort(),
             'db_user' : user['login'],
             'db_password' : user['senha']
         })
@@ -39,9 +37,8 @@ class RoutinesLocal(QtCore.QObject):
     def get_routines_data(self):
         local_routines_formated = []
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            if 'models_qgis' in sap_data:
-                models_qgis = sap_data['models_qgis']
+            if ManagerSAP(self.iface).getQgisModels():
+                models_qgis = ManagerSAP(self.iface).getQgisModels()
                 for model_data in models_qgis:
                     d = {
                         'description' : model_data['descricao'],
@@ -49,9 +46,9 @@ class RoutinesLocal(QtCore.QObject):
                         'model_xml' : model_data['model_xml']
                     }
                     local_routines_formated.append(d)
-            if self.is_active_rules_statistics() and 'regras' in sap_data and sap_data['regras']:
+            if self.is_active_rules_statistics() and ManagerSAP(self.iface).getRules():
                 format_rules_data = {}
-                for i, d in enumerate(sap_data['regras']):
+                for i, d in enumerate(ManagerSAP(self.iface).getRules()):
                     d['tipo_estilo'] = d['grupo_regra']
                     r, g, b = d['cor_rgb'].split(',')
                     d['corRgb'] = [ int(r), int(g), int(b) ]

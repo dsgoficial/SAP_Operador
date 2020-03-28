@@ -67,8 +67,8 @@ class LoadData(QtCore.QObject):
                 'input_files' : self.get_input_files_list(),
                 'workspaces' : self.get_workspaces_list()
             })
-            sap_data = ManagerSAP(self.iface).load_data()
-            if not sap_data['dados']['atividade']['menus']:
+            #if not sap_data['dados']['atividade']['menus']:
+            if not ManagerSAP(self.iface).getMenus():
                 self.frame.load_menu.setVisible(False)
             self.frame.config_sap_mode()
         else:
@@ -88,8 +88,8 @@ class LoadData(QtCore.QObject):
         layers_names = self.postgresql.get_layers_names()
         layers_list = []
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            for d in sap_data['dados']['atividade']['camadas']:
+            #for d in sap_data['dados']['atividade']['camadas']:
+            for d in ManagerSAP(self.iface).getLayers():
                 lyr_name = d['nome'] 
                 if 'alias' in d:
                     name = d['alias']
@@ -108,24 +108,21 @@ class LoadData(QtCore.QObject):
     def get_rules_list(self):
         rules_names = self.postgresql.get_rules_names()
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            rules_sap = sap_data['dados']['atividade']['regras']
-            rules_names = list(set([ d['grupo_regra'] for d in rules_sap ]))
+            #rules_sap = sap_data['dados']['atividade']['regras']
+            rules_names = list(set([ d['grupo_regra'] for d in ManagerSAP(self.iface).getRules() ]))
         return sorted(rules_names)
     
     def get_styles_list(self):
         styles_names = self.postgresql.get_styles_names()
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            styles_sap = sap_data['dados']['atividade']['estilos']
-            styles_names = list(set([ d['stylename'] for d in styles_sap ]))
+            #styles_sap = sap_data['dados']['atividade']['estilos']
+            styles_names = list(set([ d['stylename'] for d in ManagerSAP(self.iface).getStyles() ]))
         return sorted(styles_names)
 
     def get_input_files_list(self):
         input_files_list = []
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
-            input_files_list = [ d['nome'] for d in sap_data['insumos'] ]
+            input_files_list = [ d['nome'] for d in ManagerSAP(self.iface).getInputs() ]
         return sorted(input_files_list)
     
     def get_workspaces_list(self):
@@ -137,14 +134,12 @@ class LoadData(QtCore.QObject):
 
     def update_frame(self, db_name=''):
         if self.sap_mode:
-            sap_data = ManagerSAP(self.iface).load_data()
-            db_connection = sap_data['dados']['atividade']['banco_dados']
-            user = sap_data['dados']['login_info']
-            db_name = db_connection['nome']
+            user = ManagerSAP(self.iface).getDatabaseLogin()
+            db_name = ManagerSAP(self.iface).getDatabaseName()
             self.postgresql.set_connections_data({
                 'db_name' : db_name,
-                'db_host' : db_connection['servidor'],
-                'db_port' : db_connection['porta'],
+                'db_host' : ManagerSAP(self.iface).getDatabaseServer(),
+                'db_port' : ManagerSAP(self.iface).getDatabasePort(),
                 'db_user' : user['login'],
                 'db_password' : user['senha'] 
             })

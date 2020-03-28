@@ -15,7 +15,6 @@ class LoadInputs:
         self.load_layers = load_layers
 
     def load(self, settings_data):
-        sap_data = ManagerSAP(self.iface).load_data()
         files_data = {
             1 : [], #download
             2 : [], #open via net *
@@ -25,7 +24,7 @@ class LoadInputs:
             6 : [], #wms
             7 : []  #wfs
         }
-        for d in sap_data['dados']['atividade']['insumos'] :
+        for d in ManagerSAP(self.iface).getInputs() :
             if d['nome'] in settings_data['input_files']:
                 files_data[d['tipo_insumo_id']].append({ 
                     'file_name' : d['nome'],
@@ -221,7 +220,6 @@ class LoadInputs:
         group.insertLayer(0, vl)
             
     def get_uri_text(self, db_path, epsg):
-        sap_data = ManagerSAP(self.iface).load_data()['dados']['atividade']
         db_address, db_name, db_schema, layer_name = db_path.split('/')
         db_host, db_port = db_address.split(':')
         connection_config = self.postgresql.get_connection_config()
@@ -234,7 +232,10 @@ class LoadInputs:
             connection_config['db_password'],
             db_schema,
             layer_name,
-            u"""ST_INTERSECTS(geom, ST_TRANSFORM(ST_GEOMFROMEWKT('{0}'), {1}))""".format(sap_data['geom'], epsg)
+            u"""ST_INTERSECTS(geom, ST_TRANSFORM(ST_GEOMFROMEWKT('{0}'), {1}))""".format(
+                ManagerSAP(self.iface).getWorkUnitGeometry(), 
+                epsg
+            )
         )
         return uri_text
 

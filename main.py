@@ -95,7 +95,7 @@ class Main(QtCore.QObject):
     def show_tools_dialog(self, sap_mode, activeMonitoring):
         #self.monitoring.startCanvas() if activeMonitoring else self.monitoring.stopCanvas()
         self.sap_mode = sap_mode
-        self.sap.enable_action_qgis(False)
+        #self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode
         self.tools.restart_validate.connect(
