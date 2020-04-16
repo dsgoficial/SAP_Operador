@@ -38,7 +38,7 @@ class Tools(QtCore.QObject):
         if self.interface:
             self.interface.close()
             
-    def show_dialog(self):
+    def show_dialog(self):###
         self.interface = ToolsDialog(self.iface)
         self.interface.selected_option.connect(
             self.load_frame

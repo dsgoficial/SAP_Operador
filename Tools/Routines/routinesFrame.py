@@ -77,14 +77,20 @@ class RoutinesFrame(QtWidgets.QFrame):
 
     def load(self, routines_data):
         self.clean()
-        if routines_data['fme'] or routines_data['local']:
+        if routines_data['fme'] or routines_data['rules'] or routines_data['qgis_model'] :
+            for r in routines_data['qgis_model']:
+                radio_btn = self.create_radio_btn(
+                    r['description'],
+                    self.routines_area
+                )
+                radio_btn.routine_data = json.dumps(r)
             for r in routines_data['fme']:
                 radio_btn = self.create_radio_btn(
                     "\n".join(wrap("{0} : {1}".format(r['workspace_name'], r['description']), 110)),
                     self.routines_area
                 )
                 radio_btn.routine_data = json.dumps(r)
-            for r in routines_data['local']:
+            for r in routines_data['rules']:
                 radio_btn = self.create_radio_btn(
                     r['description'],
                     self.routines_area

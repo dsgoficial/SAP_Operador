@@ -60,6 +60,8 @@ class LoadData(QtCore.QObject):
             self.show_menu.emit
         )
         if self.sap_mode:
+            if ManagerSAP(self.iface).getTypeProductionData() == 1:
+                self.frame.load_btn.setVisible(False)
             self.frame.load({
                 'rules' : self.get_rules_list(),
                 'layers' : self.get_layers_list(),
@@ -85,7 +87,6 @@ class LoadData(QtCore.QObject):
         return self.frame
 
     def get_layers_list(self):
-        layers_names = self.postgresql.get_layers_names()
         layers_list = []
         if self.sap_mode:
             #for d in sap_data['dados']['atividade']['camadas']:
@@ -100,9 +101,9 @@ class LoadData(QtCore.QObject):
                     self.layers_config['attr'][name] = d['atributos']
                 if 'documentacao' in d:
                     self.layers_config['doc'][name] = d['documentacao']
-                layers_list.append(name) if lyr_name in layers_names else ''
+                layers_list.append(name)
         else:
-            layers_list = layers_names 
+            layers_list = self.postgresql.get_layers_names() 
         return sorted(layers_list)
     
     def get_rules_list(self):
@@ -135,6 +136,8 @@ class LoadData(QtCore.QObject):
     def update_frame(self, db_name=''):
         if self.sap_mode:
             user = ManagerSAP(self.iface).getDatabaseLogin()
+            if ManagerSAP(self.iface).getTypeProductionData() == 1:
+                return
             db_name = ManagerSAP(self.iface).getDatabaseName()
             self.postgresql.set_connections_data({
                 'db_name' : db_name,

@@ -108,7 +108,6 @@ class Menu(QtCore.QObject):
         profile_data = {}
         if self.sap_mode:
             for menu_data in ManagerSAP(self.iface).getMenus():
-                print(menu_data)
                 if menu_data['nome'] == name:
                     profile_data['nome_do_perfil'] = menu_data['nome']
                     profile_data['perfil'] = json.loads(menu_data['definicao_menu'])

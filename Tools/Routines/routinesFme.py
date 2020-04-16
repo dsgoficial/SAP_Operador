@@ -33,7 +33,6 @@ class RoutinesFme(QtCore.QObject):
         fme_routines = []
         if self.sap_mode:
             if  ManagerSAP(self.iface).getFmeRoutines():
-                
                 for rout_data in ManagerSAP(self.iface).getFmeRoutines():
                     server = u"http://{0}:{1}/api".format( rout_data['servidor'], rout_data['porta'] )
                     cat = u"&workspace={0}".format( rout_data['rotina'] )

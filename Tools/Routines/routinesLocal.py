@@ -41,8 +41,9 @@ class RoutinesLocal(QtCore.QObject):
                 models_qgis = ManagerSAP(self.iface).getQgisModels()
                 for model_data in models_qgis:
                     d = {
+                        'ordem' : model_data['ordem'],
                         'description' : model_data['descricao'],
-                        'type_routine' : 'local',
+                        'type_routine' : 'qgis_model',
                         'model_xml' : model_data['model_xml']
                     }
                     local_routines_formated.append(d)
@@ -56,14 +57,14 @@ class RoutinesLocal(QtCore.QObject):
                 d = {
                     'ruleStatistics' : format_rules_data, 
                     'description' : "Estatísticas de regras.",
-                    'type_routine' : 'local'
+                    'type_routine' : 'rules'
                 }
                 local_routines_formated.append(d)
         elif self.is_active_rules_statistics():
             d = {
                 'ruleStatistics' : [], 
                 'description' : "Estatísticas de regras.",
-                'type_routine' : 'local'
+                'type_routine' : 'rules'
             }
             local_routines_formated.append(d)
         return local_routines_formated

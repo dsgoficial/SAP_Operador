@@ -6,6 +6,7 @@ from .routinesFme import RoutinesFme
 import sys, os
 from Ferramentas_Producao.utils import msgBox
 from Ferramentas_Producao.utils.managerQgis import ManagerQgis
+from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
 
 class Routines(QtCore.QObject):
 
@@ -18,6 +19,8 @@ class Routines(QtCore.QObject):
         
     def get_frame(self):
         self.frame = RoutinesFrame(self.iface)
+        if ManagerSAP(self.iface).getTypeProductionData() == 1:
+                self.frame.run_btn.setVisible(False)
         self.frame.run_routine.connect(
             self.run_routine
         )
@@ -32,14 +35,19 @@ class Routines(QtCore.QObject):
         return self.frame
 
     def load_routines(self, server=''):
+        def sortByTag(elem):
+            return elem['ordem']
         routinesLocal = RoutinesLocal(self.iface)
         routinesLocal.sap_mode = self.sap_mode
         routinesFme = RoutinesFme(self.iface)
         routinesFme.sap_mode = self.sap_mode
         routines_data = {
-            'local' : routinesLocal.get_routines_data(),
+            'rules' : [ r for r in routinesLocal.get_routines_data() if r['type_routine'] == 'rules' ],
+            'qgis_model' : [ r for r in routinesLocal.get_routines_data() if r['type_routine'] == 'qgis_model' ],
             'fme' :  routinesFme.get_routines_data(server)
         }
+        for key in routines_data:
+            routines_data[key].sort(key=sortByTag)
         self.frame.load(routines_data)
     
    

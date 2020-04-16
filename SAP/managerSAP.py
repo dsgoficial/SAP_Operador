@@ -65,8 +65,12 @@ class ManagerSAP(QtCore.QObject):
         self.login_sap.action.setEnabled(b)
 
     def load_sap_activity_from_data(self, data):
-        self.dump_data(data)
-        self.show_tools.emit(True, False)
+        if data['success'] and 'dados' in data and data['dados']:
+            self.dump_data(data)
+            self.show_tools.emit(True, False)
+            return
+        self.show_message("no activity")
+        
         
     def login(self, server, user, password):
         sucess = False
@@ -127,6 +131,8 @@ class ManagerSAP(QtCore.QObject):
             
     def get_frame(self):
         self.frame = WorksFrame(self.iface, self)
+        if self.getTypeProductionData() == 1:
+            self.frame.close_works_btn.setVisible(False)
         self.frame.close_works.connect(
             self.close_works
         )
@@ -168,7 +174,7 @@ class ManagerSAP(QtCore.QObject):
             response = self.net.POST(server, url, header=header)
             if response:
                 data = response.json()
-                if data['success'] and 'dados' in data:
+                if data['success'] and 'dados' in data and data['dados']:
                     self.update_sap_data(
                         data, 
                         server, 

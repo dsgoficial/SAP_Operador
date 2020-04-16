@@ -10,6 +10,7 @@ from Ferramentas_Producao.Validate.validateOperations import ValidateOperations
 from Ferramentas_Producao.utils.managerQgis import ManagerQgis
 from Ferramentas_Producao.utils.messageSave import MessageSave
 from Ferramentas_Producao.Microcontroller.monitoring import Monitoring
+from Ferramentas_Producao.utils import msgBox
 
 class Main(QtCore.QObject):
     def __init__(self, iface):
@@ -95,6 +96,12 @@ class Main(QtCore.QObject):
     def show_tools_dialog(self, sap_mode, activeMonitoring):
         #self.monitoring.startCanvas() if activeMonitoring else self.monitoring.stopCanvas()
         self.sap_mode = sap_mode
+        if self.sap_mode and self.sap.getTypeProductionData() == 1:
+            result = msgBox.show(
+                text='Esté projeto não é controlado pelo SAP. As informações são apenas para orientar o operador sendo necessário carregar manulamente os dados', 
+                title=u"AVISO!", 
+                status="critical"
+            )
         #self.sap.enable_action_qgis(False)
         self.menu.sap_mode = sap_mode
         self.tools.sap_mode = sap_mode

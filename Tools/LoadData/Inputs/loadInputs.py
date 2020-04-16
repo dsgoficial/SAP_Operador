@@ -22,7 +22,8 @@ class LoadInputs:
             4 : [], #text
             5 : [], #url
             6 : [], #wms
-            7 : []  #wfs
+            7 : [],  #wfs,
+            8 : []  #xyz
         }
         for d in ManagerSAP(self.iface).getInputs() :
             if d['nome'] in settings_data['input_files']:
@@ -70,6 +71,20 @@ class LoadInputs:
                         'raster: falha ao carregar arquivo "{0}" tente carregar manualmente'.format(path_file)
                     )
         return erro
+
+    def load_wms(self, files_data):
+        erro = []
+        for d in files_data:
+            uri = d['path_origin']
+            erro.append('XYZ Tile: falha ao carregar o seguinte xyz tile "{0}"'.format(uri)) if not self.add_xyztile( uri, d['nome'] ) else ''
+        return erro
+
+    def add_xyztile(self, uri, name):
+        #QgsRasterLayer('type=xyz&url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&zmax=19&zmin=0', 'hop', 'wms')
+        layer = core.QgsRasterLayer(uri, name, 'wms')
+        if layer.isValid():
+            core.QgsProject.instance().addMapLayer(layer)
+            return True       
     
     def load_urls(self, files_data):
         for d in files_data:

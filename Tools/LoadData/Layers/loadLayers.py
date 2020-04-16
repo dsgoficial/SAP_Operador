@@ -315,6 +315,7 @@ class LoadLayers:
                 values = copy.deepcopy(layer_data['layer_fields'][name][u"valueMap"])
                 if values and u"IGNORAR" in values:
                     del values[u"IGNORAR"]
+                print(values)
                 setup = core.QgsEditorWidgetSetup( 
                     'ValueMap', 
                     { 'map': values }
