@@ -1,115 +1,59 @@
-# -*- coding: utf-8 -*-
+import os
+from Ferramentas_Producao.modules.sap.sapCtrl import SapCtrl
+from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.productionToolsCtrl import ProductionToolsCtrl
+from Ferramentas_Producao.modules.fme.factories.fmeApiSingleton import FmeApiSingleton
+from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
 
-import os, sys
-from qgis import core, gui
-from PyQt5 import QtCore
-from Ferramentas_Producao.SAP.managerSAP import ManagerSAP
-from Ferramentas_Producao.Tools.tools import Tools
-from Ferramentas_Producao.Tools.Menu.menu import Menu
-from Ferramentas_Producao.Validate.validateOperations import ValidateOperations
-from Ferramentas_Producao.utils.managerQgis import ManagerQgis
-from Ferramentas_Producao.utils.messageSave import MessageSave
-from Ferramentas_Producao.Microcontroller.monitoring import Monitoring
-from Ferramentas_Producao.utils import msgBox
+from Ferramentas_Producao.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
+from Ferramentas_Producao.modules.database.factories.databaseFactory import DatabaseFactory
 
-class Main(QtCore.QObject):
-    def __init__(self, iface):
+from Ferramentas_Producao.config import Config
+
+class Main:
+
+    def __init__(self, iface):    
         super(Main, self).__init__()
         self.plugin_dir = os.path.dirname(__file__)
         self.iface = iface
-        self.sap = ManagerSAP(self.iface)
-        self.menu = Menu(self.iface)
-        self.validate = ValidateOperations(self.iface)
-        self.tools = Tools(self.iface, self.menu, self.sap)
-        self.msg_save = MessageSave(self.iface, 1000*150)
-        self.sap_mode = False
-        #self.monitoring = Monitoring(self.iface)
+        
+        self.qgisCtrl = QgisCtrl()
+
+        self.sapCtrl = SapCtrl(
+            qgis=self.qgisCtrl,
+            messageFactory=UtilsFactory().createMessageFactory()
+        )
+        
+        self.productionToolsCtrl = ProductionToolsCtrl(
+            sap=self.sapCtrl,
+            qgis=self.qgisCtrl,
+            databaseFactory=DatabaseFactory(),
+            processingFactory=ProcessingQgisFactory(),
+            fme=FmeApiSingleton.getInstance(),
+            messageFactory=UtilsFactory().createMessageFactory()
+        )
+    
+    def getPluginIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.join(
+                os.path.dirname(__file__)
+            )),
+            'icon.png'
+        )
 
     def initGui(self):
-        self.sap.add_action_qgis(True)
-        self.sap.show_tools.connect(
-            self.show_tools_dialog
+        self.action = self.qgisCtrl.createAction(
+            Config.NAME,
+            self.getPluginIconPath(),
+            '',
+            self.startPlugin
         )
-        self.sap.close_tools.connect(
-            self.tools.close_dialog
-        )
-        core.QgsProject.instance().readProject.connect(
-            self.load_qgis_project
-        )
-        """ self.iface.actionNewProject().triggered.connect(
-            self.new_qgis_project
-        ) """
-        self.mQ = ManagerQgis(self.iface)
-        self.mQ.load_custom_config()
         
     def unload(self):
-        self.sap.add_action_qgis(False)
-        try:
-            self.sap.show_tools.disconnect(
-                self.show_tools_dialog
-            )
-        except:
-            pass
-        try:
-            self.sap.close_tools.disconnect(
-                self.tools.close_dialog
-            )
-        except:
-            pass
-        del self.tools
-        try:
-            core.QgsProject.instance().readProject.disconnect(
-                self.load_qgis_project
-            )
-        except:
-            pass
-        """ try:
-            self.iface.actionNewProject().triggered.disconnect(
-                self.new_qgis_project
-            )
-        except:
-            pass """
-        self.validate.stop()
-        #self.monitoring.stopCanvas()
-        del self.sap
-        del self.validate
-        #del self.monitoring
-        self.mQ.delete_shortcut_actions()
+        self.qgisCtrl.deleteAction(self.action)
+        del self.productionToolsCtrl
 
-    def load_qgis_project(self):
-        value = ManagerQgis(self.iface).load_project_var("settings_user")
-        if value:
-            self.msg_save.start() if not(self.msg_save.is_running) else ''
-            self.tools.reload_project_qgis()
-            self.validate.start()
-
-    """ def new_qgis_project(self):
-        self.monitoring.stopCanvas() """
-            
-    def closed_tools_dialog(self):
-        self.sap.enable_action_qgis(True)
-
-    def restart_validate(self):
-        if self.sap_mode:
-            self.validate.restart()
-                
-    def show_tools_dialog(self, sap_mode, activeMonitoring):
-        #self.monitoring.startCanvas() if activeMonitoring else self.monitoring.stopCanvas()
-        self.sap_mode = sap_mode
-        if self.sap_mode and self.sap.getTypeProductionData() == 1:
-            result = msgBox.show(
-                text='Esté projeto não é controlado pelo SAP. As informações são apenas para orientar o operador sendo necessário carregar manulamente os dados', 
-                title=u"AVISO!", 
-                status="critical"
-            )
-        #self.sap.enable_action_qgis(False)
-        self.menu.sap_mode = sap_mode
-        self.tools.sap_mode = sap_mode
-        self.tools.restart_validate.connect(
-            self.restart_validate
-        )
-        self.tools.show_dialog().closed_tools_dialog.connect(
-            self.closed_tools_dialog 
-        )
-        self.msg_save.start() if not(self.msg_save.is_running) else ''
-
+    def startPlugin(self):
+        if not self.sapCtrl.login():
+            return
+        self.productionToolsCtrl.loadDockWidget()
