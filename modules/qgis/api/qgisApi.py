@@ -188,19 +188,23 @@ class QgisApi(IQgisApi):
         if not dockWidget.isVisible():
             return
         iface.removeDockWidget(dockWidget)
+    
+    def getEvents(self):
+        return {
+            'readProject': core.QgsProject.instance().readProject,
+            'SaveAllEdits': iface.actionSaveAllEdits().triggered,
+            'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
+        }
 
     def on(self, event, callback):
-        events = {
-            'readProject': core.QgsProject.instance().readProject
-        }
-        events[event].connect(callback)
+        self.getEvents()[event].connect(callback)
 
     def off(self, event, callback):
-        events = {
-            'readProject': core.QgsProject.instance().readProject
-        }
-        events[event].disconnect(callback)
+        self.getEvents()[event].disconnect(callback)
 
     def cleanProject(self):
         core.QgsProject.instance().removeAllMapLayers()
         core.QgsProject.instance().layerTreeRoot().removeAllChildren()
+
+    def getCurrentMapTool(self):
+        return iface.mapCanvas().mapTool()

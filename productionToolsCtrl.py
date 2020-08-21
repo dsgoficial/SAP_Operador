@@ -1,5 +1,7 @@
 
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
+from Ferramentas_Producao.factories.timerFactory import TimerFactory
+
 import os
 
 class ProductionToolsCtrl:
@@ -12,17 +14,20 @@ class ProductionToolsCtrl:
             processingFactory,
             fme,
             messageFactory,
-            guiFactory=GUIFactory()
+            guiFactory=GUIFactory(),
+            timerFactory=TimerFactory()
         ):
-        self.guiFactory = guiFactory
         self.sap = sap
         self.qgis = qgis
+        self.fme = fme
         self.databaseFactory = databaseFactory
         self.processingFactory = processingFactory
-        self.fme = fme
+        self.guiFactory = guiFactory
+        self.timerFactory = timerFactory
         self.messageFactory = messageFactory
         self.sapActivity = None
         self.productionTools = None
+        self.saveTimer = None
         self.qgis.on('readProject', self.readProjectCallback)
         self.loadCustomQgisSettings()
 
@@ -41,7 +46,7 @@ class ProductionToolsCtrl:
             return
         self.removeDock()
         self.productionTools = self.guiFactory.makeProductionToolsDock(self)
-        self.qgis.addDockWidget(self.productionTools, side='left')
+        self.qgis.addDockWidget(self.productionTools, side='left')        
 
     def removeDock(self):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
@@ -87,8 +92,8 @@ class ProductionToolsCtrl:
         )
 
     def loadActivityData(self, sender):
-        onlyWithFeatures = sender.onlyWithFeatures(),
-        notLoadInputs = sender.notLoadInputs(),
+        onlyWithFeatures = sender.onlyWithFeatures()
+        notLoadInputs = sender.notLoadInputs()
         styleName = sender.getStyle()
         loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
@@ -169,6 +174,8 @@ class ProductionToolsCtrl:
             return
         for data in self.sapActivity.getInputs():
             self.qgis.loadInputData(data)
+        
+        self.initSaveTimer()
 
     def openRoutinesDialog(self, sender):
         routinesDialog = self.guiFactory.makeRoutinesDialog(self, self.productionTools)
@@ -244,6 +251,7 @@ class ProductionToolsCtrl:
 
     def readProjectCallback(self):
         if self.sap.isValidActivity():
+            self.initSaveTimer()
             return
         self.qgis.cleanProject()
         self.showBoxInfo(
@@ -256,6 +264,36 @@ class ProductionToolsCtrl:
             '''
         )
 
+    def initSaveTimer(self):
+        if self.saveTimer:
+            self.saveTimer.reset()
+            return
+        self.saveTimer = self.timerFactory.createTimer('Timer')
+        self.saveTimer.addCallback(self.saveMessage)
+        self.saveTimer.start(1000*30)
+        self.qgis.on('SaveAllEdits', self.saveTimer.reset)
+        self.qgis.on('SaveActiveLayerEdits', self.saveTimer.reset)
+
+    def freeHandIsActive(self):
+        freeHandStrClass = "<class 'DsgTools.gui.ProductionTools.MapTools.FreeHandTool.models.acquisitionFree.AcquisitionFree'>"
+        return str(type(self.qgis.getCurrentMapTool())) == freeHandStrClass
+
+    def haveToSave(self):
+        return (
+            self.qgis.hasModifiedLayers()
+            and
+            not(self.freeHandIsActive())
+        )
+
+    def saveMessage(self):
+        if not self.haveToSave():
+            return
+        self.showBoxInfo(
+            self.qgis.getMainWindow(),
+            'Aviso',
+           '<p style="color:red">Salve suas alterações!</p>'
+        )
+    
     def loadCustomQgisSettings(self):
         settings = self.getCustomQgisSettings()
         self.qgis.cleanShortcuts(settings)

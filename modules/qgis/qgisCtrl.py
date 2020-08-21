@@ -93,3 +93,6 @@ class QgisCtrl(IQgisCtrl):
 
     def cleanProject(self):
         self.apiQGis.cleanProject()
+
+    def getCurrentMapTool(self):
+        self.apiQGis.getCurrentMapTool()
