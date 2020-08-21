@@ -38,7 +38,7 @@ class Main:
             os.path.abspath(os.path.join(
                 os.path.dirname(__file__)
             )),
-            'icon.png'
+            'icon.svg'
         )
 
     def initGui(self):
