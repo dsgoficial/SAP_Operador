@@ -90,3 +90,6 @@ class QgisCtrl(IQgisCtrl):
 
     def off(self, event, callback):
         self.apiQGis.off(event, callback)
+
+    def cleanProject(self):
+        self.apiQGis.cleanProject()

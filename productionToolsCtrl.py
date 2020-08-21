@@ -182,6 +182,7 @@ class ProductionToolsCtrl:
     def runRoutine(self, sender):
         if self.qgis.hasModifiedLayers():
             self.showHTMLInfo(
+                self.qgis.getMainWindow(),
                 'Aviso',
                 '''<p style="color:red">
                     Salve todas suas alterações antes de executar essa rotina!
@@ -196,6 +197,7 @@ class ProductionToolsCtrl:
         routineData = sender.getCurrentRoutineData()
         html = rountineFunctions[routineData['routineType']](routineData)
         self.showHTMLInfo(
+            self.qgis.getMainWindow(),
             'Aviso',
             html
         )
@@ -232,16 +234,27 @@ class ProductionToolsCtrl:
         }
         eventFunctions[event](sender)
 
-    def showHTMLInfo(self, title, message):
+    def showHTMLInfo(self, parent, title, message):
         htmlMessageDlg = self.messageFactory.createHTMLMessageDialog()
         htmlMessageDlg.show(parent, title, message)
 
     def showBoxInfo(self, parent, title, message):
-        htmlMessageDlg = self.messageFactory.createHTMLMessageDialog()
+        htmlMessageDlg = self.messageFactory.createInfoMessageBox()
         htmlMessageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
-        pass
+        if self.sap.isValidActivity():
+            return
+        self.qgis.cleanProject()
+        self.showBoxInfo(
+            self.qgis.getMainWindow(),
+            'Aviso',
+            '''
+            <p style="color:red">
+                Esse projeto não pode ser acessado. Carregue um novo projeto.
+            </p>
+            '''
+        )
 
     def loadCustomQgisSettings(self):
         settings = self.getCustomQgisSettings()

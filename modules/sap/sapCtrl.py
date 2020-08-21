@@ -17,9 +17,11 @@ class SapCtrl(ISapCtrl):
         super(SapCtrl, self).__init__()
         self.qgis = qgis
         self.messageFactory = messageFactory
-        self.activityDataModel = dataModelFactory.createDataModel('SapActivity')
+        self.dataModelFactory = dataModelFactory
         self.sapApi = sapApi
         self.guiFactory = guiFactory
+
+        self.activityDataModel = self.dataModelFactory.createDataModel('SapActivity')
         self.loginDialog = self.guiFactory.createLoginDialog(self)
         self.loginDialog.setController(self)
 
@@ -38,7 +40,7 @@ class SapCtrl(ISapCtrl):
 
     def authUser(self, user, password, server):
         self.sapApi.setServer(server)
-        response = self.sapApi.loginAdminUser(
+        response = self.sapApi.loginUser(
             user, 
             password,
             self.qgis.getVersion(),
@@ -95,6 +97,10 @@ class SapCtrl(ISapCtrl):
         response = self.getCurrentActivity()
         if response:   
             self.activityDataModel.setData(response)
+            self.qgis.setSettingsVariable(
+                'productiontools:activityName', 
+                self.activityDataModel.getDescription()
+            )
             return self.activityDataModel
         response = self.initActivity()
         if response:
@@ -132,3 +138,33 @@ class SapCtrl(ISapCtrl):
         
     def reportError(self, errorId, errorDescription):
         return self.sapApi.reportError(errorId, errorDescription)
+
+    def hasActivityRecord(self):
+        return (
+            self.qgis.getSettingsVariable('productiontools:user')
+            and
+            self.qgis.getSettingsVariable('productiontools:server')
+            and
+            self.qgis.getSettingsVariable('productiontools:password')
+            and
+            self.qgis.getSettingsVariable('productiontools:activityName')
+        )
+
+    def hasValidAuthentication(self):
+        return self.authUser(
+            self.qgis.getSettingsVariable('productiontools:user'),
+            self.qgis.getSettingsVariable('productiontools:password'),
+            self.qgis.getSettingsVariable('productiontools:server')
+        )
+
+    def isValidActivity(self):
+        if not(self.hasActivityRecord()):
+            return True
+        if not self.hasValidAuthentication():
+            return True
+        response = self.getCurrentActivity()
+        if not response:
+            return True   
+        currentActivity = self.dataModelFactory.createDataModel('SapActivity')
+        currentActivity.setData(response)
+        return self.qgis.getSettingsVariable('productiontools:activityName') == currentActivity.getDescription()

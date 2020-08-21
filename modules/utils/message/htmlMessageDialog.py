@@ -17,7 +17,7 @@ class HtmlMessageDialog(QtWidgets.QDialog, IMessage):
             'htmlMessageDialog.ui'
         )
 
-    def show(self, title, html):
+    def show(self, parent, title, html):
         self.setWindowTitle(title)
         self.textEdit.setHtml(html)
         self.exec_()

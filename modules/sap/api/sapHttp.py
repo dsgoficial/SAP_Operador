@@ -59,7 +59,7 @@ class SapHttp(ISapApi):
     def getToken(self):
         return self.token
     
-    def loginAdminUser(self, user, password, gisVersion, pluginsVersion):
+    def loginUser(self, user, password, gisVersion, pluginsVersion):
         response = self.httpPostJson(
             url="{0}/login".format(self.getServer()), 
             postData={

@@ -200,3 +200,7 @@ class QgisApi(IQgisApi):
             'readProject': core.QgsProject.instance().readProject
         }
         events[event].disconnect(callback)
+
+    def cleanProject(self):
+        core.QgsProject.instance().removeAllMapLayers()
+        core.QgsProject.instance().layerTreeRoot().removeAllChildren()
