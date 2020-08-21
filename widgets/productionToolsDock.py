@@ -17,7 +17,7 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.treeWidgetActivity.setColumnCount(1)
         self.treeWidgetActivity.header().hide()
         self.connectQtreeWidgetSignals(self.treeWidgetActivity)
-        self.activityTab.layout().addWidget(self.treeWidgetActivity)
+        self.mainArea.layout().addWidget(self.treeWidgetActivity)
 
     def getTabIcon(self):
         return QtGui.QIcon(

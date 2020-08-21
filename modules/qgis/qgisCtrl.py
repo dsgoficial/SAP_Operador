@@ -1,6 +1,5 @@
 from Ferramentas_Producao.modules.qgis.interfaces.IQgisCtrl import IQgisCtrl
 from Ferramentas_Producao.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
-from Ferramentas_Producao.modules.qgis.factories.pluginsViewManagerSingleton import PluginsViewManagerSingleton
 from qgis.utils import iface
 
 
@@ -8,13 +7,11 @@ class QgisCtrl(IQgisCtrl):
 
     def __init__(
             self,
-            apiQGis=QgisApiSingleton.getInstance(),
-            pluginViewQgis=PluginsViewManagerSingleton.getInstance()
+            apiQGis=QgisApiSingleton.getInstance()
         ):
         super(QgisCtrl, self).__init__()
         self.iface = iface
         self.apiQGis = apiQGis
-        self.pluginViewQgis = pluginViewQgis
 
     def getMainWindow(self):
         return self.iface.mainWindow()
@@ -38,16 +35,16 @@ class QgisCtrl(IQgisCtrl):
         return self.apiQGis.getPluginsVersions()
 
     def addDockWidget(self, dockWidget, side='right'):
-        self.pluginViewQgis.addDockWidget(dockWidget, side)
+        self.apiQGis.addDockWidget(dockWidget, side)
 
     def removeDockWidget(self, dockWidget):
-        self.pluginViewQgis.removeDockWidget(dockWidget)
+        self.apiQGis.removeDockWidget(dockWidget)
     
     def addActionDigitizeToolBar(self, action):
-        self.pluginViewQgis.addActionDigitizeToolBar(action)
+        self.apiQGis.addActionDigitizeToolBar(action)
     
     def removeActionDigitizeToolBar(self, action):
-        self.pluginViewQgis.removeActionDigitizeToolBar(action)
+        self.apiQGis.removeActionDigitizeToolBar(action)
 
     def hasModifiedLayers(self):
         return self.apiQGis.hasModifiedLayers()
@@ -77,13 +74,19 @@ class QgisCtrl(IQgisCtrl):
         self.apiQGis.cleanActionShortcut(actionName)
     
     def createAction(self, name, iconPath, shortcutKeyName, callback):
-        return self.pluginViewQgis.createAction(name, iconPath, shortcutKeyName, callback)
+        return self.apiQGis.createAction(name, iconPath, shortcutKeyName, callback)
 
     def deleteAction(self, action):
-        self.pluginViewQgis.deleteAction(action)
+        self.apiQGis.deleteAction(action)
 
     def setHiddenLayers(self, b):
         self.apiQGis.setHiddenLayers(b)
 
     def canvasRefresh(self):
         self.apiQGis.canvasRefresh()
+
+    def on(self, event, callback):
+        self.apiQGis.on(event, callback)
+
+    def off(self, event, callback):
+        self.apiQGis.off(event, callback)

@@ -88,6 +88,9 @@ class SapCtrl(ISapCtrl):
             return None
         return response
 
+    def getUserName(self):
+        return self.activityDataModel.getUserName()
+
     def getActivity(self):
         response = self.getCurrentActivity()
         if response:   
@@ -124,7 +127,6 @@ class SapCtrl(ISapCtrl):
 
     def showEndActivityDialog(self, callback):
         endActivityDialog = self.guiFactory.createEndActivityDialog(self)
-        endActivityDialog.setController(sender)
         endActivityDialog.exec_()
         callback()
         

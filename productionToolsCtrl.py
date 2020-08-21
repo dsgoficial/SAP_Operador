@@ -23,11 +23,14 @@ class ProductionToolsCtrl:
         self.messageFactory = messageFactory
         self.sapActivity = None
         self.productionTools = None
+        self.qgis.on('readProject', self.readProjectCallback)
         self.loadCustomQgisSettings()
 
-    def __del__(self):
+    def unload(self):
+        self.removeDock()
         self.qgis.deleteAction(self.actionOnOffLayer)
         self.qgis.deleteAction(self.actionShowHideVertex)
+        self.qgis.off('readProject', self.readProjectCallback)
 
     def reload(self):
         self.loadDockWidget()
@@ -36,9 +39,12 @@ class ProductionToolsCtrl:
         self.sapActivity = self.sap.getActivity()
         if not self.sapActivity:
             return
-        self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
+        self.removeDock()
         self.productionTools = self.guiFactory.makeProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')
+
+    def removeDock(self):
+        self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
         
     def getActivityDescription(self):
         return self.sapActivity.getDescription()
@@ -233,6 +239,9 @@ class ProductionToolsCtrl:
     def showBoxInfo(self, parent, title, message):
         htmlMessageDlg = self.messageFactory.createHTMLMessageDialog()
         htmlMessageDlg.show(parent, title, message)
+
+    def readProjectCallback(self):
+        pass
 
     def loadCustomQgisSettings(self):
         settings = self.getCustomQgisSettings()

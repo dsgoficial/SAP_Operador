@@ -51,7 +51,7 @@ class Main:
         
     def unload(self):
         self.qgisCtrl.deleteAction(self.action)
-        del self.productionToolsCtrl
+        self.productionToolsCtrl.unload()
 
     def startPlugin(self):
         if not self.sapCtrl.login():
