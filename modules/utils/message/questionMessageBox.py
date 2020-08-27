@@ -8,8 +8,9 @@ class QuestionMessageBox(IMessage):
         super(QuestionMessageBox, self).__init__()
 
     def show(self, parent, title, text):
-        QtWidgets.QMessageBox.question(
+        result = QtWidgets.QMessageBox.question(
             parent,
             title, 
             text
         )
+        return result == 16384

@@ -13,6 +13,9 @@ class ProductionToolsBuilder(IProductionToolsBuilder):
     def reset(self):
         self.obj = ProductionToolsDock()
 
+    def setObject(self, obj):
+        self.obj = obj
+
     def addActivityWidget(self, name, widget):
         self.obj.addActivityWidget(name, widget)
     

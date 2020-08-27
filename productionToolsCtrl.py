@@ -38,13 +38,18 @@ class ProductionToolsCtrl:
         self.qgis.off('readProject', self.readProjectCallback)
 
     def reload(self):
-        self.loadDockWidget()
+        if self.productionTools is None:
+            return
+        self.sapActivity = self.sap.getActivity()
+        if self.sapActivity is None:
+            self.removeDock()
+            return
+        self.productionTools = self.guiFactory.makeProductionToolsDock(self, self.productionTools)
 
     def loadDockWidget(self):
         self.sapActivity = self.sap.getActivity()
         if not self.sapActivity:
             return
-        self.removeDock()
         self.productionTools = self.guiFactory.makeProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')        
 
@@ -270,7 +275,7 @@ class ProductionToolsCtrl:
             return
         self.saveTimer = self.timerFactory.createTimer('Timer')
         self.saveTimer.addCallback(self.saveMessage)
-        self.saveTimer.start(1000*30)
+        self.saveTimer.start(1000*60*5)
         self.qgis.on('SaveAllEdits', self.saveTimer.reset)
         self.qgis.on('SaveActiveLayerEdits', self.saveTimer.reset)
 

@@ -217,16 +217,22 @@ class SapActivity:
         return inputs
 
     def getDatabasePassword(self):
-        if self.getTypeProductionData() == 2:
+        if 'login_info' in self.getData()['dados']:
+            return self.getData()['dados']['login_info']['senha']
+        return self.getData()['senha']
+        """ if self.getTypeProductionData() == 2:
             return self.getData()['dados']['login_info']['senha']
         elif self.getTypeProductionData() == 3:
-            return self.getData()['senha']
+            return self.getData()['senha'] """
 
     def getDatabaseUserName(self):
-        if self.getTypeProductionData() == 2:
+        if 'login_info' in self.getData()['dados']:
+            return self.getData()['dados']['login_info']['login']
+        return self.getData()['login']
+        """ if self.getTypeProductionData() == 2:
             return self.getData()['dados']['login_info']['login']
         elif self.getTypeProductionData() == 3:
-            return self.getData()['login']
+            return self.getData()['login'] """
 
     def getDatabaseServer(self):
         return self.getData()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[0]

@@ -8,9 +8,12 @@ class GUIFactory(IGUIFactory):
     def __init__(self):
         super(GUIFactory, self).__init__()
 
-    def makeProductionToolsDock(self, mediator):
+    def makeProductionToolsDock(self, mediator, obj=None):
         director = ProductionToolsDirector()
         builder = ProductionToolsBuilder()
+        if obj is not None:
+            obj.removeAllWidgets()
+            builder.setObject(obj)
         director.constructProductionToolsDock( builder, mediator )
         return builder.getResult()
 

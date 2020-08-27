@@ -27,15 +27,15 @@ class SapCtrl(ISapCtrl):
 
     def login(self):
         self.loginDialog.loadData(
-            user=self.qgis.getSettingsVariable('productiontools:user'), 
+            user=self.qgis.getProjectVariable('productiontools:user'), 
             server=self.qgis.getSettingsVariable('productiontools:server'),
-            password=self.qgis.getSettingsVariable('productiontools:password')
+            password=self.qgis.getProjectVariable('productiontools:password')
         )
         return self.loginDialog.showView()
 
     def saveLoginData(self, user, password, server):
-        self.qgis.setSettingsVariable('productiontools:user', user)
-        self.qgis.setSettingsVariable('productiontools:password', password)
+        self.qgis.setProjectVariable('productiontools:user', user)
+        self.qgis.setProjectVariable('productiontools:password', password)
         self.qgis.setSettingsVariable('productiontools:server', server)
 
     def authUser(self, user, password, server):
@@ -54,7 +54,7 @@ class SapCtrl(ISapCtrl):
 
     def showQuestionMessageBox(self, parent, title, message):
         questionMessageBox = self.messageFactory.createQuestionMessageBox()
-        questionMessageBox.show(parent, title, message)
+        return questionMessageBox.show(parent, title, message)
     
     def showInfoMessageBox(self, parent, title, message):
         infoMessageBox = self.messageFactory.createInfoMessageBox()
@@ -69,8 +69,8 @@ class SapCtrl(ISapCtrl):
                 response['message']
             )
             return None
-        response['usuario'] = self.qgis.getSettingsVariable('productiontools:user')
-        response['senha'] = self.qgis.getSettingsVariable('productiontools:password')
+        response['usuario'] = self.qgis.getProjectVariable('productiontools:user')
+        response['senha'] = self.qgis.getProjectVariable('productiontools:password')
         return response
 
     def initActivity(self):
@@ -141,19 +141,19 @@ class SapCtrl(ISapCtrl):
 
     def hasActivityRecord(self):
         return (
-            self.qgis.getSettingsVariable('productiontools:user')
+            self.qgis.getProjectVariable('productiontools:user')
             and
             self.qgis.getSettingsVariable('productiontools:server')
             and
-            self.qgis.getSettingsVariable('productiontools:password')
+            self.qgis.getProjectVariable('productiontools:password')
             and
             self.qgis.getSettingsVariable('productiontools:activityName')
         )
 
     def hasValidAuthentication(self):
         return self.authUser(
-            self.qgis.getSettingsVariable('productiontools:user'),
-            self.qgis.getSettingsVariable('productiontools:password'),
+            self.qgis.getProjectVariable('productiontools:user'),
+            self.qgis.getProjectVariable('productiontools:password'),
             self.qgis.getSettingsVariable('productiontools:server')
         )
 

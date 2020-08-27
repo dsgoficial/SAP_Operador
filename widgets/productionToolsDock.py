@@ -19,6 +19,17 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.connectQtreeWidgetSignals(self.treeWidgetActivity)
         self.mainArea.layout().addWidget(self.treeWidgetActivity)
 
+    def removeAllWidgets(self):
+        self.treeWidgetActivity.clear()
+        if not self.lineageArea.layout():
+            return
+        while self.lineageArea.layout().count():
+            item = self.lineageArea.layout().takeAt(0)
+            widget = item.widget()
+            if widget is None:
+                continue
+            widget.deleteLater()
+
     def getTabIcon(self):
         return QtGui.QIcon(
             os.path.join(
@@ -49,14 +60,28 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         )
 
     def connectQtreeWidgetSignals(self, treeWidget):
-        treeWidget.itemExpanded.connect(
+        """ treeWidget.itemExpanded.connect(
             self.handleItemExpanded
+        ) """
+        treeWidget.itemCollapsed.connect(
+            self.handleItemCollapsed
         )
 
     def disconnectQtreeWidgetSignals(self, treeWidget):
-        treeWidget.itemExpanded.disconnect(
+        """ treeWidget.itemExpanded.disconnect(
             self.handleItemExpanded
+        ) """
+        treeWidget.itemCollapsed.disconnect(
+            self.handleItemCollapsed
         )
+
+    def handleItemCollapsed(self, item):
+        item.setExpanded(True)
+        """ treeWidget = self.sender()
+        treeWidget.collapseAll()
+        self.disconnectQtreeWidgetSignals(treeWidget)
+        item.setExpanded(True)
+        self.connectQtreeWidgetSignals(treeWidget) """
 
     def handleItemExpanded(self, item):
         treeWidget = self.sender()
@@ -72,6 +97,7 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         topLevelItem.addChild(childItem)
         self.treeWidgetActivity.addTopLevelItem(topLevelItem)
         self.treeWidgetActivity.setItemWidget(childItem, 0, widget)
+        topLevelItem.setExpanded(True)
 
     def addLineageLabel(self, lineage):
         text = "Etapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
