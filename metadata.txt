@@ -6,5 +6,5 @@ qgisMinimumVersion=3.0
 description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
 version=3.7.0
 repository=https://github.com/1cgeo/Ferramentas_Producao
-icon=icon.svg
+icon=icons/production.png
 ; end of mandatory metadata

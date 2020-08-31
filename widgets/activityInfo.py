@@ -9,6 +9,14 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         super(ActivityInfo, self).__init__(mediator)
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
+
+    def setEPSG(self, title, description):
+        self.layout.addWidget(
+            QtWidgets.QLabel(
+                "<b>{0}</b> {1}".format(title, description), 
+                self
+            )
+        )
         
     def setDescription(self, title, description):
         self.layout.addWidget(
@@ -32,6 +40,14 @@ class ActivityInfo(Widget, IActivityInfoWidget):
 
     def setButtons(self):
         layout = QtWidgets.QHBoxLayout()
+        layout.addSpacerItem(
+            QtWidgets.QSpacerItem(
+                150, 
+                20,
+                QtWidgets.QSizePolicy.Expanding,
+                QtWidgets.QSizePolicy.Expanding
+            )
+        )
         self.endActivityButton = QtWidgets.QPushButton('Finalizar', self)
         self.endActivityButton.setEnabled(False)
         self.endActivityButton.clicked.connect(
@@ -43,14 +59,6 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             lambda: self.getMediator().notify(self, 'errorActivity')
         )
         layout.addWidget(self.reportErrorButton)
-        layout.addSpacerItem(
-            QtWidgets.QSpacerItem(
-                150, 
-                20,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding
-            )
-        )
         self.layout.addLayout(layout)
 
     def updateEndActivityButton(self):

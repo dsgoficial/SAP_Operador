@@ -10,27 +10,21 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         super(ProductionToolsDock, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.setWindowTitle(Config.NAME)
-        self.tabWidget.setTabIcon(0, self.getTabIcon())
-        self.tabWidget.setTabIcon(1, self.getTabIcon())
-        self.treeWidgetActivity = QtWidgets.QTreeWidget()
-        self.treeWidgetActivity.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
-        self.treeWidgetActivity.setColumnCount(1)
-        self.treeWidgetActivity.header().hide()
-        self.connectQtreeWidgetSignals(self.treeWidgetActivity)
-        self.mainArea.layout().addWidget(self.treeWidgetActivity)
+        #self.tabWidget.setTabIcon(0, self.getTabIcon())
+        #self.tabWidget.setTabIcon(1, self.getTabIcon())
 
     def removeAllWidgets(self):
-        self.treeWidgetActivity.clear()
-        if not self.lineageArea.layout():
-            return
-        while self.lineageArea.layout().count():
-            item = self.lineageArea.layout().takeAt(0)
-            widget = item.widget()
-            if widget is None:
+        for layout in [self.lineageArea.layout(), self.mainArea.layout()]:
+            if not layout:
                 continue
-            widget.deleteLater()
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is None:
+                    continue
+                widget.deleteLater()
 
-    def getTabIcon(self):
+    """ def getTabIcon(self):
         return QtGui.QIcon(
             os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
@@ -38,7 +32,7 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
                 'icons',
                 'DSG.svg'
             )
-        )
+        ) """
     
     def getItemIcon(self):
         return QtGui.QIcon(
@@ -59,45 +53,20 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
             'productionToolsDock.ui'
         )
 
-    def connectQtreeWidgetSignals(self, treeWidget):
-        """ treeWidget.itemExpanded.connect(
-            self.handleItemExpanded
-        ) """
-        treeWidget.itemCollapsed.connect(
-            self.handleItemCollapsed
-        )
-
-    def disconnectQtreeWidgetSignals(self, treeWidget):
-        """ treeWidget.itemExpanded.disconnect(
-            self.handleItemExpanded
-        ) """
-        treeWidget.itemCollapsed.disconnect(
-            self.handleItemCollapsed
-        )
-
-    def handleItemCollapsed(self, item):
-        item.setExpanded(True)
-        """ treeWidget = self.sender()
-        treeWidget.collapseAll()
-        self.disconnectQtreeWidgetSignals(treeWidget)
-        item.setExpanded(True)
-        self.connectQtreeWidgetSignals(treeWidget) """
-
-    def handleItemExpanded(self, item):
-        treeWidget = self.sender()
-        treeWidget.collapseAll()
-        self.disconnectQtreeWidgetSignals(treeWidget)
-        item.setExpanded(True)
-        self.connectQtreeWidgetSignals(treeWidget)
+    def addLine(self):
+        lineA = QtWidgets.QFrame()
+        lineA.setFrameShape(QtWidgets.QFrame.HLine)
+        lineA.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.mainArea.layout().addWidget(lineA)
 
     def addActivityWidget(self, name, widget):
-        topLevelItem = QtWidgets.QTreeWidgetItem([name])
-        topLevelItem.setIcon(0, self.getItemIcon())
-        childItem = QtWidgets.QTreeWidgetItem()
-        topLevelItem.addChild(childItem)
-        self.treeWidgetActivity.addTopLevelItem(topLevelItem)
-        self.treeWidgetActivity.setItemWidget(childItem, 0, widget)
-        topLevelItem.setExpanded(True)
+        self.mainArea.layout().addWidget(widget)
+
+    def setShortcutDescription(self, description):
+        self.shortcutTE.setHtml(description)
+
+    """ def createMapToolAction(self):
+        pass """
 
     def addLineageLabel(self, lineage):
         text = "Etapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(

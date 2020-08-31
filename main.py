@@ -34,11 +34,13 @@ class Main:
         )
     
     def getPluginIconPath(self):
+        #Icons made by <a href="https://smashicons.com/" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
         return os.path.join(
             os.path.abspath(os.path.join(
                 os.path.dirname(__file__)
             )),
-            'icon.svg'
+            'icons',
+            'production.png'
         )
 
     def initGui(self):

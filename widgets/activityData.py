@@ -24,16 +24,17 @@ class ActivityData(Widget, IActivityDataWidget):
     def onlyWithFeatures(self):
         return self.onlyWithGeomCkb.isChecked()
 
-    def notLoadInputs(self):
-        return self.notLoadInputsCkb.isChecked()
-
     def getStyle(self):
         return self.stylesCb.currentText()
 
     @QtCore.pyqtSlot(bool)
-    def on_loadBtn_clicked(self):
+    def on_loadLayersBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getMediator().notify( self, 'loadActivity' )
+            self.getMediator().notify( self, 'loadActivityLayers' )
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+
+    @QtCore.pyqtSlot(bool)
+    def on_summaryBtn_clicked(self):
+        self.getMediator().notify( self, 'showActivityDataSummary' )

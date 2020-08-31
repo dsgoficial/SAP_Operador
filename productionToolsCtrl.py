@@ -68,6 +68,9 @@ class ProductionToolsCtrl:
     def getActivityRequirements(self):
         return self.sapActivity.getRequirements()
 
+    def getActivityEPSG(self):
+        return self.sapActivity.getEPSG()
+
     def getUserName(self):
         return self.sapActivity.getUserName()
 
@@ -96,15 +99,20 @@ class ProductionToolsCtrl:
             self.sapActivity.getDatabasePassword()
         )
 
-    def loadActivityData(self, sender):
+    def getActivityLayerNames(self):
+        return [item["nome"] for item in self.sapActivity.getLayers()]
+
+    def getActivityInputs(self):
+        return self.sapActivity.getInputs()
+
+    def loadActivityLayers(self, sender):
         onlyWithFeatures = sender.onlyWithFeatures()
-        notLoadInputs = sender.notLoadInputs()
         styleName = sender.getStyle()
         loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
             'dbHost' : self.sapActivity.getDatabaseServer(), 
-            'layerNames' : [item["nome"] for item in self.sapActivity.getLayers()], 
+            'layerNames' : self.getActivityLayerNames(), 
             'dbPassword' : self.sapActivity.getDatabasePassword(), 
             'dbPort' : self.sapActivity.getDatabasePort(), 
             'dbUser' : self.sapActivity.getDatabaseUserName() 
@@ -175,21 +183,18 @@ class ProductionToolsCtrl:
             'tipo_insumo_id': 100,
             'qml': self.sapActivity.getFrameQml()
         })
-        if notLoadInputs:
-            return
-        for data in self.sapActivity.getInputs():
-            self.qgis.loadInputData(data)
         
         self.initSaveTimer()
 
-    def openRoutinesDialog(self, sender):
-        routinesDialog = self.guiFactory.makeRoutinesDialog(self, self.productionTools)
-        routinesDialog.addRountines(
-            self.sapActivity.getQgisModels() +
-            self.sapActivity.getRuleRoutines() +
-            self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
-        )
-        routinesDialog.exec_()
+    def loadActivityInputs(self, sender):
+        inputData = sender.getInputsSelected()
+        if not inputData:
+            return
+        for data in inputData:
+            self.qgis.loadInputData(data)
+
+    def getActivityRoutines(self):
+        return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
 
     def runRoutine(self, sender):
         if self.qgis.hasModifiedLayers():
@@ -206,7 +211,7 @@ class ProductionToolsCtrl:
             'fme': self.runFMESAP,
             'qgisModel': self.runQgisModel
         }
-        routineData = sender.getCurrentRoutineData()
+        routineData = sender.getRoutineSelected()
         html = rountineFunctions[routineData['routineType']](routineData)
         self.showHTMLInfo(
             self.qgis.getMainWindow(),
@@ -240,11 +245,20 @@ class ProductionToolsCtrl:
         eventFunctions = {
             'endActivity': self.showEndActivityDialog,
             'errorActivity': self.showReportErrorDialog,
-            'loadActivity': self.loadActivityData,
-            'openRoutines': self.openRoutinesDialog,
+            'loadActivityLayers': self.loadActivityLayers,
             'runRoutine': self.runRoutine,
+            'showActivityDataSummary': self.showActivityDataSummary,
+            'loadActivityInputs': self.loadActivityInputs
         }
         eventFunctions[event](sender)
+
+    def showActivityDataSummary(self, sender):
+        dialog = self.guiFactory.makeActivitySummaryDialog(
+            self,
+            self.getActivityLayerNames(),
+            self.sapActivity.getConditionalStyleNames()
+        )
+        dialog.exec_()
 
     def showHTMLInfo(self, parent, title, message):
         htmlMessageDlg = self.messageFactory.createHTMLMessageDialog()
@@ -298,6 +312,28 @@ class ProductionToolsCtrl:
             'Aviso',
            '<p style="color:red">Salve suas alterações!</p>'
         )
+
+    """ def loadMapTools(self):
+        self.actionOnOffLayer = self.qgis.createAction(
+            'Ligar/Desligar camada',
+            os.path.join(
+                os.path.dirname(__file__),
+                'icons',
+                'on_off.png'
+            ),
+            'Y',
+            self.onOffLayers
+        )
+        self.actionShowHideVertex = self.qgis.createAction(
+            'Mostrar/Esconder marcadores para feições selecionadas',
+            os.path.join(
+                os.path.dirname(__file__),
+                'icons',
+                'vertex.png'
+            ),
+            'B',
+            self.showMarkersOnlySelectedFeatures
+        ) """
     
     def loadCustomQgisSettings(self):
         settings = self.getCustomQgisSettings()
@@ -330,14 +366,28 @@ class ProductionToolsCtrl:
 
     def showMarkersOnlySelectedFeatures(self, b):
         if b:
-            self.qgis.setSettings([{
+            self.qgis.setSettings({
                 'qgis/digitizing/marker_only_for_selected': 'true'
-            }])
+            })
         else:
-            self.qgis.setSettings([{
+            self.qgis.setSettings({
                 'qgis/digitizing/marker_only_for_selected': 'false'
-            }])
+            })
         self.qgis.canvasRefresh()
+
+    def getShortcutQgisDescription(self):
+        descriptionHtml = ''
+        customQgisSettings = self.getCustomQgisSettings()
+        for settingsKey in customQgisSettings:
+            if not('shortcuts' in settingsKey.lower()):
+                continue
+            if not(customQgisSettings[settingsKey]):
+                continue
+            descriptionHtml += '<b>{0}:</b> {1}<br>'.format(
+                settingsKey.split('/')[1], 
+                customQgisSettings[settingsKey]
+            )
+        return '<div>{0}</div>'.format(descriptionHtml)
 
     def getCustomQgisSettings(self):
         return {

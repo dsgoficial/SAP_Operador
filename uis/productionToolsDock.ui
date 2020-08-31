@@ -85,6 +85,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Atalhos</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0">
+         <widget class="QTextEdit" name="shortcutTE"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>

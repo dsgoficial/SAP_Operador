@@ -1,4 +1,4 @@
-from Ferramentas_Producao.widgets.endActivityDialog import EndActivityDialog
+from Ferramentas_Producao.modules.sap.widgets.endActivityDialog import EndActivityDialog
 
 class EndActivityDialogSingleton:
 

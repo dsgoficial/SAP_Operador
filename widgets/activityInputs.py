@@ -3,10 +3,10 @@ from Ferramentas_Producao.widgets.widget import Widget
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 import os, json
 
-class ActivityRoutines(Widget):
+class ActivityInputs(Widget):
 
     def __init__(self, mediator=None):
-        super(ActivityRoutines, self).__init__(mediator)
+        super(ActivityInputs, self).__init__(mediator)
         uic.loadUi(self.getUiPath(), self)
 
     def getUiPath(self):
@@ -14,27 +14,29 @@ class ActivityRoutines(Widget):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'activityRoutines.ui'
+            'activityInputs.ui'
         )
 
     def addWidget(self, widget):
         self.scrollAreaContents.layout().addWidget(widget)
 
-    def setRoutines(self, routines):
-        if not routines:
+    def setInputs(self, inputData):
+        if not inputData:
             return
-        for item in routines:
-            rb = QtWidgets.QRadioButton(item['description'], self)
-            rb.customData = json.dumps(item)
-            self.addWidget(rb)
+        for item in inputData:
+            cbx = QtWidgets.QCheckBox(item['nome'], self)
+            cbx.customData = json.dumps(item)
+            self.addWidget(cbx)
 
-    def getRoutineSelected(self):
+    def getInputsSelected(self):
+        inputData = []
         for idx in range(self.scrollAreaContents.layout().count()):
             item = self.scrollAreaContents.layout().itemAt(idx)
             widget = item.widget()
             if widget is None or not widget.isChecked():
                 continue
-            return json.loads(widget.customData)
+            inputData.append(json.loads(widget.customData))
+        return inputData
 
     def adjustWidgets(self):
         self.scrollAreaContents.layout().addSpacerItem(
@@ -47,9 +49,9 @@ class ActivityRoutines(Widget):
         )
 
     @QtCore.pyqtSlot(bool)
-    def on_runRoutineBtn_clicked(self):
+    def on_loadInputsBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getMediator().notify(self, 'runRoutine')
+            self.getMediator().notify(self, 'loadActivityInputs')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()

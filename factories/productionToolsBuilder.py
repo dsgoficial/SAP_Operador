@@ -18,9 +18,15 @@ class ProductionToolsBuilder(IProductionToolsBuilder):
 
     def addActivityWidget(self, name, widget):
         self.obj.addActivityWidget(name, widget)
+
+    def addLine(self):
+        self.obj.addLine()
     
     def addLineageLabel(self, lineage):
         self.obj.addLineageLabel(lineage)
+
+    def setShortcutDescription(self, description):
+        self.obj.setShortcutDescription(description)
 
     def getResult(self):
         obj = self.obj

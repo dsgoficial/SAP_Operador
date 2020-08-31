@@ -107,6 +107,10 @@ class SapActivity:
             })
         return rules
 
+
+    def getConditionalStyleNames(self):
+        return [ data['descricao'] for data in self.getRules() ]
+            
     def getLayers(self):
         layers = self.getData()['dados']['atividade']['camadas'][:]
         for layer in layers:
@@ -313,8 +317,11 @@ class SapActivity:
     def getFrameQuery(self):
         return "?query=SELECT geom_from_wkt('{0}') as geometry&geometry=geometry:3:{1}".format(
             self.getWorkUnitGeometry().split(';')[1],
-            self.getWorkUnitGeometry().split(';')[0].split('=')[1]
+            self.getEPSG()
         )
+
+    def getEPSG(self):
+        return self.getWorkUnitGeometry().split(';')[0].split('=')[1]
 
     def getFrameQml(self):
         return '''<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>

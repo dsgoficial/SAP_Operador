@@ -14,6 +14,9 @@ class ActivityInfoWidgetBuilder(IActivityInfoWidgetBuilder):
     def setMediator(self, mediator):
         self.obj.setMediator( mediator )
 
+    def setEPSG(self, title, description):
+        self.obj.setEPSG( title, description )
+
     def setDescription(self, title, description):
         self.obj.setDescription( title, description )
     
