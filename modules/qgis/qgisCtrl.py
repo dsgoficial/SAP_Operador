@@ -72,6 +72,15 @@ class QgisCtrl(IQgisCtrl):
 
     def cleanActionShortcut(self, actionName):
         self.apiQGis.cleanActionShortcut(actionName)
+
+    def addMenuBar(self, name):
+        return self.apiQGis.addMenuBar(name)
+
+    def addActionDigitizeToolBar(self, action):
+        self.apiQGis.addActionDigitizeToolBar(action)
+
+    def removeActionDigitizeToolBar(self, action):
+        self.apiQGis.removeActionDigitizeToolBar(action)
     
     def createAction(self, name, iconPath, shortcutKeyName, callback):
         return self.apiQGis.createAction(name, iconPath, shortcutKeyName, callback)

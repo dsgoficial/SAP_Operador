@@ -30,11 +30,37 @@ class ProductionToolsCtrl:
         self.saveTimer = None
         self.qgis.on('readProject', self.readProjectCallback)
         self.loadCustomQgisSettings()
+        self.createMenuBar()
+
+    def createMenuBar(self):
+        self.menuBarMain = self.qgis.addMenuBar('Ferramentas de Produção')
+        self.actionOnOffLayer = self.qgis.createAction(
+            'Ligar/Desligar camada',
+            os.path.join(
+                os.path.dirname(__file__),
+                'icons',
+                'on_off.png'
+            ),
+            'Y',
+            self.onOffLayers
+        )
+        self.menuBarMain.addAction(self.actionOnOffLayer)
+        self.actionShowHideVertex = self.qgis.createAction(
+            'Mostrar/Esconder marcadores para feições selecionadas',
+            os.path.join(
+                os.path.dirname(__file__),
+                'icons',
+                'vertex.png'
+            ),
+            'B',
+            self.showMarkersOnlySelectedFeatures
+        )
+        self.menuBarMain.addAction(self.actionShowHideVertex)
 
     def unload(self):
         self.removeDock()
-        self.qgis.deleteAction(self.actionOnOffLayer)
-        self.qgis.deleteAction(self.actionShowHideVertex)
+        self.menuBarMain.removeAction(self.actionOnOffLayer)
+        self.menuBarMain.removeAction(self.actionShowHideVertex)
         self.qgis.off('readProject', self.readProjectCallback)
 
     def reload(self):
@@ -340,7 +366,7 @@ class ProductionToolsCtrl:
         self.qgis.cleanShortcuts(settings)
         self.qgis.setSettings(settings)
         self.qgis.cleanActionShortcut('EnableSnappingAction')
-        self.actionOnOffLayer = self.qgis.createAction(
+        """ self.actionOnOffLayer = self.qgis.createAction(
             'Ligar/Desligar camada',
             os.path.join(
                 os.path.dirname(__file__),
@@ -359,7 +385,7 @@ class ProductionToolsCtrl:
             ),
             'B',
             self.showMarkersOnlySelectedFeatures
-        )
+        ) """
 
     def onOffLayers(self, b):
         self.qgis.setHiddenLayers(b)

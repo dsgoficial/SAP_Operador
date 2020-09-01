@@ -50,9 +50,10 @@ class Main:
             '',
             self.startPlugin
         )
+        self.qgisCtrl.addActionDigitizeToolBar(self.action)
         
     def unload(self):
-        self.qgisCtrl.deleteAction(self.action)
+        self.qgisCtrl.removeActionDigitizeToolBar(self.action)
         self.productionToolsCtrl.unload()
 
     def startPlugin(self):

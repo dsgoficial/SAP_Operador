@@ -6,7 +6,7 @@ from qgis import gui, core
 import base64, os, processing
 from qgis.utils import plugins, iface
 from configparser import ConfigParser
-from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QAction, QMenu
 from PyQt5.QtGui import QIcon
 
 class QgisApi(IQgisApi):
@@ -135,6 +135,13 @@ class QgisApi(IQgisApi):
                 continue
             a.setShortcut('')
 
+    def addMenuBar(self, name):
+        menu = QMenu(iface.mainWindow())
+        menu.setObjectName(name)
+        menu.setTitle(name)
+        iface.mainWindow().menuBar().insertMenu(iface.firstRightStandardMenu().menuAction(), menu)
+        return menu
+
     def setHiddenLayers(self, b):
         if b:
             iface.actionHideSelectedLayers().trigger()
@@ -163,10 +170,13 @@ class QgisApi(IQgisApi):
             a.setShortcut(self.getShortcutKey(shortcutKeyName))
         a.setCheckable(True)
         a.toggled.connect(callback)
-        iface.digitizeToolBar().addAction(a)
+        #iface.digitizeToolBar().addAction(a)
         return a
 
-    def deleteAction(self, action):
+    def addActionDigitizeToolBar(self, action):
+        iface.digitizeToolBar().addAction(action)
+
+    def removeActionDigitizeToolBar(self, action):
         iface.digitizeToolBar().removeAction(action)
 
     def addActionDigitizeToolBar(self, action):
