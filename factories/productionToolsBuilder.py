@@ -25,6 +25,9 @@ class ProductionToolsBuilder(IProductionToolsBuilder):
     def addLineageLabel(self, lineage):
         self.obj.addLineageLabel(lineage)
 
+    def addPomodoro(self, pomodoro):
+        self.obj.addPomodoro(pomodoro)
+
     def setShortcutDescription(self, description):
         self.obj.setShortcutDescription(description)
 

@@ -5,8 +5,8 @@ class InputData:
     def __init__(self,
             messageFactory=UtilsFactory().createMessageFactory()
         ):
-        self.errorMessageBox = messageFactory.createErrorMessageBox()
-        self.infoMessageBox = messageFactory.createInfoMessageBox()
+        self.errorMessageBox = messageFactory.createMessage('ErrorMessageBox')
+        self.infoMessageBox = messageFactory.createMessage('InfoMessageBox')
 
     def showErrorMessageBox(self, html):
         self.errorMessageBox.show(

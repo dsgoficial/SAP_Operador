@@ -49,15 +49,15 @@ class SapCtrl(ISapCtrl):
         return response['success']
 
     def showErrorMessageBox(self, parent, title, message):
-        errorMessageBox = self.messageFactory.createErrorMessageBox()
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(parent, title, message)
 
     def showQuestionMessageBox(self, parent, title, message):
-        questionMessageBox = self.messageFactory.createQuestionMessageBox()
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
         return questionMessageBox.show(parent, title, message)
     
     def showInfoMessageBox(self, parent, title, message):
-        infoMessageBox = self.messageFactory.createInfoMessageBox()
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(parent, title, message)
 
     def getCurrentActivity(self):

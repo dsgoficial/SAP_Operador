@@ -40,7 +40,7 @@ class ReportErrorDialog(QtWidgets.QDialog):
             )
 
     def showQuestionMessageBox(self, title, message):
-        questionMessageBox = self.messageFactory.createQuestionMessageBox()
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
         return questionMessageBox.show(self, title, message)
             
     def reportError(self):

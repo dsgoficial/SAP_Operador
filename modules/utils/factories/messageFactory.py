@@ -5,14 +5,12 @@ from Ferramentas_Producao.modules.utils.message.questionMessageBox  import Quest
 
 class MessageFactory:
 
-    def createHTMLMessageDialog(self):
-        return HtmlMessageDialog()
+    def createMessage(self, messageType):
+        messageTypes = {
+            'HtmlMessageDialog': HtmlMessageDialog,
+            'InfoMessageBox': InfoMessageBox,
+            'ErrorMessageBox': ErrorMessageBox,
+            'QuestionMessageBox': QuestionMessageBox
 
-    def createInfoMessageBox(self):
-        return InfoMessageBox()
-
-    def createErrorMessageBox(self):
-        return ErrorMessageBox()
-
-    def createQuestionMessageBox(self):
-        return QuestionMessageBox()
+        }
+        return messageTypes[messageType]()

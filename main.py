@@ -7,6 +7,7 @@ from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFacto
 
 from Ferramentas_Producao.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from Ferramentas_Producao.modules.database.factories.databaseFactory import DatabaseFactory
+from Ferramentas_Producao.modules.pomodoro.pomodoro import Pomodoro
 
 from Ferramentas_Producao.config import Config
 
@@ -16,7 +17,7 @@ class Main:
         super(Main, self).__init__()
         self.plugin_dir = os.path.dirname(__file__)
         self.iface = iface
-        
+        self.pomodoro = Pomodoro(self.iface)
         self.qgisCtrl = QgisCtrl()
 
         self.sapCtrl = SapCtrl(
@@ -30,11 +31,11 @@ class Main:
             databaseFactory=DatabaseFactory(),
             processingFactory=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=UtilsFactory().createMessageFactory(),
+            pomodoro=self.pomodoro
         )
     
     def getPluginIconPath(self):
-        #Icons made by <a href="https://smashicons.com/" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
         return os.path.join(
             os.path.abspath(os.path.join(
                 os.path.dirname(__file__)
@@ -47,16 +48,20 @@ class Main:
         self.action = self.qgisCtrl.createAction(
             Config.NAME,
             self.getPluginIconPath(),
-            '',
             self.startPlugin
+            
         )
         self.qgisCtrl.addActionDigitizeToolBar(self.action)
+        self.qgisCtrl.loadProcessingProvider(self.getPluginIconPath())
+        #self.pomodoro.initGui()
         
     def unload(self):
         self.qgisCtrl.removeActionDigitizeToolBar(self.action)
+        self.qgisCtrl.unloadProcessingProvider()
         self.productionToolsCtrl.unload()
+        self.pomodoro.unload()
 
-    def startPlugin(self):
+    def startPlugin(self, s):
         if not self.sapCtrl.login():
             return
         self.productionToolsCtrl.loadDockWidget()

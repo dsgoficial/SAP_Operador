@@ -19,7 +19,7 @@ class Login(QtWidgets.QDialog, ILogin):
         self.messageFactory = messageFactory
 
     def showErrorMessageBox(self, title, message):
-        errorMessageBox = self.messageFactory.createErrorMessageBox()
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(self, title, message)
 
     def getUiPath(self):

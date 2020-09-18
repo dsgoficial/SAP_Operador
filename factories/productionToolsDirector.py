@@ -38,3 +38,4 @@ class ProductionToolsDirector:
         for lineage in mediator.getActivityLineage():
             builder.addLineageLabel(lineage)
         builder.setShortcutDescription(mediator.getShortcutQgisDescription())
+        builder.addPomodoro(mediator.getPomodoroWidget())

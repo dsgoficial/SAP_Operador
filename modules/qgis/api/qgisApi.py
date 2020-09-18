@@ -1,5 +1,10 @@
 from Ferramentas_Producao.modules.qgis.interfaces.IQgisApi import IQgisApi
 from Ferramentas_Producao.modules.qgis.factories.inputDataFactory import InputDataFactory
+from Ferramentas_Producao.modules.qgis.factories.processingProviderFactory import ProcessingProviderFactory
+from Ferramentas_Producao.modules.qgis.factories.layerActionsFactory import LayerActionsFactory
+from Ferramentas_Producao.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
+from Ferramentas_Producao.modules.qgis.factories.mapToolsFactory import MapToolsFactory
+
 from qgis.PyQt.QtXml import QDomDocument
 from PyQt5 import QtCore, QtWidgets, QtGui 
 from qgis import gui, core
@@ -8,13 +13,22 @@ from qgis.utils import plugins, iface
 from configparser import ConfigParser
 from PyQt5.QtWidgets import QAction, QMenu
 from PyQt5.QtGui import QIcon
+import math
 
 class QgisApi(IQgisApi):
 
     def __init__(self,
-            inputDataFactory=InputDataFactory()
+            inputDataFactory=InputDataFactory(),
+            processingProviderFactory=ProcessingProviderFactory(),
+            layerActionsFactory=LayerActionsFactory(),
+            mapFunctionsFactory=MapFunctionsFactory(),
+            mapToolsFactory=MapToolsFactory()
         ):
        self.inputDataFactory = inputDataFactory
+       self.processingProviderFactory = processingProviderFactory
+       self.mapFunctionsFactory = mapFunctionsFactory
+       self.mapToolsFactory = mapToolsFactory
+       self.layerActionsFactory = layerActionsFactory
 
     def setProjectVariable(self, key, value):
         chiper_text = base64.b64encode(value.encode('utf-8'))
@@ -160,7 +174,7 @@ class QgisApi(IQgisApi):
             return
         return keys[shortcutKeyName]
 
-    def createAction(self, name, iconPath, shortcutKeyName, callback):
+    def createAction(self, name, iconPath, callback, shortcutKeyName, checkable):
         a = QAction(
             QIcon(iconPath),
             name,
@@ -168,9 +182,8 @@ class QgisApi(IQgisApi):
         )
         if self.getShortcutKey(shortcutKeyName):
             a.setShortcut(self.getShortcutKey(shortcutKeyName))
-        a.setCheckable(True)
-        a.toggled.connect(callback)
-        #iface.digitizeToolBar().addAction(a)
+        a.setCheckable(checkable)
+        a.triggered.connect(callback)
         return a
 
     def addActionDigitizeToolBar(self, action):
@@ -218,3 +231,84 @@ class QgisApi(IQgisApi):
 
     def getCurrentMapTool(self):
         return iface.mapCanvas().mapTool()
+
+    def loadProcessingProvider(self, iconPath):
+        fpProcProvider = self.processingProviderFactory.createProvider('fp')
+        fpProcProvider.setIconPath(iconPath)
+        core.QgsApplication.processingRegistry().addProvider(fpProcProvider)
+    
+    def unloadProcessingProvider(self):    
+        fpProcProvider = self.processingProviderFactory.createProvider('fp')
+        core.QgsApplication.processingRegistry().removeProvider(fpProcProvider)
+
+    def smoothLine(self):        
+        smoothLine = self.mapFunctionsFactory.getFunction('SmoothLine')
+        return smoothLine.run(iface.activeLayer())
+
+    def closeLine(self):
+        closeLine = self.mapFunctionsFactory.getFunction('CloseLine')
+        return closeLine.run(iface.activeLayer())
+
+    def activeTrimLineTool(self, active):
+        trimLineMapTool = self.mapToolsFactory.getTool('TrimLineMapTool')
+        if active:
+            iface.mapCanvas().setMapTool(trimLineMapTool)
+        else:
+            iface.mapCanvas().unsetMapTool(trimLineMapTool)
+    
+    def activeExpandLineTool(self, active):
+        expandLineMapTool = self.mapToolsFactory.getTool('ExpandLineMapTool')
+        if active:
+            iface.mapCanvas().setMapTool(expandLineMapTool)
+        else:
+            iface.mapCanvas().unsetMapTool(expandLineMapTool)
+
+    def pageRaster(self, direction):
+        groupName = 'imagens_dinamicas'
+        root = core.QgsProject.instance().layerTreeRoot()
+        grupo = root.findGroup(groupName)
+        if not grupo:
+            return (False, 'Crie um grupo com o nome "{0}" e coloque as camadas do tipo "Raster" para paginação.'.format(groupName))
+        images = [
+            tLayer for tLayer in grupo.findLayers() 
+            if tLayer.layer().type() == core.QgsMapLayer.RasterLayer
+        ]
+        if len(images) == 0:
+            return (False, 'O grupo "{0}" não possue camadas do tipo "Raster"'.format(groupName))
+        visibleImages = [ tLayer for tLayer in images if tLayer.isVisible() ]
+        if len(visibleImages) == 0 or len(visibleImages) > 1:
+            [ tLayer.setVisible(False) for tLayer in visibleImages]             
+            images[0].setVisible(True)
+            return
+        
+        def pageDown(currentPostion, images):
+            return 0 if currentPostion == (len(images)-1) else (currentPostion + 1)
+        def pageUp(currentPostion, images):
+            return (len(images)-1) if currentPostion == 0 else (currentPostion - 1)
+        pageFunctions = {
+            'down': pageDown,
+            'up': pageUp
+        }
+        if not(direction in pageFunctions):
+            return (False, 'Direção inválida')
+        currentPostion = images.index(rastersVisiveis[0])
+        nextPosition = pageFunctions[direction](currentPostion, images)
+        images[currentPostion].setVisible(False)
+        images[nextPosition].setVisible(True)
+
+    def createNewMapView(self):
+        createNewMapView = self.mapFunctionsFactory.getFunction('CreateNewMapView')
+        createNewMapView.run()
+        
+    def loadLayerActions(self, layerIds):
+        actions = {
+            'Mostrar feição': self.layerActionsFactory.createAction('FlashFeature'),   
+        }
+        layers = core.QgsProject.instance().mapLayers()
+        for layerId in layers:
+            if not(layerId in layerIds):
+                continue
+            for name in actions:
+                customAction = gui.QgsMapLayerAction( name , iface, layers[layerId])
+                gui.QgsGui.mapLayerActionRegistry().addMapLayerAction(customAction)
+                customAction.triggeredForFeature.connect(actions[name].execute)

@@ -15,7 +15,7 @@ class AuthSMB(QtWidgets.QDialog):
         uic.loadUi(self.dialog_path, self)
         self.ok_bt.clicked.connect(self.validate)
         self.cancel_bt.clicked.connect(self.reject)
-        self.infoMessageBox = messageFactory.createInfoMessageBox()
+        self.infoMessageBox = messageFactory.createMessage('InfoMessageBox')
         self.params = {}
         self.user = ""
         self.passwd = ""

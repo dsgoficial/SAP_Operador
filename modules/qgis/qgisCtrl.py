@@ -82,8 +82,8 @@ class QgisCtrl(IQgisCtrl):
     def removeActionDigitizeToolBar(self, action):
         self.apiQGis.removeActionDigitizeToolBar(action)
     
-    def createAction(self, name, iconPath, shortcutKeyName, callback):
-        return self.apiQGis.createAction(name, iconPath, shortcutKeyName, callback)
+    def createAction(self, name, iconPath, callback, shortcutKeyName='', checkable=False):
+        return self.apiQGis.createAction(name, iconPath, callback, shortcutKeyName, checkable)
 
     def deleteAction(self, action):
         self.apiQGis.deleteAction(action)
@@ -105,3 +105,30 @@ class QgisCtrl(IQgisCtrl):
 
     def getCurrentMapTool(self):
         self.apiQGis.getCurrentMapTool()
+
+    def loadProcessingProvider(self, iconPath):
+        self.apiQGis.loadProcessingProvider(iconPath)
+    
+    def unloadProcessingProvider(self):    
+        self.apiQGis.unloadProcessingProvider()
+
+    def smoothLine(self):
+        return self.apiQGis.smoothLine()
+
+    def closeLine(self):
+        return self.apiQGis.closeLine()
+
+    def activeTrimLineTool(self, active):
+        self.apiQGis.activeTrimLineTool(active)
+    
+    def activeExpandLineTool(self, active):
+        self.apiQGis.activeExpandLineTool(active)
+
+    def loadLayerActions(self, layerIds):
+        self.apiQGis.loadLayerActions(layerIds)
+
+    def pageRaster(self, direction):
+        return self.apiQGis.pageRaster(direction)
+
+    def createNewMapView(self):
+        self.apiQGis.createNewMapView()

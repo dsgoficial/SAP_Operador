@@ -14,6 +14,7 @@ class ProductionToolsCtrl:
             processingFactory,
             fme,
             messageFactory,
+            pomodoro,
             guiFactory=GUIFactory(),
             timerFactory=TimerFactory()
         ):
@@ -25,42 +26,49 @@ class ProductionToolsCtrl:
         self.guiFactory = guiFactory
         self.timerFactory = timerFactory
         self.messageFactory = messageFactory
+        self.pomodoro = pomodoro
         self.sapActivity = None
         self.productionTools = None
         self.saveTimer = None
+        self.hideLayer = True
+        self.showMarkers = True
+        self.menuBarActions = []
         self.qgis.on('readProject', self.readProjectCallback)
         self.loadCustomQgisSettings()
+        self.createActionsMenuBar()
         self.createMenuBar()
+    
+    def createActionsMenuBar(self):
+        menuBarActions = []
+        for actionConfig in self.getMenuBarActionSettings():
+            action = self.qgis.createAction(
+                actionConfig['name'],
+                actionConfig['iconPath'],
+                actionConfig['callback'],
+                actionConfig['shortcut']
+            )
+            menuBarActions.append(action)
+        self.setMenuBarActions(menuBarActions)
+
+    def setMenuBarActions(self, menuBarActions):
+        self.menuBarActions = menuBarActions
+
+    def getMenuBarActions(self):
+        return self.menuBarActions
+
+    def getPomodoroWidget(self):
+        return self.pomodoro.getWidget()
 
     def createMenuBar(self):
         self.menuBarMain = self.qgis.addMenuBar('Ferramentas de Produção')
-        self.actionOnOffLayer = self.qgis.createAction(
-            'Ligar/Desligar camada',
-            os.path.join(
-                os.path.dirname(__file__),
-                'icons',
-                'on_off.png'
-            ),
-            'Y',
-            self.onOffLayers
-        )
-        self.menuBarMain.addAction(self.actionOnOffLayer)
-        self.actionShowHideVertex = self.qgis.createAction(
-            'Mostrar/Esconder marcadores para feições selecionadas',
-            os.path.join(
-                os.path.dirname(__file__),
-                'icons',
-                'vertex.png'
-            ),
-            'B',
-            self.showMarkersOnlySelectedFeatures
-        )
-        self.menuBarMain.addAction(self.actionShowHideVertex)
-
+        for action in self.getMenuBarActions():
+            self.menuBarMain.addAction(action)
+        
     def unload(self):
         self.removeDock()
-        self.menuBarMain.removeAction(self.actionOnOffLayer)
-        self.menuBarMain.removeAction(self.actionShowHideVertex)
+        for action in self.getMenuBarActions():
+            self.menuBarMain.removeAction(action)
+        self.setMenuBarActions([])
         self.qgis.off('readProject', self.readProjectCallback)
 
     def reload(self):
@@ -105,7 +113,7 @@ class ProductionToolsCtrl:
 
     def showEndActivityDialog(self, sender):
         if self.qgis.hasModifiedLayers():
-            self.showBoxInfo(
+            self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',
                 'Salve todas suas alterações antes de finalizar!'
@@ -210,6 +218,8 @@ class ProductionToolsCtrl:
             'qml': self.sapActivity.getFrameQml()
         })
         
+        self.qgis.loadLayerActions(loadedLayerIds)
+        
         self.initSaveTimer()
 
     def loadActivityInputs(self, sender):
@@ -224,7 +234,7 @@ class ProductionToolsCtrl:
 
     def runRoutine(self, sender):
         if self.qgis.hasModifiedLayers():
-            self.showHTMLInfo(
+            self.showHtmlMessageDialog(
                 self.qgis.getMainWindow(),
                 'Aviso',
                 '''<p style="color:red">
@@ -239,7 +249,7 @@ class ProductionToolsCtrl:
         }
         routineData = sender.getRoutineSelected()
         html = rountineFunctions[routineData['routineType']](routineData)
-        self.showHTMLInfo(
+        self.showHtmlMessageDialog(
             self.qgis.getMainWindow(),
             'Aviso',
             html
@@ -286,20 +296,24 @@ class ProductionToolsCtrl:
         )
         dialog.exec_()
 
-    def showHTMLInfo(self, parent, title, message):
-        htmlMessageDlg = self.messageFactory.createHTMLMessageDialog()
+    def showHtmlMessageDialog(self, parent, title, message):
+        htmlMessageDlg = self.messageFactory.createMessage('HtmlMessageDialog')
         htmlMessageDlg.show(parent, title, message)
 
-    def showBoxInfo(self, parent, title, message):
-        htmlMessageDlg = self.messageFactory.createInfoMessageBox()
-        htmlMessageDlg.show(parent, title, message)
+    def showInfoMessageBox(self, parent, title, message):
+        messageDlg = self.messageFactory.createMessage('InfoMessageBox')
+        messageDlg.show(parent, title, message)
+    
+    def showErrorMessageBox(self, parent, title, message):
+        messageDlg = self.messageFactory.createMessage('ErrorMessageBox')
+        messageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
         if self.sap.isValidActivity():
             self.initSaveTimer()
             return
         self.qgis.cleanProject()
-        self.showBoxInfo(
+        self.showInfoMessageBox(
             self.qgis.getMainWindow(),
             'Aviso',
             '''
@@ -333,73 +347,32 @@ class ProductionToolsCtrl:
     def saveMessage(self):
         if not self.haveToSave():
             return
-        self.showBoxInfo(
+        self.showInfoMessageBox(
             self.qgis.getMainWindow(),
             'Aviso',
            '<p style="color:red">Salve suas alterações!</p>'
         )
-
-    """ def loadMapTools(self):
-        self.actionOnOffLayer = self.qgis.createAction(
-            'Ligar/Desligar camada',
-            os.path.join(
-                os.path.dirname(__file__),
-                'icons',
-                'on_off.png'
-            ),
-            'Y',
-            self.onOffLayers
-        )
-        self.actionShowHideVertex = self.qgis.createAction(
-            'Mostrar/Esconder marcadores para feições selecionadas',
-            os.path.join(
-                os.path.dirname(__file__),
-                'icons',
-                'vertex.png'
-            ),
-            'B',
-            self.showMarkersOnlySelectedFeatures
-        ) """
     
     def loadCustomQgisSettings(self):
         settings = self.getCustomQgisSettings()
         self.qgis.cleanShortcuts(settings)
         self.qgis.setSettings(settings)
         self.qgis.cleanActionShortcut('EnableSnappingAction')
-        """ self.actionOnOffLayer = self.qgis.createAction(
-            'Ligar/Desligar camada',
-            os.path.join(
-                os.path.dirname(__file__),
-                'icons',
-                'on_off.png'
-            ),
-            'Y',
-            self.onOffLayers
-        )
-        self.actionShowHideVertex = self.qgis.createAction(
-            'Mostrar/Esconder marcadores para feições selecionadas',
-            os.path.join(
-                os.path.dirname(__file__),
-                'icons',
-                'vertex.png'
-            ),
-            'B',
-            self.showMarkersOnlySelectedFeatures
-        ) """
 
-    def onOffLayers(self, b):
-        self.qgis.setHiddenLayers(b)
+    def onOffLayers(self):
+        self.qgis.setHiddenLayers(self.hideLayer)
+        self.hideLayer = not self.hideLayer
 
-    def showMarkersOnlySelectedFeatures(self, b):
-        if b:
-            self.qgis.setSettings({
-                'qgis/digitizing/marker_only_for_selected': 'true'
-            })
-        else:
-            self.qgis.setSettings({
-                'qgis/digitizing/marker_only_for_selected': 'false'
-            })
+    def showMarkersOnlySelectedFeatures(self):
+        values = {
+            True: 'true',
+            False: 'false'
+        }
+        self.qgis.setSettings({
+            'qgis/digitizing/marker_only_for_selected': values[self.showMarkers]
+        })
         self.qgis.canvasRefresh()
+        self.showMarkers = not self.showMarkers
 
     def getShortcutQgisDescription(self):
         descriptionHtml = ''
@@ -414,6 +387,95 @@ class ProductionToolsCtrl:
                 customQgisSettings[settingsKey]
             )
         return '<div>{0}</div>'.format(descriptionHtml)
+
+    def smoothLine(self):
+        result = self.qgis.smoothLine()
+        if not result[0]:
+            self.showErrorMessageBox(
+                self.qgis.getMainWindow(),
+                'Erro',
+                '<p style="color:red">{0}</p>'.format(result[1])
+            )
+
+    def closeLine(self):
+        result = self.qgis.closeLine()
+        if not result[0]:
+            self.showErrorMessageBox(
+                self.qgis.getMainWindow(),
+                'Erro',
+                '<p style="color:red">{0}</p>'.format(result[1])
+            )
+
+    def pageRaster(self, direction):
+        result = self.qgis.pageRaster(direction)
+        if not result[0]:
+            self.showErrorMessageBox(
+                self.qgis.getMainWindow(),
+                'Erro',
+                '<p style="color:red">{0}</p>'.format(result[1])
+            )
+
+    def getMenuBarActionSettings(self):
+        iconRootPath = os.path.join(
+                os.path.dirname(__file__),
+                'icons'
+        )
+        return [
+            {
+                'name': 'Ligar/Desligar camada',
+                'iconPath':os.path.join(iconRootPath, 'on_off.png'),
+                'shortcut': 'Y',
+                'callback': self.onOffLayers
+            },
+            {
+                'name': 'Mostrar/Esconder marcadores para feições selecionadas',
+                'iconPath':os.path.join(iconRootPath, 'vertex.png'),
+                'shortcut': 'B',
+                'callback': self.showMarkersOnlySelectedFeatures
+            },
+            {
+                'name': 'Suavizador de linhas',
+                'iconPath':os.path.join(iconRootPath, 'smoothLayer.png'),
+                'shortcut': '',
+                'callback': self.smoothLine
+            },
+            {
+                'name': 'Fechar linha',
+                'iconPath':os.path.join(iconRootPath, 'closeLine.png'),
+                'shortcut': '',
+                'callback': self.closeLine
+            },
+            {
+                'name': 'Aparar linha',
+                'iconPath':os.path.join(iconRootPath, 'trim.png'),
+                'shortcut': '',
+                'callback': lambda: self.qgis.activeTrimLineTool(True)
+            },
+            {
+                'name': 'Expandir linha',
+                'iconPath':os.path.join(iconRootPath, 'expand.png'),
+                'shortcut': '',
+                'callback': lambda: self.qgis.activeExpandLineTool(True)
+            },
+            {
+                'name': 'Paginar raster para cima',
+                'iconPath':os.path.join(iconRootPath, 'pageup.png'),
+                'shortcut': '',
+                'callback': lambda direction='up': self.pageRaster(direction)
+            },
+            {
+                'name': 'Paginar raster para baixo',
+                'iconPath':os.path.join(iconRootPath, 'pagedown.png'),
+                'shortcut': '',
+                'callback': lambda direction='down': self.pageRaster(direction)
+            },
+            {
+                'name': 'Criar nova visualização de mapa',
+                'iconPath':os.path.join(iconRootPath, 'newmapview.png'),
+                'shortcut': '',
+                'callback': lambda: self.qgis.createNewMapView()
+            }
+        ]
 
     def getCustomQgisSettings(self):
         return {
