@@ -389,7 +389,8 @@ class ProductionToolsCtrl:
         return '<div>{0}</div>'.format(descriptionHtml)
 
     def smoothLine(self):
-        result = self.qgis.smoothLine()
+        #result = self.qgis.smoothLine()
+        result = self.qgis.runMapFunctions([{'name': 'SmoothLine'}])
         if not result[0]:
             self.showErrorMessageBox(
                 self.qgis.getMainWindow(),
@@ -398,7 +399,8 @@ class ProductionToolsCtrl:
             )
 
     def closeLine(self):
-        result = self.qgis.closeLine()
+        #result = self.qgis.closeLine()
+        result = self.qgis.runMapFunctions([{'name': 'CloseLine'}])
         if not result[0]:
             self.showErrorMessageBox(
                 self.qgis.getMainWindow(),
@@ -449,13 +451,13 @@ class ProductionToolsCtrl:
                 'name': 'Aparar linha',
                 'iconPath':os.path.join(iconRootPath, 'trim.png'),
                 'shortcut': '',
-                'callback': lambda: self.qgis.activeTrimLineTool(True)
+                'callback': lambda: self.qgis.activeTool('TrimLineMapTool')
             },
             {
                 'name': 'Expandir linha',
                 'iconPath':os.path.join(iconRootPath, 'expand.png'),
                 'shortcut': '',
-                'callback': lambda: self.qgis.activeExpandLineTool(True)
+                'callback': lambda: self.qgis.activeTool('ExpandLineMapTool')
             },
             {
                 'name': 'Paginar raster para cima',
@@ -474,7 +476,13 @@ class ProductionToolsCtrl:
                 'iconPath':os.path.join(iconRootPath, 'newmapview.png'),
                 'shortcut': '',
                 'callback': lambda: self.qgis.createNewMapView()
-            }
+            },
+            {
+                'name': 'Convergir vertices de feições',
+                'iconPath':os.path.join(iconRootPath, 'convergencepoint.png'),
+                'shortcut': '',
+                'callback': lambda: self.qgis.activeTool('ConvergencePoint')
+            },
         ]
 
     def getCustomQgisSettings(self):

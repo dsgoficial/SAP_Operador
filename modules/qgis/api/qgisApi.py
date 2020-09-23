@@ -241,27 +241,21 @@ class QgisApi(IQgisApi):
         fpProcProvider = self.processingProviderFactory.createProvider('fp')
         core.QgsApplication.processingRegistry().removeProvider(fpProcProvider)
 
-    def smoothLine(self):        
-        smoothLine = self.mapFunctionsFactory.getFunction('SmoothLine')
-        return smoothLine.run(iface.activeLayer())
+    def runMapFunctions(self, functionList):
+        for functionData in functionList:
+            mapFunction = self.mapFunctionsFactory.getFunction(functionData['name'])
+            result = mapFunction.run(iface.activeLayer())
+            if result[0]:
+                continue
+            return result
+        return result
 
-    def closeLine(self):
-        closeLine = self.mapFunctionsFactory.getFunction('CloseLine')
-        return closeLine.run(iface.activeLayer())
-
-    def activeTrimLineTool(self, active):
-        trimLineMapTool = self.mapToolsFactory.getTool('TrimLineMapTool')
-        if active:
-            iface.mapCanvas().setMapTool(trimLineMapTool)
+    def activeTool(self, toolName, unsetTool=False):
+        tool = self.mapToolsFactory.getTool(toolName)
+        if unsetTool:
+            iface.mapCanvas().unsetMapTool(tool)
         else:
-            iface.mapCanvas().unsetMapTool(trimLineMapTool)
-    
-    def activeExpandLineTool(self, active):
-        expandLineMapTool = self.mapToolsFactory.getTool('ExpandLineMapTool')
-        if active:
-            iface.mapCanvas().setMapTool(expandLineMapTool)
-        else:
-            iface.mapCanvas().unsetMapTool(expandLineMapTool)
+            iface.mapCanvas().setMapTool(tool)
 
     def pageRaster(self, direction):
         groupName = 'imagens_dinamicas'

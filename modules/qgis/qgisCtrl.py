@@ -112,17 +112,11 @@ class QgisCtrl(IQgisCtrl):
     def unloadProcessingProvider(self):    
         self.apiQGis.unloadProcessingProvider()
 
-    def smoothLine(self):
-        return self.apiQGis.smoothLine()
+    def runMapFunctions(self, functionList):
+        return self.apiQGis.runMapFunctions(functionList)
 
-    def closeLine(self):
-        return self.apiQGis.closeLine()
-
-    def activeTrimLineTool(self, active):
-        self.apiQGis.activeTrimLineTool(active)
-    
-    def activeExpandLineTool(self, active):
-        self.apiQGis.activeExpandLineTool(active)
+    def activeTool(self, toolName, unsetTool=False):
+        self.apiQGis.activeTool(toolName, unsetTool)
 
     def loadLayerActions(self, layerIds):
         self.apiQGis.loadLayerActions(layerIds)

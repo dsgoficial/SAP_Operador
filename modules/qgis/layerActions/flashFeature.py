@@ -116,7 +116,7 @@ class FlashFeature:
             self.animation.setKeyValueAt( start + midStep, startColor )
             end = float(( i + 1 ) / flashes)
             if not(end == 1.0):
-                self.animation.setKeyValueAt( end, endColor );
+                self.animation.setKeyValueAt( end, endColor )
         self.animation.setEndValue( endColor )
         self.animation.start()
 
@@ -128,12 +128,6 @@ class FlashFeature:
         self.showCrossedLines(self.getFeatureMarkerPoint(featureGeometry, layerCrs))
         self.startFlashFeature(featureGeometry, layerCrs)
         
-
-
-""" l = iface.activeLayer()
-customAction = qgis.gui.QgsMapLayerAction( "Locate Feature" , iface, l );
-QgsGui.mapLayerActionRegistry().addMapLayerAction(customAction)
-customAction.triggeredForFeature.connect(locateFeature) """
 ####
 #selector = QgsGui.shortcutsManager().listAll()[175]
 #QgsGui.shortcutsManager().setObjectKeySequence(selector, 'S')

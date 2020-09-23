@@ -8,12 +8,12 @@ class SmoothLine(MapFunction):
     def __init__(self):
         super(SmoothLine, self).__init__()
     
-    def isValidParamenters(self, layer):
+    def isValidParameters(self, layer):
         if not layer:
             return (False, 'Selecione uma camada')
         if not(layer.crs().mapUnits() == core.QgsUnitTypes.DistanceMeters):
             return (False, 'A camada ativa deve ter sua unidade de distancia em metros')
-        if not(layer.wkbType() == core.QgsWkbTypes.LineGeometry):
+        if not(layer.geometryType() == core.QgsWkbTypes.LineGeometry):
             return (False, 'A camada ativa deve ser do tipo "LineGeometry"')
         if not(layer.isEditable()):
             return (False, 'A camada ativa deve está no modo editável')
@@ -22,7 +22,7 @@ class SmoothLine(MapFunction):
         return (True, '')
 
     def run(self, layer):
-        result = self.isValidParamenters(layer)
+        result = self.isValidParameters(layer)
         if not result[0]:
             return result
         for feat in layer.selectedFeatures():
