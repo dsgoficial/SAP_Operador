@@ -2,7 +2,7 @@ from Ferramentas_Producao.modules.sap.dataModels.sapActivity import SapActivity
 
 class DataModelFactory:
 
-    def createDataModel(modelName):
+    def createDataModel(self, modelName):
         dataModels = {
             'SapActivity': SapActivity
         }
