@@ -127,7 +127,3 @@ class FlashFeature:
         self.setCanvasExtent(featureGeometry, layerCrs)
         self.showCrossedLines(self.getFeatureMarkerPoint(featureGeometry, layerCrs))
         self.startFlashFeature(featureGeometry, layerCrs)
-        
-####
-#selector = QgsGui.shortcutsManager().listAll()[175]
-#QgsGui.shortcutsManager().setObjectKeySequence(selector, 'S')
