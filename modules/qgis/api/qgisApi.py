@@ -14,6 +14,8 @@ from configparser import ConfigParser
 from PyQt5.QtWidgets import QAction, QMenu
 from PyQt5.QtGui import QIcon
 import math
+from configparser import ConfigParser
+
 
 class QgisApi(IQgisApi):
 
@@ -192,16 +194,6 @@ class QgisApi(IQgisApi):
     def removeActionDigitizeToolBar(self, action):
         iface.digitizeToolBar().removeAction(action)
 
-    def addActionDigitizeToolBar(self, action):
-        iface.digitizeToolBar().addAction(
-            action
-        )
-
-    def removeActionDigitizeToolBar(self, action):
-        iface.digitizeToolBar().removeAction(
-            action
-        )
-
     def addDockWidget(self, dockWidget, side):
         if side == 'right':
             iface.addDockWidget(QtCore.Qt.RightDockWidgetArea, dockWidget)
@@ -306,3 +298,67 @@ class QgisApi(IQgisApi):
                 customAction = gui.QgsMapLayerAction( name , iface, layers[layerId])
                 gui.QgsGui.mapLayerActionRegistry().addMapLayerAction(customAction)
                 customAction.triggeredForFeature.connect(actions[name].execute)
+
+    def getMainWindow(self):
+        return iface.mainWindow()
+        
+    def updateMainWindow(self, customizationData):
+        mSettings = core.QSettings()
+        mw = iface.mainWindow()
+        cp = ConfigParser()
+        cp.read_string(customizationData)
+        items = list(cp['Customization'].items())
+
+        menuBar = mw.menuBar()
+        menuCustomization = [ item for item in items if itemm[0].startswith('menus') ]
+        
+        mSettings.beginGroup( "Customization/Menus" )
+        menus = menuBar.findChildren(core.QMenu)
+        for menu in menus:
+            if not menu.objectName() or not(menu.objectName() in customLayout):
+                continue
+            visible = customLayout[menu.objectName()]
+            if not visible :
+                menuBar.removeAction( menu.menuAction() )
+            else:
+                menuBar.addAction( menu.menuAction() )
+        mSettings.endGroup()
+
+        mSettings.beginGroup( "Customization/Toolbars" )
+        toolBars = mw.findChildren(core.QToolBar)
+        for toolBar in toolBars:
+            objectName = toolBar.objectName()
+            if not objectName or not(objectName in customLayout):
+                continue
+            visible = customLayout[objectName]
+            if not visible :
+                mw.removeToolBar( toolBar )
+                iface.viewMenu().removeAction(toolBar.toggleViewAction())
+            else:
+                iface.viewMenu().addAction(toolBar.toggleViewAction())
+                toolBar.toggleViewAction().trigger() if not toolBar.isVisible() else ''
+        mSettings.endGroup()
+
+        mSettings.beginGroup( "Customization/Docks" )
+        docks = mw.findChildren(core.QDockWidget)
+        for dock in docks:
+            objectName = dock.objectName()
+            if not objectName or not(objectName in customLayout):
+                continue
+            visible = customLayout[objectName]
+            if not visible :
+                mw.removeDockWidget( dock )
+        mSettings.endGroup()
+
+
+
+
+
+
+
+
+
+
+
+
+
