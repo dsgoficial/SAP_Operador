@@ -10,11 +10,10 @@ class QgisCtrl(IQgisCtrl):
             apiQGis=QgisApiSingleton.getInstance()
         ):
         super(QgisCtrl, self).__init__()
-        self.iface = iface
         self.apiQGis = apiQGis
 
     def getMainWindow(self):
-        return self.iface.mainWindow()
+        return self.apiQGis.mainWindow()
 
     def setProjectVariable(self, key, value):
         self.apiQGis.setProjectVariable(key, value)

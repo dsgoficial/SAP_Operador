@@ -80,8 +80,8 @@ class ProductionToolsCtrl:
             return
         self.productionTools = self.guiFactory.makeProductionToolsDock(self, self.productionTools)
 
-    def loadDockWidget(self):
-        self.sapActivity = self.sap.getActivity()
+    def loadDockWidget(self, sapActivity=None):
+        self.sapActivity = self.sap.getActivity() if sapActivity is None else sapActivity
         if not self.sapActivity:
             return
         self.productionTools = self.guiFactory.makeProductionToolsDock(self)

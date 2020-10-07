@@ -11,7 +11,7 @@ class SapCtrl(ISapCtrl):
             qgis,
             messageFactory,
             sapApi=SapApiSingleton.getInstance(),
-            dataModelFactory=DataModelFactory,
+            dataModelFactory=DataModelFactory(),
             guiFactory=GUIFactory()
         ):
         super(SapCtrl, self).__init__()

@@ -19,12 +19,10 @@ class Main:
         self.iface = iface
         self.pomodoro = Pomodoro(self.iface)
         self.qgisCtrl = QgisCtrl()
-
         self.sapCtrl = SapCtrl(
             qgis=self.qgisCtrl,
             messageFactory=UtilsFactory().createMessageFactory()
         )
-        
         self.productionToolsCtrl = ProductionToolsCtrl(
             sap=self.sapCtrl,
             qgis=self.qgisCtrl,
@@ -34,6 +32,7 @@ class Main:
             messageFactory=UtilsFactory().createMessageFactory(),
             pomodoro=self.pomodoro
         )
+        self.externalInstances = []
     
     def getPluginIconPath(self):
         return os.path.join(
@@ -53,7 +52,6 @@ class Main:
         )
         self.qgisCtrl.addActionDigitizeToolBar(self.action)
         self.qgisCtrl.loadProcessingProvider(self.getPluginIconPath())
-        #self.pomodoro.initGui()
         
     def unload(self):
         self.qgisCtrl.removeActionDigitizeToolBar(self.action)
@@ -61,7 +59,20 @@ class Main:
         self.productionToolsCtrl.unload()
         self.pomodoro.unload()
 
-    def startPlugin(self, s):
+    def startPlugin(self, b):
         if not self.sapCtrl.login():
             return
         self.productionToolsCtrl.loadDockWidget()
+
+    def startPluginExternally(self, sapCtrl):
+        productionToolsCtrl = ProductionToolsCtrl(
+            sap=sapCtrl,
+            qgis=self.qgisCtrl,
+            databaseFactory=DatabaseFactory(),
+            processingFactory=ProcessingQgisFactory(),
+            fme=FmeApiSingleton.getInstance(),
+            messageFactory=UtilsFactory().createMessageFactory(),
+            pomodoro=self.pomodoro
+        )
+        productionToolsCtrl.loadDockWidget()
+        self.externalInstances.append(productionToolsCtrl)
