@@ -13,7 +13,7 @@ class QgisCtrl(IQgisCtrl):
         self.apiQGis = apiQGis
 
     def getMainWindow(self):
-        return self.apiQGis.mainWindow()
+        return self.apiQGis.getMainWindow()
 
     def setProjectVariable(self, key, value):
         self.apiQGis.setProjectVariable(key, value)
