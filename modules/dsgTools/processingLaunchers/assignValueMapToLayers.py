@@ -5,7 +5,7 @@ import json
 
 class AssignValueMapToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(AssignValueMapToLayers, self).__init__()
         self.processingId = 'dsgtools:assignvaluemaptolayersalgorithm'
    

@@ -5,8 +5,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 class ActivityInfo(Widget, IActivityInfoWidget):
 
-    def __init__(self, mediator=None):
-        super(ActivityInfo, self).__init__(mediator)
+    def __init__(self, controller=None):
+        super(ActivityInfo, self).__init__(controller)
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
 
@@ -51,12 +51,12 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton = QtWidgets.QPushButton('Finalizar', self)
         self.endActivityButton.setEnabled(False)
         self.endActivityButton.clicked.connect(
-            lambda: self.getMediator().notify(self, 'endActivity')
+            lambda: self.getController().showEndActivityDialog()
         )
         layout.addWidget(self.endActivityButton)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
         self.reportErrorButton.clicked.connect(
-            lambda: self.getMediator().notify(self, 'errorActivity')
+            lambda: self.getController().showReportErrorDialog()
         )
         layout.addWidget(self.reportErrorButton)
         self.layout.addLayout(layout)

@@ -5,7 +5,7 @@ class EndActivityDialogSingleton:
     dialog = None
 
     @staticmethod
-    def getInstance(mediator):
+    def getInstance(controller):
         if not EndActivityDialogSingleton.dialog:
-            EndActivityDialogSingleton.dialog = EndActivityDialog(mediator)
+            EndActivityDialogSingleton.dialog = EndActivityDialog(controller)
         return EndActivityDialogSingleton.dialog

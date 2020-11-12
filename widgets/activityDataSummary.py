@@ -3,7 +3,7 @@ import os
 
 class ActivityDataSummary(QtWidgets.QDialog):
 
-    def __init__(self, mediator=None):
+    def __init__(self, controller=None):
         super(ActivityDataSummary, self).__init__()
         uic.loadUi(self.getUiPath(), self)
 

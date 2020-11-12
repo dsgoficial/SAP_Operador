@@ -1,9 +1,11 @@
-from Ferramentas_Producao.modules.sap.dataModels.sapActivity import SapActivity
+from Ferramentas_Producao.modules.sap.dataModels.sapActivityHttp import SapActivityHttp
+from Ferramentas_Producao.modules.sap.dataModels.sapActivityPostgres import SapActivityPostgres
 
 class DataModelFactory:
 
     def createDataModel(self, modelName):
         dataModels = {
-            'SapActivity': SapActivity
+            'SapActivityHttp': SapActivityHttp,
+            'SapActivityPostgres': SapActivityPostgres
         }
         return dataModels[modelName]()

@@ -4,7 +4,7 @@ import processing
 
 class AssingFilterToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(AssingFilterToLayers, self).__init__()
         self.processingId = 'dsgtools:assignfiltertolayers'
 

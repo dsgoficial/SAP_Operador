@@ -4,7 +4,7 @@ import processing
 
 class GroupLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(GroupLayers, self).__init__()
         self.processingId = 'dsgtools:grouplayers'
 

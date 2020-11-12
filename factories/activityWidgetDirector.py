@@ -1,36 +1,49 @@
-from Ferramentas_Producao.widgets.activityData import ActivityData
+from Ferramentas_Producao.widgets.selectItems import SelectItems
 
 class ActivityWidgetDirector:
 
-    def constructActivityInfoWidget(self, builder, mediator):
-        builder.setMediator(mediator)
-        builder.setDescription( "Descrição:", mediator.getActivityDescription())
-        builder.setEPSG('EPSG:', mediator.getActivityEPSG())
-        builder.setNotes( "Observações:", mediator.getActivityNotes() )
-        builder.setRequirements( "Requisitos:", mediator.getActivityRequirements() )
+    def constructActivityInfoWidget(self, builder, controller):
+        builder.setController(controller)
+        builder.setDescription( "Descrição:", controller.getActivityDescription())
+        builder.setEPSG('EPSG:', controller.getActivityEPSG())
+        builder.setNotes( "Observações:", controller.getActivityNotes() )
+        builder.setRequirements( "Requisitos:", controller.getActivityRequirements() )
         builder.setButtons()
 
-    def constructActivityDataWidget(self, builder, mediator):
-        builder.setMediator(mediator)
-        builder.setStyles(mediator.getActivityStyles())
+    def constructActivityDataWidget(self, builder, controller):
+        builder.setController(controller)
+        builder.setStyles(controller.getActivityStyles())
 
-    def constructActivityInputsWidget(self, builder, mediator):
-        builder.setMediator(mediator)
+    def constructActivityInputsWidget(self, builder, controller):
+        builder.setController(controller)
         builder.setInputs([ 
-            data for data in mediator.getActivityInputs()
+            data for data in controller.getActivityInputs()
             if not(data['tipo_insumo_id'] in [4,5])
         ])
         builder.adjustWidgets()
 
-    def constructActivityInputLinksWidget(self, builder, mediator):
-        builder.setMediator(mediator)
+    def constructActivityInputLinksWidget(self, builder, controller):
+        builder.setController(controller)
         builder.setInputs([ 
-            data for data in mediator.getActivityInputs()
+            data for data in controller.getActivityInputs()
             if data['tipo_insumo_id'] in [4,5]
         ])
         builder.adjustWidgets()
 
-    def constructActivityRoutinesWidget(self, builder, mediator):
-        builder.setMediator(mediator)
-        builder.setRoutines(mediator.getActivityRoutines())
+    def constructActivityRoutinesWidget(self, builder, controller):
+        builder.setController(controller)
+        builder.setRoutines(controller.getActivityRoutines())
         builder.adjustWidgets()
+
+    def constructLoadLocalActivityWidgetBuilder(self, builder, controller):
+        builder.setController(controller)
+        
+        workspacesSelectItems = SelectItems('Áreas de trabalho:')
+        workspacesSelectItems.addItems(controller.getActivityWorkspaces())
+
+        layersSelectItems = SelectItems('Camadas:')
+        layersSelectItems.addItems(controller.getActivityLayers())
+
+        builder.setStyleNames(controller.getActivityStyles())
+        builder.setWorkspaceSelectItems(workspacesSelectItems)
+        builder.setLayersSelectItems(layersSelectItems)

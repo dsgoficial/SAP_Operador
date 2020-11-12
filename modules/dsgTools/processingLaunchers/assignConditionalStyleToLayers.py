@@ -5,7 +5,7 @@ import json
 
 class AssignConditionalStyleToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(AssignConditionalStyleToLayers, self).__init__()
         self.processingId = 'dsgtools:assignconditionalstyletolayersalgorithm'
     

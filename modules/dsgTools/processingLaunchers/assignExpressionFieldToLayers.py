@@ -5,7 +5,7 @@ import json
 
 class AssignExpressionFieldToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(AssignExpressionFieldToLayers, self).__init__()
         self.processingId = 'dsgtools:assignexpressionfieldtolayersalgorithm'
 

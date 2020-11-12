@@ -7,7 +7,7 @@ class IActivityRoutinesWidgetBuilder(ABC):
         pass
 
     @abstractmethod
-    def setMediator(self, *args):
+    def setController(self, *args):
         pass
 
     @abstractmethod

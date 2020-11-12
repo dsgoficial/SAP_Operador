@@ -6,8 +6,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore, uic
 
 class ActivityData(Widget, IActivityDataWidget):
 
-    def __init__(self, mediator=None):
-        super(ActivityData, self).__init__(mediator)
+    def __init__(self, controller=None):
+        super(ActivityData, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
 
     def getUiPath(self):
@@ -31,10 +31,13 @@ class ActivityData(Widget, IActivityDataWidget):
     def on_loadLayersBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getMediator().notify( self, 'loadActivityLayers' )
+            self.getController().loadActivityLayers( 
+                self.onlyWithFeatures(),
+                self.getStyle()
+            )
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
     @QtCore.pyqtSlot(bool)
     def on_summaryBtn_clicked(self):
-        self.getMediator().notify( self, 'showActivityDataSummary' )
+        self.getController().showActivityDataSummary()

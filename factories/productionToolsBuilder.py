@@ -16,6 +16,9 @@ class ProductionToolsBuilder(IProductionToolsBuilder):
     def setObject(self, obj):
         self.obj = obj
 
+    def setController(self, controller):
+        self.obj.setController(controller)
+
     def addActivityWidget(self, name, widget):
         self.obj.addActivityWidget(name, widget)
 
@@ -30,6 +33,9 @@ class ProductionToolsBuilder(IProductionToolsBuilder):
 
     def setShortcutDescription(self, description):
         self.obj.setShortcutDescription(description)
+
+    def removeTab(self, index):
+        self.obj.removeTab(index)
 
     def getResult(self):
         obj = self.obj

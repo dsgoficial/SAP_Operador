@@ -1,4 +1,4 @@
-class SapActivity:
+class SapActivityPostgres:
 
     def __init__(self):
         self.data = {}
@@ -9,51 +9,8 @@ class SapActivity:
     def getData(self):
         return self.data
 
-    def getNotes(self):
-        notes = []
-        activityData = self.getData()['dados']['atividade']
-        for key in activityData:
-            if 'observacao' in key and activityData[key]:
-                notes.append(activityData[key])
-        return notes
-
-    def getRequirements(self):
-        activityData = self.getData()['dados']['atividade']
-        if 'requisitos' in activityData and activityData['requisitos']:
-            return activityData['requisitos']
-        return []
-
-    def getDescription(self):
-        return self.getData()['dados']['atividade']['nome']
-
-    def getUserName(self):
-        return self.getData()['dados']['usuario_nome']
-
-    def getId(self):
-        return self.getData()['dados']['atividade']['id']
-
-    def getTypeProductionData(self):
-        return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
-
     def getMenus(self):
-        return self.getData()['dados']['atividade']['menus']
-
-    def getActivityGroupName(self):
-        """ return "{}_{}".format(
-            self.getDatabaseName(), 
-            self.getWorkUnitName()
-        )  """
-        return "{}".format(
-            self.getWorkUnitName()
-        )
-
-    def getGeomGroup(self, geometryType):
-        if geometryType == 0:
-            return u"PONTO"
-        elif geometryType == 1:
-            return u"LINHA"
-        elif geometryType == 2:
-            return u"AREA"
+        return self.getData()['menus']
 
     def getLayerGroup(self, layerName):
         return layerName.split('_')[0]
@@ -98,9 +55,10 @@ class SapActivity:
             if not(data['ordem'] in rules):
                 rules[data['ordem']] = {}
                 rules[data['ordem']]['tipo'] = data['tipo_regra']
-            if not data['atributo'] in rules[data['ordem']]:
-                rules[data['ordem']][data['atributo']] = []
-            rules[data['ordem']][data['atributo']].append({
+                rules[data['ordem']]['atributos'] = {}
+            if not data['atributo'] in rules[data['ordem']]['atributos']:
+                rules[data['ordem']]['atributos'][data['atributo']] = []
+            rules[data['ordem']]['atributos'][data['atributo']].append({
                     'descricao' : data['descricao'],
                     'regra' : data['regra'],
                     'corRgb' : data['cor_rgb']
@@ -110,59 +68,25 @@ class SapActivity:
 
     def getConditionalStyleNames(self):
         return [ data['descricao'] for data in self.getRules() ]
+
+    def getLayerNames(self):
+        return [ layer['nome'] for layer in self.getLayers()]
             
     def getLayers(self):
-        layers = self.getData()['dados']['atividade']['camadas'][:]
-        for layer in layers:
-            layer.update({
-                'filter': self.getLayerFilter(layer["schema"], layer["nome"])
-            }) 
-        return layers
+        return self.getData()['layers'][:]
+
+    def getWorkspaceNames(self):
+        return [ workspace['nome'] for workspace in self.getData()['workspaces']]
 
     def getLayersQml(self, styleName):
         layersQml = []
-        layers = self.getLayers()[:]
+        layers = self.getLayers()
         for layer in layers:
             layersQml.append({
                 'camada': layer["nome"],
                 'qml': self.getLayerStyle(layer["nome"], layer["schema"], styleName)
             })
         return layersQml
-
-    def getLayerALiases(self):
-        return [
-            {
-                'camadaNome': item['nome'],
-                'camadaApelido': item['alias'] if 'alias' in item else '',
-                'atributosApelido': item['atributos'] if 'atributos' in item else []
-            }
-            for item in self.getData()['dados']['atividade']['camadas']
-        ]
-
-    def getLayerActions(self):
-        return [
-            {
-                'camadaNome': item['nome'],
-                'descricao': "Doc MGCP",
-                'tipo': 'OpenUrl',
-                'documentacao': item['documentacao'] if 'documentacao' in item else ''
-            }
-            for item in self.getData()['dados']['atividade']['camadas']
-        ]
-    
-    def getLayerDefaultFieldValue(self):
-        return [
-            {
-                'camadaNome': item['nome'],
-                'atributos': [
-                    {
-                        'nome': 'ultimo_usuario',
-                        'valor': self.getUserId()
-                    }
-                ]
-            }
-            for item in self.getData()['dados']['atividade']['camadas']
-        ]
     
     def getLayerExpressionField(self):
         return [
@@ -175,7 +99,7 @@ class SapActivity:
                     }
                 ]
             }
-            for item in self.getData()['dados']['atividade']['camadas']
+            for item in self.getLayers()
         ]
 
     def getLayerConditionalStyle(self):
@@ -184,14 +108,14 @@ class SapActivity:
                 'camadaNome': item['nome'],
                 'estilos': self.getConditionalStyles(item['nome'])
             }
-            for item in self.getData()['dados']['atividade']['camadas']
+            for item in self.getLayers()
         ]
 
     def getRules(self):
-        return self.getData()['dados']['atividade']['regras']
+        return self.getData()['rules'][:]
     
     def getLayerStyle(self, layerName, layerSchema, styleName):
-        for item in self.getData()['dados']['atividade']['estilos']:
+        for item in self.getStyles():
             if not(
                 item['f_table_schema'] == layerSchema
                 and
@@ -202,69 +126,39 @@ class SapActivity:
                 continue
             return item['styleqml']
 
-    def getStylesName(self):
+    def getStyles(self):
+        return self.getData()['styles'][:]
+
+    def getStyleNames(self):
         return list(set([
             item['stylename']
-            for item in self.getData()['dados']['atividade']['estilos']
+            for item in self.getStyles()
         ]))
 
-    def getInputs(self):
-        inputs = self.getData()['dados']['atividade']['insumos'][:]
-        for data in inputs:
-            if not(data['tipo_insumo_id'] == 3):
-                continue
-            data.update({
-                'usuario': self.getDatabaseUserName(),
-                'senha': self.getDatabasePassword(),
-                'workUnitGeometry': self.getWorkUnitGeometry()
-            })
-        return inputs
-
     def getDatabasePassword(self):
-        if 'login_info' in self.getData()['dados']:
-            return self.getData()['dados']['login_info']['senha']
-        return self.getData()['senha']
-        """ if self.getTypeProductionData() == 2:
-            return self.getData()['dados']['login_info']['senha']
-        elif self.getTypeProductionData() == 3:
-            return self.getData()['senha'] """
+        return self.getData()['database']['password']
 
     def getDatabaseUserName(self):
-        if 'login_info' in self.getData()['dados']:
-            return self.getData()['dados']['login_info']['login']
-        return self.getData()['login']
-        """ if self.getTypeProductionData() == 2:
-            return self.getData()['dados']['login_info']['login']
-        elif self.getTypeProductionData() == 3:
-            return self.getData()['login'] """
+        return self.getData()['database']['user']
 
     def getDatabaseServer(self):
-        return self.getData()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[0]
+        return self.getData()['database']['host']
 
     def getDatabasePort(self):
-        return self.getData()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[1]
+        return self.getData()['database']['port']
 
     def getDatabaseName(self):
-        return self.getData()['dados']['atividade']['dado_producao']['nome']
-    
-    def getWorkUnitGeometry(self):
-        return self.getData()['dados']['atividade']['geom']
-
-    def getWorkUnitName(self):
-        return self.getData()['dados']['atividade']['unidade_trabalho']
-
-    def getFmeConfig(self):
-        return self.getData()['dados']['atividade']['fme']
+        return self.getData()['database']['name']
     
     def getQgisModels(self):
         return [
             {
-                'ordem' : item['ordem'],
+                'ordem' : idx,
                 'description' : item['descricao'],
                 'routineType' : 'qgisModel',
                 'model_xml' : item['model_xml']
             }
-            for item in self.getData()['dados']['atividade']['models_qgis'] 
+            for idx, item in enumerate(self.getData()['qgisModels'])
         ]
 
     def getRuleRoutines(self):
@@ -281,34 +175,41 @@ class SapActivity:
             'description' : "Estatísticas de regras.",
             'routineType' : 'rules'
         }]
-        
-    def getLineage(self):
-        if not( 
-                'linhagem' in self.getData()['dados']['atividade'] 
-                and 
-                self.getData()['dados']['atividade']['linhagem'] 
-            ):
-            return []
-        return [
-            {
-                'etapa': d['etapa'] if 'etapa' in d else '',
-                'data_inicio': d['data_inicio'] if 'data_inicio' in d else '',
-                'data_fim': d['data_fim'] if 'data_fim' in d else '',
-                'posto_grad': d['posto_grad'] if 'posto_grad' in d else '',
-                'nome_guerra': d['nome_guerra'] if 'nome_guerra' in d else '',
-                'situacao': d['situacao'] if 'situacao' in d else '',
-            }
-            for d in self.getData()['dados']['atividade']['linhagem']
-        ]
 
-    def getUserId(self):
-        return self.getData()['dados']['usuario_id']
+    def getLayersFilter(self, workspaceNames):
+        layers = self.getLayers()
+        workspacesFilter = self.getWorkspacesFilter(workspaceNames)
+        for layer in layers:
+            layer.update({
+                'filter': self.getLayerFilter(layer["schema"], layer["nome"], workspacesFilter)
+            }) 
+        return layers
 
-    def getLayerFilter(self, layerSchema, layerName):
-        if layerName == u"aux_moldura_a":
-            return u""""mi" = '{}'""".format(self.getWorkUnitName())
-        return """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
-                self.getWorkUnitGeometry(),
+    def getWorkspacesFilter(self, workspaceNames):
+        geometries = []
+        for workspace in self.getData()['workspaces']:
+            if not( workspace['nome'] in workspaceNames):
+                continue
+            geometries.append("ST_GEOMFROMEWKT('{0}')".format(workspace['ewkt']))
+        return '''ST_Collect(ARRAY[{0}])'''.format(','.join(geometries))
+
+    def getActivityGroupName(self):
+        """ return "{}_{}".format(
+            self.getDatabaseName(), 
+            self.getWorkUnitName()
+        )  """
+        return "{}".format(
+            self.getWorkUnitName()
+        )
+
+    def getWorkUnitName(self):
+        return self.getData()['dados']['atividade']['unidade_trabalho']
+
+    def getLayerFilter(self, layerSchema, layerName, workspacesFilter):
+        #if layerName == u"aux_moldura_a":
+        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
+        return """ST_INTERSECTS(geom, {0}) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+                workspacesFilter,
                 'id',
                 layerSchema,
                 layerName,

@@ -5,7 +5,7 @@ class ReportErrorDialogSingleton:
     dialog = None
 
     @staticmethod
-    def getInstance(mediator):
+    def getInstance(controller):
         if not ReportErrorDialogSingleton.dialog:
-            ReportErrorDialogSingleton.dialog = ReportErrorDialog(mediator)
+            ReportErrorDialogSingleton.dialog = ReportErrorDialog(controller)
         return ReportErrorDialogSingleton.dialog

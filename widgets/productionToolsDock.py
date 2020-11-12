@@ -10,8 +10,17 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         super(ProductionToolsDock, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.setWindowTitle(Config.NAME)
-        #self.tabWidget.setTabIcon(0, self.getTabIcon())
-        #self.tabWidget.setTabIcon(1, self.getTabIcon())
+        self.controller = None
+        self.shortcutTE.setReadOnly(True)
+
+    def setController(self, controller):
+        self.controller = controller
+
+    def getController(self):
+        return self.controller
+
+    def removeTab(self, index):
+        self.tabWidget.removeTab(index)
 
     def removeAllWidgets(self):
         for layout in [self.lineageArea.layout(), self.mainArea.layout()]:
@@ -24,15 +33,8 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
                     continue
                 widget.deleteLater()
 
-    """ def getTabIcon(self):
-        return QtGui.QIcon(
-            os.path.join(
-                os.path.abspath(os.path.dirname(__file__)),
-                '..',
-                'icons',
-                'DSG.svg'
-            )
-        ) """
+    def closeEvent(self, e):
+        self.getController().closedDock()
     
     def getItemIcon(self):
         return QtGui.QIcon(

@@ -5,8 +5,8 @@ import os, json
 
 class ActivityRoutines(Widget):
 
-    def __init__(self, mediator=None):
-        super(ActivityRoutines, self).__init__(mediator)
+    def __init__(self, controller=None):
+        super(ActivityRoutines, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
 
     def getUiPath(self):
@@ -50,6 +50,6 @@ class ActivityRoutines(Widget):
     def on_runRoutineBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getMediator().notify(self, 'runRoutine')
+            self.getController().runRoutine(self.getRoutineSelected())
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()

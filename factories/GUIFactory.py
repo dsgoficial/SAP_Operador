@@ -9,21 +9,30 @@ class GUIFactory(IGUIFactory):
     def __init__(self):
         super(GUIFactory, self).__init__()
 
-    def makeProductionToolsDock(self, mediator, obj=None):
+    def makeRemoteProductionToolsDock(self, controller, obj=None):
         director = ProductionToolsDirector()
         builder = ProductionToolsBuilder()
         if obj is not None:
             obj.removeAllWidgets()
             builder.setObject(obj)
-        director.constructProductionToolsDock( builder, mediator )
+        director.constructRemoteProductionToolsDock( builder, controller )
         return builder.getResult()
 
-    def makeActivitySummaryDialog(self, mediator, layerNames, ruleNames):
-        dialog = ActivityDataSummary(mediator)
+    def makeLocalProductionToolsDock(self, controller, obj=None):
+        director = ProductionToolsDirector()
+        builder = ProductionToolsBuilder()
+        if obj is not None:
+            obj.removeAllWidgets()
+            builder.setObject(obj)
+        director.constructLocalProductionToolsDock( builder, controller )
+        return builder.getResult()
+
+    def makeActivitySummaryDialog(self, controller, layerNames, ruleNames):
+        dialog = ActivityDataSummary(controller)
         dialog.setLayerNames('Camadas:', layerNames)
         dialog.setRuleNames('Regras:', ruleNames)
         dialog.adjustWidgets()
         return dialog
 
-    def makeRoutinesDialog(self, mediator, parent):
-        return RoutinesDialog(mediator, parent)
+    def makeRoutinesDialog(self, controller, parent):
+        return RoutinesDialog(controller, parent)

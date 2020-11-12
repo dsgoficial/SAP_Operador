@@ -4,7 +4,7 @@ import processing
 
 class LoadLayersFromPostgis(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(LoadLayersFromPostgis, self).__init__()
         self.processingId = 'dsgtools:loadlayersfrompostgisalgorithm'
 

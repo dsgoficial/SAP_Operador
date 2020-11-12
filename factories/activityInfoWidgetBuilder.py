@@ -11,8 +11,8 @@ class ActivityInfoWidgetBuilder(IActivityInfoWidgetBuilder):
     def reset(self):
         self.obj = ActivityInfo()
 
-    def setMediator(self, mediator):
-        self.obj.setMediator( mediator )
+    def setController(self, controller):
+        self.obj.setController( controller )
 
     def setEPSG(self, title, description):
         self.obj.setEPSG( title, description )

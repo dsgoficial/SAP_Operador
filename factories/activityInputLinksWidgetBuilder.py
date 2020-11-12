@@ -11,8 +11,8 @@ class ActivityInputLinksWidgetBuilder(IActivityInputLinksWidgetBuilder):
     def reset(self):
         self.obj = ActivityInputLinks()
 
-    def setMediator(self, mediator):
-        self.obj.setMediator( mediator )
+    def setController(self, controller):
+        self.obj.setController( controller )
 
     def setInputs(self, inputData):
         self.obj.setInputs( inputData )

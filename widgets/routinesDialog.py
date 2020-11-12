@@ -3,20 +3,20 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
 class RoutinesDialog(QtWidgets.QDialog):
     
-    def __init__(self, mediator, parent=None):
+    def __init__(self, controller, parent=None):
         super(RoutinesDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.tableWidget.horizontalHeader().sortIndicatorOrder()
         self.tableWidget.setSortingEnabled(True)
         self.tableWidget.setColumnHidden(0, True)
         self.currentRoutineData = {}
-        self.mediator = mediator
+        self.controller = controller
     
-    def setMediator(self, mediator):
-        self.mediator = mediator
+    def getController(self, controller):
+        self.controller = controller
     
-    def getMediator(self):
-        return self.mediator
+    def setController(self):
+        return self.controller
 
     def setCurrentRoutineData(self, data):
         self.currentRoutineData = data
@@ -62,7 +62,7 @@ class RoutinesDialog(QtWidgets.QDialog):
         self.setCurrentRoutineData(self.getRowData(index))
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getMediator().notify(self, 'runRoutine')
+            self.getController().runRoutine(self.getRoutineSelected())
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
         

@@ -11,8 +11,8 @@ class ActivityRoutinesWidgetBuilder(IActivityRoutinesWidgetBuilder):
     def reset(self):
         self.obj = ActivityRoutines()
 
-    def setMediator(self, mediator):
-        self.obj.setMediator( mediator )
+    def setController(self, controller):
+        self.obj.setController( controller )
 
     def setRoutines(self, routines):
         self.obj.setRoutines( routines )

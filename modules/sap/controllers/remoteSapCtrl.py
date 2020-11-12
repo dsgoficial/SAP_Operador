@@ -1,42 +1,25 @@
-from Ferramentas_Producao.modules.sap.interfaces.ISapCtrl import ISapCtrl
-
-from Ferramentas_Producao.modules.sap.factories.sapApiSingleton import SapApiSingleton
+from Ferramentas_Producao.modules.sap.controllers.sapCtrl import SapCtrl
+from Ferramentas_Producao.modules.sap.factories.sapApiHttpSingleton import SapApiHttpSingleton
 from Ferramentas_Producao.modules.sap.factories.dataModelFactory import DataModelFactory
-
 from Ferramentas_Producao.modules.sap.factories.guiFactory import GUIFactory
+from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
 
-class SapCtrl(ISapCtrl):
+class RemoteSapCtrl(SapCtrl):
     
     def __init__(self, 
             qgis,
-            messageFactory,
-            sapApi=SapApiSingleton.getInstance(),
+            messageFactory=UtilsFactory().createMessageFactory(),
+            sapApi=SapApiHttpSingleton.getInstance(),
             dataModelFactory=DataModelFactory(),
             guiFactory=GUIFactory()
         ):
-        super(SapCtrl, self).__init__()
+        super(RemoteSapCtrl, self).__init__()
         self.qgis = qgis
         self.messageFactory = messageFactory
         self.dataModelFactory = dataModelFactory
         self.sapApi = sapApi
         self.guiFactory = guiFactory
-
-        self.activityDataModel = self.dataModelFactory.createDataModel('SapActivity')
-        self.loginDialog = self.guiFactory.createLoginDialog(self)
-        self.loginDialog.setController(self)
-
-    def login(self):
-        self.loginDialog.loadData(
-            user=self.qgis.getProjectVariable('productiontools:user'), 
-            server=self.qgis.getSettingsVariable('productiontools:server'),
-            password=self.qgis.getProjectVariable('productiontools:password')
-        )
-        return self.loginDialog.showView()
-
-    def saveLoginData(self, user, password, server):
-        self.qgis.setProjectVariable('productiontools:user', user)
-        self.qgis.setProjectVariable('productiontools:password', password)
-        self.qgis.setSettingsVariable('productiontools:server', server)
+        self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
 
     def authUser(self, user, password, server):
         self.sapApi.setServer(server)
@@ -47,19 +30,7 @@ class SapCtrl(ISapCtrl):
             self.qgis.getPluginsVersions()
         )
         return response['success']
-
-    def showErrorMessageBox(self, parent, title, message):
-        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
-        errorMessageBox.show(parent, title, message)
-
-    def showQuestionMessageBox(self, parent, title, message):
-        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
-        return questionMessageBox.show(parent, title, message)
-    
-    def showInfoMessageBox(self, parent, title, message):
-        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
-        infoMessageBox.show(parent, title, message)
-
+        
     def getCurrentActivity(self):
         response = self.sapApi.getActivity()
         if not( 'dados' in response and response['dados'] ):

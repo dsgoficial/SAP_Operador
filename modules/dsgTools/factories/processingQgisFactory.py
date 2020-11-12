@@ -19,7 +19,7 @@ class ProcessingQgisFactory(IProcessingFactory):
     def __init__(self):
         super(ProcessingQgisFactory, self).__init__()
 
-    def createProcessing(self, processingName, mediator):
+    def createProcessing(self, processingName, controller):
         processingNames = {
             'LoadLayersFromPostgis': LoadLayersFromPostgis,
             'GroupLayers': GroupLayers,
@@ -35,5 +35,5 @@ class ProcessingQgisFactory(IProcessingFactory):
             'RuleStatistics': RuleStatistics,
             'RunFMESAP': RunFMESAP
         }
-        return processingNames[processingName](mediator)
+        return processingNames[processingName](controller)
             

@@ -5,7 +5,7 @@ import json
 
 class RuleStatistics(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(RuleStatistics, self).__init__()
         self.processingId = 'dsgtools:rulestatistics'
 

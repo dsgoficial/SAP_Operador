@@ -5,7 +5,7 @@ import json
 
 class AssignActionsToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(AssignActionsToLayers, self).__init__()
         self.processingId = 'dsgtools:assignactionstolayersalgorithm'
         

@@ -350,8 +350,36 @@ class QgisApi(IQgisApi):
                 mw.removeDockWidget( dock )
         mSettings.endGroup()
 
+    def getDatabaseSettings(self):
+        dbaliases = sorted([ 
+            key.split('/')[2] 
+            for key in QtCore.QSettings().allKeys() 
+            if 'postgresql' in key.lower() 
+                and 
+                'host' in key.lower() 
+                and 
+                len(key.split('/')) > 3
+        ])
+        dbsettings = []
+        for dbalias in dbaliases:
+            if not self.isValidDatabaseSettings(dbalias):
+                continue
+            dbsettings.append({
+                'alias': dbalias,
+                'database':QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/database'),
+                'host':QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/host'),
+                'port':QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/port'),
+                'username':QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/username'),
+                'password':QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/password'),
+            })
+        return dbsettings
 
-
+    def isValidDatabaseSettings(self, dbalias):
+        return (
+            QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/savePassword') == 'true'
+            and
+            QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/saveUsername') == 'true'
+        )
 
 
 

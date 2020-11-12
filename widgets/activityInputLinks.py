@@ -5,8 +5,8 @@ import os, json
 
 class ActivityInputLinks(Widget):
 
-    def __init__(self, mediator=None):
-        super(ActivityInputLinks, self).__init__(mediator)
+    def __init__(self, controller=None):
+        super(ActivityInputLinks, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
 
     def getUiPath(self):

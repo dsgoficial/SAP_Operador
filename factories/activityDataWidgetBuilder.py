@@ -11,8 +11,8 @@ class ActivityDataWidgetBuilder(IActivityDataWidgetBuilder):
     def reset(self):
         self.obj = ActivityData()
 
-    def setMediator(self, mediator):
-        self.obj.setMediator( mediator )
+    def setController(self, controller):
+        self.obj.setController( controller )
 
     def setStyles(self, styles):
         self.obj.setStyles(styles)

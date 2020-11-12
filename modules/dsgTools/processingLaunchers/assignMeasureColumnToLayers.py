@@ -5,7 +5,7 @@ import json
 
 class AssignMeasureColumnToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(AssignMeasureColumnToLayers, self).__init__()
         self.processingId = 'dsgtools:assignmeasurecolumntolayers'
     

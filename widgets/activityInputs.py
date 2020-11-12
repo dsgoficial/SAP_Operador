@@ -5,8 +5,8 @@ import os, json
 
 class ActivityInputs(Widget):
 
-    def __init__(self, mediator=None):
-        super(ActivityInputs, self).__init__(mediator)
+    def __init__(self, controller=None):
+        super(ActivityInputs, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
 
     def getUiPath(self):
@@ -52,6 +52,6 @@ class ActivityInputs(Widget):
     def on_loadInputsBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getMediator().notify(self, 'loadActivityInputs')
+            self.getController().loadActivityInputs(self.getInputsSelected())
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()

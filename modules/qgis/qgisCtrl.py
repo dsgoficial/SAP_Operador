@@ -125,3 +125,6 @@ class QgisCtrl(IQgisCtrl):
 
     def createNewMapView(self):
         self.apiQGis.createNewMapView()
+
+    def getDatabaseSettings(self):
+        return self.apiQGis.getDatabaseSettings()

@@ -5,7 +5,7 @@ import json
 
 class MatchAndApplyQmlStylesToLayers(Processing):
     
-    def __init__(self, mediator):
+    def __init__(self, controller):
         super(MatchAndApplyQmlStylesToLayers, self).__init__()
         self.processingId = 'dsgtools:matchandapplyqmlstylestolayersalgorithm'
 
