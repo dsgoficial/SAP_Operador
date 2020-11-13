@@ -47,25 +47,6 @@ class SapActivityPostgres:
             return ''
         return '''CASE {0} ELSE "Sem erros!" END'''.format(expression)
 
-    def getConditionalStyles(self, layerName):
-        rules = {}
-        for data in self.getRules():
-            if not( data['camada'] == layerName ):
-                continue
-            if not(data['ordem'] in rules):
-                rules[data['ordem']] = {}
-                rules[data['ordem']]['tipo'] = data['tipo_regra']
-                rules[data['ordem']]['atributos'] = {}
-            if not data['atributo'] in rules[data['ordem']]['atributos']:
-                rules[data['ordem']]['atributos'][data['atributo']] = []
-            rules[data['ordem']]['atributos'][data['atributo']].append({
-                    'descricao' : data['descricao'],
-                    'regra' : data['regra'],
-                    'corRgb' : data['cor_rgb']
-            })
-        return rules
-
-
     def getConditionalStyleNames(self):
         return [ data['descricao'] for data in self.getRules() ]
 
@@ -110,6 +91,24 @@ class SapActivityPostgres:
             }
             for item in self.getLayers()
         ]
+
+    def getConditionalStyles(self, layerName):
+        rules = {}
+        for data in self.getRules():
+            if not( data['camada'] == layerName ):
+                continue
+            if not(data['ordem'] in rules):
+                rules[data['ordem']] = {}
+                rules[data['ordem']]['tipo'] = data['tipo_regra']
+                rules[data['ordem']]['atributos'] = {}
+            if not data['atributo'] in rules[data['ordem']]['atributos']:
+                rules[data['ordem']]['atributos'][data['atributo']] = []
+            rules[data['ordem']]['atributos'][data['atributo']].append({
+                    'descricao' : data['descricao'],
+                    'regra' : data['regra'],
+                    'corRgb' : data['cor_rgb']
+            })
+        return rules
 
     def getRules(self):
         return self.getData()['rules'][:]
@@ -215,14 +214,19 @@ class SapActivityPostgres:
                 layerName,
             )
 
-    def getFrameQuery(self):
-        return "?query=SELECT geom_from_wkt('{0}') as geometry&geometry=geometry:3:{1}".format(
-            self.getWorkUnitGeometry().split(';')[1],
-            self.getEPSG()
-        )
-
-    def getEPSG(self):
-        return self.getWorkUnitGeometry().split(';')[0].split('=')[1]
+    def getFramesByWorkspaces(self, workspaceNames):
+        frames = []
+        for workspace in self.getData()['workspaces']:
+            if not( workspace['nome'] in workspaceNames):
+                continue
+            frames.append({
+                'query': "?query=SELECT geom_from_wkt('{0}') as geometry&geometry=geometry:3:{1}".format(
+                    workspace['ewkt'].split(';')[1],
+                    workspace['ewkt'].split(';')[0].split('=')[1]
+                ),
+                'qml': self.getFrameQml()
+            })
+        return frames
 
     def getFrameQml(self):
         return '''<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>

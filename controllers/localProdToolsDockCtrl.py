@@ -78,10 +78,19 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             'dbUser' : self.sapActivity.getDatabaseUserName() 
         })
         loadedLayerIds = result['OUTPUT']
-
+        
         if workspaceNames:
             assingFilterToLayers = self.processingFactory.createProcessing('AssingFilterToLayers', self)
             assingFilterToLayers.run({'layers': self.sapActivity.getLayersFilter(workspaceNames)})
+
+            frames = self.sapActivity.getFramesByWorkspaces(workspaceNames)
+            for frame in frames:
+                self.qgis.loadInputData({
+                    'query': frame['query'],
+                    'nome': 'moldura',
+                    'tipo_insumo_id': 100,
+                    'qml': frame['qml']
+                })
     
         if onlyWithFeatures:
             self.qgis.removeLayersWithouFeatures(loadedLayerIds)
@@ -94,7 +103,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             'layersQml': self.sapActivity.getLayersQml(styleName),
             'layerIds': loadedLayerIds
         })
-
+        
         assignValueMapToLayers = self.processingFactory.createProcessing('AssignValueMapToLayers', self)
         database = self.getActivityDatabase()
         assignValueMapToLayers.run({
@@ -104,10 +113,10 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             },
             'layerIds': loadedLayerIds
         }) 
-
+        
         assignMeasureColumnToLayers = self.processingFactory.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
-
+        
         assignExpressionFieldToLayers = self.processingFactory.createProcessing('AssignExpressionFieldToLayers', self)
         assignExpressionFieldToLayers.run({
             'expressions': self.sapActivity.getLayerExpressionField(),
@@ -119,14 +128,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             'conditionals': self.sapActivity.getLayerConditionalStyle(),
             'layerIds': loadedLayerIds
         })
-        ###
-        """ self.qgis.loadInputData({
-            'query': self.sapActivity.getFrameQuery(),
-            'nome': 'moldura',
-            'tipo_insumo_id': 100,
-            'qml': self.sapActivity.getFrameQml()
-        }) """
-        
         self.qgis.loadLayerActions(loadedLayerIds)
         self.prodToolsSettings.initSaveTimer()
 

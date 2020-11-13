@@ -39,12 +39,16 @@ class LoadLocalActivity(Widget, IActivityDataWidget):
                 'Selecione no mínimo uma camada!'
             )
             return
-        self.getController().loadActivityLayers(
-            self.layersSelectItems.getSelections(),
-            self.workspaceSelectItems.getSelections(),
-            self.onlyGeomCbx.isChecked(),
-            self.stylesCb.currentText()
-        )
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.getController().loadActivityLayers(
+                self.layersSelectItems.getSelections(),
+                self.workspaceSelectItems.getSelections(),
+                self.onlyGeomCbx.isChecked(),
+                self.stylesCb.currentText()
+            )
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def isValidInput(self):
         return self.layersSelectItems.getSelections()
