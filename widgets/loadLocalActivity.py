@@ -47,6 +47,8 @@ class LoadLocalActivity(Widget, IActivityDataWidget):
                 self.onlyGeomCbx.isChecked(),
                 self.stylesCb.currentText()
             )
+            self.workspaceSelectItems.reset()
+            self.layersSelectItems.reset()
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 

@@ -246,7 +246,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def runRuleStatistics(self, routineData):
         ruleStatistics = self.processingFactory.createProcessing('RuleStatistics', self)
         return ruleStatistics.run({
-            'rules': routineData,
+            'rules': routineData['ruleStatistics'],
             'layers': self.sapActivity.getLayers()
         })
 

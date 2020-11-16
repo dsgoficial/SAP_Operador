@@ -71,4 +71,7 @@ class SelectItems(Widget, IActivityDataWidget):
                 item.setHidden(False)
 
     def getSelections(self):
-        return [  self.shortlistWidget.item(idx).text() for idx in range(self.shortlistWidget.count()) ] 
+        return [  self.shortlistWidget.item(idx).text() for idx in range(self.shortlistWidget.count()) ]
+
+    def reset(self):
+        self.moveAllItems(self.shortlistWidget, self.selectionListWidget) 

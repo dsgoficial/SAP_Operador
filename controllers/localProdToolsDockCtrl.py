@@ -68,6 +68,9 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         )
 
     def loadActivityLayers(self, layerNames, workspaceNames, onlyWithFeatures, styleName):
+        messageBar, progress = self.qgis.createProgressMessageBar('Carregando camadas...')
+        progress.setMaximum(7)
+        progress.setValue(1)
         loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
@@ -78,7 +81,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             'dbUser' : self.sapActivity.getDatabaseUserName() 
         })
         loadedLayerIds = result['OUTPUT']
-        
         if workspaceNames:
             assingFilterToLayers = self.processingFactory.createProcessing('AssingFilterToLayers', self)
             assingFilterToLayers.run({'layers': self.sapActivity.getLayersFilter(workspaceNames)})
@@ -98,12 +100,16 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         groupLayers = self.processingFactory.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
 
+        progress.setValue(2)
+
         matchAndApplyQmlStylesToLayers = self.processingFactory.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
             'layersQml': self.sapActivity.getLayersQml(styleName),
             'layerIds': loadedLayerIds
         })
         
+        progress.setValue(3)
+
         assignValueMapToLayers = self.processingFactory.createProcessing('AssignValueMapToLayers', self)
         database = self.getActivityDatabase()
         assignValueMapToLayers.run({
@@ -113,16 +119,16 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             },
             'layerIds': loadedLayerIds
         }) 
-        
+        progress.setValue(4)
         assignMeasureColumnToLayers = self.processingFactory.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
-        
+        progress.setValue(5)
         assignExpressionFieldToLayers = self.processingFactory.createProcessing('AssignExpressionFieldToLayers', self)
         assignExpressionFieldToLayers.run({
             'expressions': self.sapActivity.getLayerExpressionField(),
             'layerIds': loadedLayerIds
         })
-
+        progress.setValue(6)
         assignConditionalStyleToLayers = self.processingFactory.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({
             'conditionals': self.sapActivity.getLayerConditionalStyle(),
@@ -130,6 +136,8 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         })
         self.qgis.loadLayerActions(loadedLayerIds)
         self.prodToolsSettings.initSaveTimer()
+        progress.setValue(7)
+        self.qgis.removeMessageBar(messageBar)
 
     def getActivityRoutines(self):
         return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines()
@@ -160,7 +168,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
     def runRuleStatistics(self, routineData):
         ruleStatistics = self.processingFactory.createProcessing('RuleStatistics', self)
         return ruleStatistics.run({
-            'rules': routineData,
+            'rules': routineData['ruleStatistics'],
             'layers': self.sapActivity.getLayers()
         })
 

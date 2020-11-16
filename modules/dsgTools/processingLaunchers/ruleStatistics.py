@@ -26,11 +26,10 @@ class RuleStatistics(Processing):
         )
         
     def getParameters(self, parameters):
-        parameters = { 
-            'INPUT_LAYERS' : [
-                self.getLayerUriFromTable(layerData['schema'], layerData['nome'])
-                for layerData in parameters['layers']
-            ],
+        layers = [self.getLayerUriFromTable(layerData['schema'], layerData['nome']) for layerData in parameters['layers']]
+        layers = [l for l in layers if l is not None]
+        return { 
+            'INPUTLAYERS' : layers,
             'RULEFILE' : '.json', 
             'RULEDATA' : json.dumps(parameters['rules']) 
         }

@@ -86,7 +86,8 @@ class SapPostgres:
                 SELECT 
                     f_table_schema, 
                     f_table_name, 
-                    type 
+                    type,
+                    srid 
                 FROM 
                     geometry_columns
                 WHERE 
@@ -98,7 +99,8 @@ class SapPostgres:
         return [{
             'schema': item[0],
             'nome': item[1],
-            'geometryType': item[2] 
+            'geometryType': item[2],
+            'srid': item[3]
         } for item in query]
 
     @notransaction

@@ -1,5 +1,6 @@
 from Ferramentas_Producao.modules.dsgTools.interfaces.IProcessing import IProcessing
 from qgis import core, gui
+from qgis.utils import iface
 import processing
 
 class Processing(IProcessing):
@@ -16,7 +17,7 @@ class Processing(IProcessing):
 
     def getLayerUriFromTable(self, layerSchema, layerName):
         layersUri = []
-        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        loadedLayers = iface.mapCanvas().layers()
         for layer in loadedLayers:
             if not(
                     layer.dataProvider().uri().schema() == layerSchema

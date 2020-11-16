@@ -180,7 +180,7 @@ class SapActivityPostgres:
         workspacesFilter = self.getWorkspacesFilter(workspaceNames)
         for layer in layers:
             layer.update({
-                'filter': self.getLayerFilter(layer["schema"], layer["nome"], workspacesFilter)
+                'filter': self.getLayerFilter(layer["schema"], layer["nome"], layer["srid"], workspacesFilter)
             }) 
         return layers
 
@@ -190,7 +190,18 @@ class SapActivityPostgres:
             if not( workspace['nome'] in workspaceNames):
                 continue
             geometries.append("ST_GEOMFROMEWKT('{0}')".format(workspace['ewkt']))
-        return '''ST_Collect(ARRAY[{0}])'''.format(','.join(geometries))
+        return '''ST_UNION(ARRAY[{0}])'''.format(','.join(geometries))
+
+    def getLayerFilter(self, layerSchema, layerName, srid, workspacesFilter):
+        #if layerName == u"aux_moldura_a":
+        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
+        return """ST_INTERSECTS(geom, ST_TRANSFORM({0}, {4})) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+                workspacesFilter,
+                'id',
+                layerSchema,
+                layerName,
+                srid
+            )
 
     def getActivityGroupName(self):
         """ return "{}_{}".format(
@@ -203,16 +214,6 @@ class SapActivityPostgres:
 
     def getWorkUnitName(self):
         return self.getData()['dados']['atividade']['unidade_trabalho']
-
-    def getLayerFilter(self, layerSchema, layerName, workspacesFilter):
-        #if layerName == u"aux_moldura_a":
-        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
-        return """ST_INTERSECTS(geom, {0}) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
-                workspacesFilter,
-                'id',
-                layerSchema,
-                layerName,
-            )
 
     def getFramesByWorkspaces(self, workspaceNames):
         frames = []

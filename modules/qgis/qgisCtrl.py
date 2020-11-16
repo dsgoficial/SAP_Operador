@@ -128,3 +128,9 @@ class QgisCtrl(IQgisCtrl):
 
     def getDatabaseSettings(self):
         return self.apiQGis.getDatabaseSettings()
+
+    def createProgressMessageBar(self, title):
+        return self.apiQGis.createProgressMessageBar(title)
+
+    def removeMessageBar(self, messageBar):
+        self.apiQGis.removeMessageBar(messageBar)

@@ -151,6 +151,11 @@ class QgisApi(IQgisApi):
                 continue
             a.setShortcut('')
 
+    def setActionShortcut(self, objectName):
+        pass
+        #selector = QgsGui.shortcutsManager().listAll()[175]
+        #QgsGui.shortcutsManager().setObjectKeySequence(selector, 'S')
+
     def addMenuBar(self, name):
         menu = QMenu(iface.mainWindow())
         menu.setObjectName(name)
@@ -381,6 +386,17 @@ class QgisApi(IQgisApi):
             QtCore.QSettings().value('PostgreSQL/connections/'+dbalias+'/saveUsername') == 'true'
         )
 
+
+    def createProgressMessageBar(self, title):
+        progressMessageBar = iface.messageBar().createMessage('Ferramentas de Produção', title)
+        progress = QtWidgets.QProgressBar()
+        progress.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        progressMessageBar.layout().addWidget(progress)
+        iface.messageBar().pushWidget(progressMessageBar, core.Qgis.Info)
+        return progressMessageBar, progress
+
+    def removeMessageBar(self, messageBar):
+        iface.messageBar().popWidget(messageBar)
 
 
 
