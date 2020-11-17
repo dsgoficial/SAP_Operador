@@ -17,7 +17,7 @@ class Processing(IProcessing):
 
     def getLayerUriFromTable(self, layerSchema, layerName):
         layersUri = []
-        loadedLayers = iface.mapCanvas().layers()
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
         for layer in loadedLayers:
             if not(
                     layer.dataProvider().uri().schema() == layerSchema
