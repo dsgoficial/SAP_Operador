@@ -229,6 +229,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             'qgis/digitizing/line_color_alpha' : '63',
             'qgis/digitizing/fill_color_alpha' : '40',
             u'qgis/default_selection_color_alpha': u'63',
+            
             u'shortcuts/Sair do QGIS' : u'',
             u'shortcuts/Exit QGIS' : u'',
             u'shortcuts/Mesclar fei\xe7\xf5es selecionadas' : u'M',

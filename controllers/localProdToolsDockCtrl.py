@@ -144,11 +144,20 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
     def runRoutine(self, routineData):
         if self.qgis.hasModifiedLayers():
-            self.showHtmlMessageDialog(
+            self.showErrorMessageBox(
                 self.qgis.getMainWindow(),
                 'Aviso',
                 '''<p style="color:red">
                     Salve todas suas alterações antes de executar essa rotina!
+                </p>'''
+            )
+            return
+        if not routineData:
+            self.showErrorMessageBox(
+                self.qgis.getMainWindow(),
+                'Aviso',
+                '''<p style="color:red">
+                    Selecione uma rotina!
                 </p>'''
             )
             return

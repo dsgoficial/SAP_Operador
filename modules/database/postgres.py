@@ -68,9 +68,9 @@ class Postgres:
     def getLayerContrainsCodes(self, layerName):
         pgCursor = self.getConnection().cursor()
         pgCursor.execute(
-            """SELECT d.column_name, c.consrc
+            """SELECT d.column_name, pg_get_constraintdef(c.oid)
             FROM
-            (SELECT conname, consrc FROM  pg_constraint) c
+            (SELECT conname, oid FROM  pg_constraint) c
             INNER JOIN
             (
                 SELECT column_name, constraint_name
