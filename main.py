@@ -13,7 +13,7 @@ from Ferramentas_Producao.modules.fme.factories.fmeApiSingleton import FmeApiSin
 from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Producao.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from Ferramentas_Producao.modules.database.factories.databaseFactory import DatabaseFactory
-from Ferramentas_Producao.modules.pomodoro.pomodoro import Pomodoro
+#from Ferramentas_Producao.modules.pomodoro.pomodoro import Pomodoro
 from Ferramentas_Producao.config import Config
 
 class Main:
@@ -30,7 +30,7 @@ class Main:
             databaseFactory=DatabaseFactory(),
             processingFactory=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            pomodoro=Pomodoro(self.iface),
+            pomodoro=None,#Pomodoro(self.iface),
             prodToolsSettings=self.prodToolsSettingsCtrl
         )
         self.localProdToolsDockCtrl = LocalProdToolsDockCtrl(
@@ -83,7 +83,7 @@ class Main:
             databaseFactory=DatabaseFactory(),
             processingFactory=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            pomodoro=Pomodoro(self.iface),
+            pomodoro=None,#Pomodoro(self.iface),
             prodToolsSettings=self.prodToolsSettingsCtrl
         )
         remoteProdToolsDockCtrl.loadDockWidget()

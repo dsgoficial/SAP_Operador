@@ -41,12 +41,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sap.authUser(username, password, server)
 
     def getPomodoroWidget(self):
-        return self.pomodoro.getWidget()
+        return self.pomodoro.getWidget() if self.pomodoro else None
         
     def unload(self):
         self.removeDock()
         self.qgis.off('readProject', self.readProjectCallback)
-        self.pomodoro.unload()
+        #self.pomodoro.unload()
 
     def reload(self):
         if self.productionTools is None:
