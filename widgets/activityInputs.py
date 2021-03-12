@@ -52,6 +52,7 @@ class ActivityInputs(Widget):
     def on_loadInputsBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getController().loadActivityInputs(self.getInputsSelected())
+            results = self.getController().loadActivityInputs(self.getInputsSelected())
+            self.showErrorMessageBox( 'Download Insumos', ''.join( results ) ) if results else ''
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()

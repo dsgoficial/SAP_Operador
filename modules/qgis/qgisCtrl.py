@@ -52,7 +52,7 @@ class QgisCtrl(IQgisCtrl):
         return self.apiQGis.runProcessingModel(parametersData)
 
     def loadInputData(self, inputData):
-        self.apiQGis.loadInputData(inputData)
+        return self.apiQGis.loadInputData(inputData)
 
     def removeLayersWithouFeatures(self, layerIds):
         self.apiQGis.removeLayersWithouFeatures(layerIds)

@@ -12,7 +12,7 @@ class AuthSMB(QtWidgets.QDialog):
             messageFactory=UtilsFactory().createMessageFactory()
         ):
         super(AuthSMB, self).__init__(parent)
-        uic.loadUi(self.dialog_path, self)
+        uic.loadUi(self.getUIPath(), self)
         self.ok_bt.clicked.connect(self.validate)
         self.cancel_bt.clicked.connect(self.reject)
         self.infoMessageBox = messageFactory.createMessage('InfoMessageBox')

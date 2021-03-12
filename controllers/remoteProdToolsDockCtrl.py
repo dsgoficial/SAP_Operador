@@ -2,6 +2,8 @@
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
 from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
+from PyQt5 import QtWidgets
+from qgis import core, gui, utils
 
 import os
 
@@ -200,11 +202,33 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         
         self.prodToolsSettings.initSaveTimer()
 
+    def getPathDest(self):
+        return QtWidgets.QFileDialog.getExistingDirectory(
+            self.productionTools if self.productionTools else utils.iface.mainWindow(), 
+            u"Selecione pasta de destino dos insumos:",
+            options=QtWidgets.QFileDialog.ShowDirsOnly
+        )
+
+    def requestFilePath(self, inputData):
+        for d in inputData:
+            if not d['caminho_padrao']:
+                return True
+        return False
+
     def loadActivityInputs(self, inputData):
+        results = []
         if not inputData:
             return
+        if self.requestFilePath(inputData):            
+            pathDest = self.getPathDest()
+            if not pathDest:
+                return
         for data in inputData:
-            self.qgis.loadInputData(data)
+            if not data['caminho_padrao']:
+                data['caminho_padrao'] = pathDest
+            result = self.qgis.loadInputData(data)
+            results.append(result[1])
+        return results
 
     def getActivityRoutines(self):
         return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + self.fme.getSapRoutines(self.sapActivity.getFmeConfig())

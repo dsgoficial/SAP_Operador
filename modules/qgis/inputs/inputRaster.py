@@ -12,8 +12,8 @@ class InputRaster(InputLayer):
         s = QtCore.QSettings()
         defaultBehavior = s.value("Projections/defaultBehavior")
         s.setValue("Projections/defaultBehavior", "useGlobal")
-        layer = core.QgsRasterLayer(d['caminho_arquivo'], d['nome'])
-        layer.setCrs(core.QgsCoordinateReferenceSystem(int(d['epsg'])))
+        layer = core.QgsRasterLayer(uri, name)
+        layer.setCrs(core.QgsCoordinateReferenceSystem(int(epsg)))
         s.setValue("Projections/defaultBehavior", defaultBehavior)
         if not layer.isValid():
             return False

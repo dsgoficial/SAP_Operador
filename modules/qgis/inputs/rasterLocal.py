@@ -3,6 +3,8 @@ import os, platform
 from qgis import core, gui, utils
 from Ferramentas_Producao.modules.qgis.inputs.inputRaster import InputRaster
 from Ferramentas_Producao.modules.qgis.widgets.authSMB import AuthSMB
+import copy
+import subprocess
 
 class RasterLocal(InputRaster):
 
@@ -10,34 +12,15 @@ class RasterLocal(InputRaster):
         super(RasterLocal, self).__init__()
     
     def load(self, fileData):
-        result = self.download(fileData)
-        if not result:
-            self.showErrorMessageBox('Falha ao baixar rasters')
-        
-        downloadedFiles = result[0]
-        unDownloadedFiles = result[1]
-        unloadedFiles = []
-        
-        for d in downloadedFiles:
-            if not self.loadRaster(d['caminho_arquivo'], d['nome'], d['epsg']):
-                unloadedFiles.append(d)
-                continue
-        if not(unDownloadedFiles and unloadedFiles):
-            return
-
-        self.showErrorMessageBox(''.join(
-            [
-                '<p>erro: falha no download do arquivo "{0}"</p>'.format(d['caminho']) 
-                for d in unDownloadedFiles
-            ] +
-            [
-                '<p>erro: falha ao carregar arquivo "{0}" tente carregar manualmente</p>'.format(d['caminho']) 
-                for d in unloadedFiles
-            ]
-        ))
+        fileDataOutput = self.download(fileData)
+        if not fileDataOutput:
+            return (False, '<p>"{0}": falha no download do arquivo</p>'.format( fileData['caminho'] ) )
+        if not self.loadRaster( fileDataOutput['caminho_arquivo'], fileDataOutput['nome'], fileDataOutput['epsg'] ):
+            return (False, '<p>"{0}": falha ao carregar arquivo tente carregar manualmente</p>'.format( fileDataOutput['caminho_arquivo'] ) )
+        return (True, '<p>"{0}": arquivo carregado com sucesso</p>'.format( fileDataOutput['caminho_arquivo'] ))
 
     def getAuthSMB(self):
-        authSMB = AuthSmb(utils.iface.mainWindow())
+        authSMB = AuthSMB(utils.iface.mainWindow())
         r = authSMB.exec_()
         if not r:
             return
@@ -53,46 +36,23 @@ class RasterLocal(InputRaster):
     def getScriptPath(self):
         script_path = os.path.join(
             os.path.dirname(__file__),
-            '..'
+            '..',
             'scripts',
             'getFileBySMB.py'
         )
         return script_path
 
-    def getPathDest(self):
-        return QtWidgets.QFileDialog.getExistingDirectory(
-            self.parent if self.parent else utils.iface.mainWindow(), 
-            u"Selecione pasta de destino dos insumos:",
-            options=QtWidgets.QFileDialog.ShowDirsOnly
-        )
-
-    def requestFilePath(self, fileData):
-        for d in fileData:
-            if not d['caminho_padrao']:
-                return True
-        return False
-
     def download(self, fileData):
-        downloadedFiles = []
-        unDownloadedFiles = []
-        if self.requestFilePath(fileData):            
-            pathDest = self.getPathDest()
-            if not pathDest:
+        fileDataOutput = copy.deepcopy(fileData)
+        try:
+            downloadFunction = self.getDownloadFunction()
+            localFilePath = downloadFunction( fileDataOutput['caminho'], fileDataOutput['caminho_padrao'] )  
+            if not( localFilePath and os.path.exists( localFilePath ) ):
                 return
-        for d in fileData:
-            pathOrigin = d['caminho']
-            try:
-                currentPathDest = d['caminho_padrao'] if d['caminho_padrao'] else pathDest
-                downloadFunction = self.getDownloadFunction()
-                localFilePath = self.downloadFunction(pathOrigin, currentPathDest)  
-                if not(localFilePath and os.path.exists(localFilePath)):
-                    unDownloadedFiles.append(d)
-                    continue
-                d['caminho_arquivo'] = localFilePath
-                downloadedFiles.append(d)
-            except:
-                unDownloadedFiles.append(d)
-        return (downloadedFiles, unDownloadedFiles)
+            fileDataOutput['caminho_arquivo'] = localFilePath
+            return fileDataOutput
+        except Exception as e:
+            return
 
     def createDestinationPath(self, pathDest):
         try:
@@ -117,7 +77,7 @@ class RasterLocal(InputRaster):
     
     def runSystemCommand(self, command):
         proc = os.popen(command)  
-        proc.read()
+        result = proc.read()
         proc.close()
 
     def downloadFileLinux(self, pathOrigin, pathDest):
