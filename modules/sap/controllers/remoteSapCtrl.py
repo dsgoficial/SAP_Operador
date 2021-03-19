@@ -136,6 +136,6 @@ class RemoteSapCtrl(SapCtrl):
         response = self.getCurrentActivity()
         if not response:
             return True   
-        currentActivity = self.dataModelFactory.createDataModel('SapActivity')
+        currentActivity = self.dataModelFactory.createDataModel('SapActivityHttp')
         currentActivity.setData(response)
         return self.qgis.getSettingsVariable('productiontools:activityName') == currentActivity.getDescription()
