@@ -48,7 +48,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def unload(self):
         self.removeDock()
         self.qgis.off('readProject', self.readProjectCallback)
-        #self.pomodoro.unload()
+        self.pomodoro.unload()
 
     def reload(self):
         if self.productionTools is None:
@@ -231,7 +231,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return results
 
     def getActivityRoutines(self):
-        return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
+        fmeData = []
+        #try:
+        print(self.sapActivity.getFmeConfig())
+        fmeData = self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
+        #except Exception as e:
+        #    self.showErrorMessageBox(None, 'Erro', 'Sem conexão com o FME!')
+        return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + fmeData
 
     def runRoutine(self, routineData):
         if self.qgis.hasModifiedLayers():
