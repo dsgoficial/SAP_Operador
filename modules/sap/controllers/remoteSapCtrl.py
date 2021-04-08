@@ -139,7 +139,7 @@ class RemoteSapCtrl(SapCtrl):
         callback()
         
     def reportError(self, errorId, errorDescription):
-        return self.sapApi.reportError(errorId, errorDescription)
+        return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription)
 
     def hasActivityRecord(self):
         return (

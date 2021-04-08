@@ -140,10 +140,11 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    def reportError(self, errorId, errorDescription):
+    def reportError(self, activityId, errorId, errorDescription):
         response = self.httpPostJson(
             url="{0}/distribuicao/problema_atividade".format(self.getServer()),
             postData={
+                'atividade_id' : activityId,
                 'tipo_problema_id' : errorId,
                 'descricao' : errorDescription
             }

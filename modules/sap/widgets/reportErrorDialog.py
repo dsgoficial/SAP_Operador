@@ -12,7 +12,6 @@ class ReportErrorDialog(SapDialog):
         super(ReportErrorDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        self.messageFactory = messageFactory
         self.buttonBox.accepted.connect(
             self.reportError
         )
@@ -37,10 +36,6 @@ class ReportErrorDialog(SapDialog):
                 item['tipo_problema'],
                 item['tipo_problema_id']
             )
-
-    def showQuestionMessageBox(self, title, message):
-        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
-        return questionMessageBox.show(self, title, message)
             
     def reportError(self):
         if not self.showQuestionMessageBox(
