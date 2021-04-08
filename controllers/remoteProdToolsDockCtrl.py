@@ -57,12 +57,19 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if self.sapActivity is None:
             self.removeDock()
             return
+        self.loadShortcuts()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+
+    def loadShortcuts(self):
+        shortcuts = self.sapActivity.getShortcuts()
+        for shortcut in shortcuts:
+            self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'])
 
     def loadDockWidget(self, sapActivity=None):
         self.sapActivity = self.sap.getActivity() if sapActivity is None else sapActivity
         if not self.sapActivity:
             return
+        self.loadShortcuts()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')        
 
@@ -227,13 +234,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             if not data['caminho_padrao']:
                 data['caminho_padrao'] = pathDest
             result = self.qgis.loadInputData(data)
-            results.append(result[1])
+            results.append(result)
         return results
 
     def getActivityRoutines(self):
         fmeData = []
         #try:
-        print(self.sapActivity.getFmeConfig())
         fmeData = self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
         #except Exception as e:
         #    self.showErrorMessageBox(None, 'Erro', 'Sem conexão com o FME!')
@@ -265,13 +271,19 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def runFMESAP(self, routineData):
         runFMESAP = self.processingFactory.createProcessing('RunFMESAP', self)
-        return runFMESAP.run({
+        output = runFMESAP.run({
             'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
             'fmeRoutine': routineData,
             'dbName': self.sapActivity.getDatabaseName(),
             'dbPort': self.sapActivity.getDatabasePort(),
             'dbHost': self.sapActivity.getDatabaseServer()
         })
+        summary = output['result']['dados']['sumario']
+        html = "<p>[rotina nome] : {0}</p>".format(routineData['rotina'])
+        html += "<p>[status de execução] : {0}</p>".format(output['result']['dados']['status'])
+        for flags in output['result']['dados']['sumario']:
+            html += """<p>[rotina flags] : {} - {}</p>""".format(flags['classes'], flags['feicoes'])
+        return html
 
     def runRuleStatistics(self, routineData):
         ruleStatistics = self.processingFactory.createProcessing('RuleStatistics', self)

@@ -87,7 +87,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         settings = self.getCustomQgisSettings()
         self.qgis.cleanShortcuts(settings)
         self.qgis.setSettings(settings)
-        self.qgis.cleanActionShortcut('EnableSnappingAction')
+        self.qgis.setActionShortcut('EnableSnappingAction', '')
 
     def onOffLayers(self):
         self.qgis.setHiddenLayers(self.hideLayer)

@@ -143,16 +143,17 @@ class QgisApi(IQgisApi):
                 continue
             QtCore.QSettings().setValue(qgisVariable, '')
 
-    def cleanActionShortcut(self, actionName):
+    def setActionShortcut(self, actionName, shortcut):
         for a in gui.QgsGui.shortcutsManager().listActions():
-            if not(actionName.lower() in a.objectName().lower()):
+            if not(actionName.lower() == a.text().lower()):
                 continue
             a.setShortcut('')
+            gui.QgsGui.shortcutsManager().setObjectKeySequence(a, shortcut)
 
-    def setActionShortcut(self, objectName):
+    """ def setActionShortcut(self, objectName):
         pass
-        #selector = QgsGui.shortcutsManager().listAll()[175]
-        #QgsGui.shortcutsManager().setObjectKeySequence(selector, 'S')
+        #selector = QgsGui.shortcutsManager().listActions()[175]
+        #QgsGui.shortcutsManager().setObjectKeySequence(selector, 'S') """
 
     def addMenuBar(self, name):
         menu = QMenu(iface.mainWindow())

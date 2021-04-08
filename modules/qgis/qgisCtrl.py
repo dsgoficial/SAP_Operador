@@ -69,8 +69,8 @@ class QgisCtrl(IQgisCtrl):
     def cleanShortcuts(self,settings):
         self.apiQGis.cleanShortcuts(settings)
 
-    def cleanActionShortcut(self, actionName):
-        self.apiQGis.cleanActionShortcut(actionName)
+    def setActionShortcut(self, actionName, shortcut):
+        self.apiQGis.setActionShortcut(actionName, shortcut)
 
     def addMenuBar(self, name):
         return self.apiQGis.addMenuBar(name)
