@@ -21,7 +21,6 @@ class FmeHttp(IFmeApi):
     def getSapRoutines(self, fmeConfig):
         routineSap = []
         for config in fmeConfig:
-            
             server = u"{0}:{1}/api/rotinas".format( config['servidor'], config['porta'] )
             cat = u"?ids={0}".format( config['rotina'] )
             url = u"{0}{1}".format( server, cat )
@@ -33,7 +32,7 @@ class FmeHttp(IFmeApi):
                 routine.update({
                     'description': '{0}: \n{1}'.format(routine['rotina'], routine['descricao']),
                     'routineType': 'fme',
-                    'server': server
+                    'server': '{}:{}'.format( config['servidor'], config['porta'] )
                 })
             routineSap += routines
         return routineSap

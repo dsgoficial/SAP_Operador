@@ -324,6 +324,9 @@ class SapActivityHttp:
     def getEPSG(self):
         return self.getWorkUnitGeometry().split(';')[0].split('=')[1]
 
+    def getShortcuts(self):
+        return self.getData()['dados']['atividade']['atalhos']
+
     def getFrameQml(self):
         return '''<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
             <qgis styleCategories="Symbology" version="3.4.12-Madeira">

@@ -1,9 +1,14 @@
 import os, sys, copy, json
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
 
 class RoutinesDialog(QtWidgets.QDialog):
     
-    def __init__(self, controller, parent=None):
+    def __init__(self, 
+            controller, 
+            parent=None,
+            messageFactory=UtilsFactory().createMessageFactory()
+        ):
         super(RoutinesDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.tableWidget.horizontalHeader().sortIndicatorOrder()
@@ -11,6 +16,7 @@ class RoutinesDialog(QtWidgets.QDialog):
         self.tableWidget.setColumnHidden(0, True)
         self.currentRoutineData = {}
         self.controller = controller
+        self.messageFactory = messageFactory
     
     def getController(self, controller):
         self.controller = controller
@@ -122,19 +128,13 @@ class RoutinesDialog(QtWidgets.QDialog):
             else:
                 self.tableWidget.setRowHidden(idx, False)                
 
-    def showError(self, title, text):
-        MessageSingleton.getInstance().showError(
-            self,
-            title, 
-            text
-        )
+    def showErrorMessageBox(self, title, message):
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
+        errorMessageBox.show(self, title, message)
 
-    def showInfo(self, title, text):
-        MessageSingleton.getInstance().showInfo(
-            self,
-            title, 
-            text
-        )
+    def showInfoMessageBox(self, title, message):
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
+        infoMessageBox.show(self, title, message)
 
     def clearAllItems(self):
         self.tableWidget.setRowCount(0)

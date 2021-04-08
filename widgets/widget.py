@@ -21,3 +21,7 @@ class Widget(QtWidgets.QWidget, IWidget):
     def showErrorMessageBox(self, title, message):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(self, title, message)
+
+    def showInfoMessageBox(self, title, message):
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
+        infoMessageBox.show(self, title, message)

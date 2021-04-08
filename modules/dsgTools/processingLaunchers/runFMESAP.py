@@ -7,24 +7,25 @@ class RunFMESAP(Processing):
     
     def __init__(self, controller):
         super(RunFMESAP, self).__init__()
-        self.processingId = 'dsgtools:runfmesap'
+        self.processingId = 'dsgtools:runremotefme'
         
     def getParameters(self, parameters):
-        fmeJSON = {}
-        for parameter in parameters['fmeRoutine']['parameters']:
-            if 'dbarea' in parameter:
-                fmeJSON[parameter] = "'{0}'".format(parameters['workUnitGeometry'])
-            elif 'dbname' in parameter:
-                fmeJSON[parameter] = parameters['dbName']
-            elif 'dbport' in parameter:
-                fmeJSON[parameter] = parameters['dbPort']
-            elif 'dbhost' in parameter:
-                fmeJSON[parameter] = parameters['dbHost']
-            else:
-                fmeJSON[parameter] = ''
-        fmeJSON['server'] = parameters['fmeRoutine']['server']
-        fmeJSON['workspace_id'] = parameters['fmeRoutine']['workspace_id']
-        return {
-            'FILE' : '.json', 
-            'TEXT' : json.dumps(fmeJSON) 
+        return { 
+            'FME_MANAGER' : {
+                'auth': None, 
+                'parameters': {
+                    'parametros': {
+                        'dbarea_where_clause': "'{}'".format(parameters['workUnitGeometry']), 
+                        'dbhost_HOST_POSTGIS': parameters['dbHost'], 
+                        'dbname_SourceDataset_POSTGIS': parameters['dbName'], 
+                        'dbport_PORT_POSTGIS': parameters['dbPort']
+                    }
+                }, 
+                'proxy_dict': None, 
+                'server': parameters['fmeRoutine']['server'], 
+                'use_proxy': False, 
+                'use_ssl': False, 
+                'version': 'v2', 
+                'workspace_id': parameters['fmeRoutine']['id']
+            } 
         }
