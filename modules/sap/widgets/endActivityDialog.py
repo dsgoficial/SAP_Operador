@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 import os
+from Ferramentas_Producao.modules.sap.widgets.sapDialog import SapDialog
 
-class EndActivityDialog(QtWidgets.QDialog):
+class EndActivityDialog(SapDialog):
 
     def __init__(self, controller=None):
         super(EndActivityDialog, self).__init__()
@@ -25,7 +26,7 @@ class EndActivityDialog(QtWidgets.QDialog):
         )
     
     def updateEndButton(self):
-        if self.getController().getUserName() == self.nameLe.text():
+        if self.getController().getUserName().lower() == self.nameLe.text():
             self.endBtn.setEnabled(True)
         else:
             self.endBtn.setEnabled(False)
@@ -34,8 +35,10 @@ class EndActivityDialog(QtWidgets.QDialog):
     def on_endBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getController().endActivity(self.sapActivity.getId(), False)
+            self.getController().endActivity(withoutCorrection=False)
             self.close()
+        except Exception as e:
+            self.showErrorMessageBox('Erro', str(e))
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 

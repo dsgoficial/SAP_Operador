@@ -21,6 +21,21 @@ class RemoteSapCtrl(SapCtrl):
         self.guiFactory = guiFactory
         self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
 
+    def showErrorMessageBox(self, parent, title, message):
+        parent = self.qgis.getMainWindow() if not parent else parent
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
+        errorMessageBox.show(parent, title, message)
+
+    def showQuestionMessageBox(self, parent, title, message):
+        parent = self.qgis.getMainWindow() if not parent else parent
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
+        return questionMessageBox.show(parent, title, message)
+    
+    def showInfoMessageBox(self, parent, title, message):
+        parent = self.qgis.getMainWindow() if not parent else parent
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
+        infoMessageBox.show(parent, title, message)    
+        
     def authUser(self, user, password, server):
         self.sapApi.setServer(server)
         response = self.sapApi.loginUser(
@@ -45,12 +60,6 @@ class RemoteSapCtrl(SapCtrl):
         return response
 
     def initActivity(self):
-        if not self.showQuestionMessageBox(
-                self.qgis.getMainWindow(),
-                'Atenção',
-                '<p>Deseja iniciar a próxima atividade?</p>'
-            ):
-            return None
         response = self.sapApi.initActivity()
         if not( response['success'] and 'dados' in response and response['dados'] ):
             self.showErrorMessageBox(
@@ -65,14 +74,20 @@ class RemoteSapCtrl(SapCtrl):
         return self.activityDataModel.getUserName()
 
     def getActivity(self):
-        response = self.getCurrentActivity()
-        if response:   
+        response = self.sapApi.getActivity()
+        if 'dados' in response and response['dados']:  
             self.activityDataModel.setData(response)
             self.qgis.setSettingsVariable(
                 'productiontools:activityName', 
                 self.activityDataModel.getDescription()
             )
             return self.activityDataModel
+        if not self.showQuestionMessageBox(
+                self.qgis.getMainWindow(),
+                'Atenção',
+                '<p>Deseja iniciar a próxima atividade?</p>'
+            ):
+            return None
         response = self.initActivity()
         if response:
             self.activityDataModel.setData(response)
@@ -83,10 +98,26 @@ class RemoteSapCtrl(SapCtrl):
             '''<p>Não há nenhum trabalho cadastrado para você.
                 </p><p>Procure seu chefe de seção.</p>'''
         )
-        return None
+        
 
-    def endActivity(self, activityId, withoutCorrection):
-        return self.sapApi.endActivity(activityId, withoutCorrection)
+    def getCurrentActivity(self):
+        response = self.sapApi.getActivity()
+        if not( 'dados' in response and response['dados'] ):
+            self.showErrorMessageBox(
+                self.qgis.getMainWindow(),
+                'Aviso',
+                response['message']
+            )
+            return None
+        response['usuario'] = self.qgis.getProjectVariable('productiontools:user')
+        response['senha'] = self.qgis.getProjectVariable('productiontools:password')
+        return response
+
+    def endActivity(self, withoutCorrection):
+        return self.sapApi.endActivity(
+            self.activityDataModel.getId(), 
+            withoutCorrection
+        )
 
     def getErrorsTypes(self):
         response = self.sapApi.getErrorsTypes()

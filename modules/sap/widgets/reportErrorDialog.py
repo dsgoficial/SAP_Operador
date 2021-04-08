@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from Ferramentas_Producao.modules.sap.widgets.sapDialog import SapDialog
 
-class ReportErrorDialog(QtWidgets.QDialog):
+class ReportErrorDialog(SapDialog):
 
     def __init__(
             self,
-            controller,
-            messageFactory=UtilsFactory().createMessageFactory()
+            controller
         ):
         super(ReportErrorDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
