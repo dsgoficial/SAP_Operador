@@ -17,3 +17,7 @@ class SapDialog(QtWidgets.QDialog):
     def showInfoMessageBox(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
+
+    def showQuestionMessageBox(self, title, message):
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
+        return questionMessageBox.show(self, title, message)

@@ -97,7 +97,7 @@ class SapActivityHttp:
                 continue
             if not(data['ordem'] in rules):
                 rules[data['ordem']] = {}
-                rules[data['ordem']]['tipo'] = data['tipo_regra']
+                rules[data['ordem']]['tipo'] = 'atributo'
                 rules[data['ordem']]['atributos'] = {}
             if not data['atributo'] in rules[data['ordem']]['atributos']:
                 rules[data['ordem']]['atributos'][data['atributo']] = []
