@@ -87,8 +87,8 @@ class QgisCtrl(IQgisCtrl):
     def deleteAction(self, action):
         self.apiQGis.deleteAction(action)
 
-    def setHiddenLayers(self, b):
-        self.apiQGis.setHiddenLayers(b)
+    def setHiddenLayers(self):
+        self.apiQGis.setHiddenLayers()
 
     def canvasRefresh(self):
         self.apiQGis.canvasRefresh()

@@ -162,7 +162,9 @@ class QgisApi(IQgisApi):
         iface.mainWindow().menuBar().insertMenu(iface.firstRightStandardMenu().menuAction(), menu)
         return menu
 
-    def setHiddenLayers(self, b):
+    def setHiddenLayers(self):
+        f = iface.activeLayer()
+        b = core.QgsProject.instance().layerTreeRoot().findLayer(f.id()).isVisible()
         if b:
             iface.actionHideSelectedLayers().trigger()
         else:
