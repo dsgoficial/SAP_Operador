@@ -44,8 +44,8 @@ class Pomodoro:
         # Declare instance attributes
         self.actions = []
         self.menu = u'&Pomodoro'
-        self.toolbar = self.iface.addToolBar(u'Pomodoro')
-        self.toolbar.setObjectName(u'Pomodoro')
+        #self.toolbar = self.iface.addToolBar(u'Pomodoro')
+        #self.toolbar.setObjectName(u'Pomodoro')
 
         # Initialize Pomodoro
 

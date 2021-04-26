@@ -57,21 +57,21 @@ class Main:
         )
 
     def initGui(self):
+        self.qgisCtrl.load()
         self.action = self.qgisCtrl.createAction(
             Config.NAME,
             self.getPluginIconPath(),
             self.startPlugin   
         )
-        self.qgisCtrl.addActionDigitizeToolBar(self.action)
+        self.qgisCtrl.addActionToolBar(self.action)
         self.qgisCtrl.loadProcessingProvider(self.getPluginIconPath())
         self.prodToolsSettingsCtrl.load()
         
     def unload(self):
-        self.qgisCtrl.removeActionDigitizeToolBar(self.action)
-        self.qgisCtrl.unloadProcessingProvider()
         self.remoteProdToolsDockCtrl.unload()
         self.localProdToolsDockCtrl.unload()
         self.prodToolsSettingsCtrl.unload()
+        self.qgisCtrl.unload()
         
     def startPlugin(self, b):
         self.loginCtrl.showView()

@@ -3,6 +3,7 @@ from Ferramentas_Producao.factories.productionToolsDirector import ProductionToo
 from Ferramentas_Producao.factories.productionToolsBuilder import ProductionToolsBuilder
 from Ferramentas_Producao.widgets.routinesDialog import RoutinesDialog
 from Ferramentas_Producao.widgets.activityDataSummary import ActivityDataSummary
+from Ferramentas_Producao.factories.changeStylesSingleton import ChangeStylesSingleton
 
 class GUIFactory(IGUIFactory):
     
@@ -36,3 +37,9 @@ class GUIFactory(IGUIFactory):
 
     def makeRoutinesDialog(self, controller, parent):
         return RoutinesDialog(controller, parent)
+
+    def getWidget(self, name, controller):
+        widgets = {
+            'ChangeStyles': lambda: ChangeStylesSingleton.getInstance(controller)
+        }
+        return widgets[name]() if name in widgets else None

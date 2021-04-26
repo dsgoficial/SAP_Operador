@@ -130,6 +130,28 @@ class SapActivityHttp:
             })
         return layersQml
 
+    def getLayerStyles(self):
+        layersQml = []
+        layers = self.getLayers()[:]
+        for layer in layers:
+            layersQml.append({
+                'layerName': layer["nome"],
+                'styles': self.getLayerStyleList(layer["nome"], layer["schema"])
+            })
+        return layersQml
+
+    def getLayerStyleList(self, layerName, layerSchema):
+        styles = []
+        for item in self.getData()['dados']['atividade']['estilos']:
+            if not(
+                item['f_table_schema'] == layerSchema
+                and
+                item['f_table_name'] == layerName
+            ):
+                continue
+            styles.append({ 'name': item['stylename'], 'qml': item['styleqml'] })
+        return styles
+
     def getLayerALiases(self):
         return [
             {

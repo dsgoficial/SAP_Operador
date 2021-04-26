@@ -12,6 +12,12 @@ class QgisCtrl(IQgisCtrl):
         super(QgisCtrl, self).__init__()
         self.apiQGis = apiQGis
 
+    def unload(self):
+        self.apiQGis.unload()
+
+    def load(self):
+        self.apiQGis.load()
+
     def getMainWindow(self):
         return self.apiQGis.getMainWindow()
 
@@ -134,3 +140,21 @@ class QgisCtrl(IQgisCtrl):
 
     def removeMessageBar(self, messageBar):
         self.apiQGis.removeMessageBar(messageBar)
+
+    def loadMapLayerStyles(self, loadedLayerIds, layerStyles, defaultStyle):
+        self.apiQGis.loadMapLayerStyles(loadedLayerIds, layerStyles, defaultStyle)
+
+    def changeMapLayerStyles(self, styleName):
+        self.apiQGis.changeMapLayerStyles(styleName)
+
+    def addWidgetToolBar(self, widget):
+        return self.apiQGis.addWidgetToolBar(widget)
+
+    def removeWidgetToolBar(self, widget):
+        self.apiQGis.removeWidgetToolBar(widget)
+
+    def addActionToolBar(self, action):
+        return self.apiQGis.addActionToolBar(action)
+
+    def removeActionToolBar(self, action):
+        self.apiQGis.removeActionToolBar(action)

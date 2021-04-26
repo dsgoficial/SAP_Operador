@@ -31,6 +31,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.prodToolsSettings = prodToolsSettings
         self.sapActivity = None
         self.productionTools = None
+        self.changeStyles = None
         self.qgis.on('readProject', self.readProjectCallback)
 
     def closedDock(self):
@@ -65,11 +66,16 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         for shortcut in shortcuts:
             self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'])
 
+    def loadChangeStyles(self):
+        self.changeStyles = self.guiFactory.getWidget('ChangeStyles', controller=self)
+        self.qgis.addWidgetToolBar(self.changeStyles)
+
     def loadDockWidget(self, sapActivity=None):
         self.sapActivity = self.sap.getActivity() if sapActivity is None else sapActivity
         if not self.sapActivity:
             return
         self.loadShortcuts()
+        self.loadChangeStyles()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')        
 
@@ -128,6 +134,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getActivityInputs(self):
         return self.sapActivity.getInputs()
 
+    def changeMapLayerStyle(self, styleName):
+        self.qgis.changeMapLayerStyles(styleName)
+
     def loadActivityLayers(self, onlyWithFeatures, styleName):
         loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
@@ -148,6 +157,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
         groupLayers = self.processingFactory.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
+
+        defaultStyle = self.getActivityStyles()[0]
+        self.qgis.loadMapLayerStyles(
+            loadedLayerIds,
+            self.sapActivity.getLayerStyles(),
+            defaultStyle
+        )
+        self.changeStyles.loadStyles(self.getActivityStyles(), defaultStyle)
 
         matchAndApplyQmlStylesToLayers = self.processingFactory.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
