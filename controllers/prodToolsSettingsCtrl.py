@@ -15,7 +15,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         self.qgis = qgis
         self.timerFactory = timerFactory
         self.saveTimer = None
-        self.hideLayer = True
         self.showMarkers = True
         self.menuBarActions = []
 
@@ -90,8 +89,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         self.qgis.setActionShortcut('EnableSnappingAction', '')
 
     def onOffLayers(self):
-        self.qgis.setHiddenLayers(self.hideLayer)
-        self.hideLayer = not self.hideLayer
+        self.qgis.setHiddenLayers()
 
     def showMarkersOnlySelectedFeatures(self):
         values = {
