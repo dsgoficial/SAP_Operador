@@ -21,6 +21,9 @@ class ChangeStyles(Widget):
         self.stylesCb.addItems(styles)
         self.stylesCb.setCurrentIndex(self.stylesCb.findText(defaultStyle))
 
+    def clearStyles(self):
+        self.stylesCb.clear()
+
     def page(self):
         nextIndex = self.stylesCb.currentIndex() + 1
         if nextIndex == self.stylesCb.count():

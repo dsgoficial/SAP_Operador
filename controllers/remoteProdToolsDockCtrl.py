@@ -41,8 +41,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.on('readProject', self.readProjectCallback)
 
     def closedDock(self):
+        #self.changeStyleWidget.clearStyles() if self.changeStyleWidget else ''
         pass
-
+        
     def authUser(self, username, password, server):
         self.qgis.setProjectVariable('productiontools:user', username)
         self.qgis.setProjectVariable('productiontools:password', password)
