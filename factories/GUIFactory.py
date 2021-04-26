@@ -40,6 +40,6 @@ class GUIFactory(IGUIFactory):
 
     def getWidget(self, name, controller):
         widgets = {
-            'ChangeStyles': lambda: ChangeStylesSingleton.getInstance(controller)
+            'ChangeStyleWidget': lambda: ChangeStylesSingleton.getInstance(controller)
         }
         return widgets[name]() if name in widgets else None

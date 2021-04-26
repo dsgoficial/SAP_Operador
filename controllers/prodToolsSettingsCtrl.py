@@ -35,8 +35,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             action = self.qgis.createAction(
                 actionConfig['name'],
                 actionConfig['iconPath'],
-                actionConfig['callback'],
-                actionConfig['shortcut']
+                actionConfig['callback']
             )
             menuBarActions.append(action)
         self.setMenuBarActions(menuBarActions)
@@ -144,7 +143,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'Erro',
                 '<p style="color:red">{0}</p>'.format(result[1])
             )
-
+    
     def getMenuBarActionSettings(self):
         iconRootPath = os.path.join(
                 os.path.dirname(__file__),
@@ -155,63 +154,53 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             {
                 'name': 'Ligar/Desligar camada',
                 'iconPath':os.path.join(iconRootPath, 'on_off.png'),
-                'shortcut': 'Y',
                 'callback': self.onOffLayers
             },
             {
                 'name': 'Mostrar/Esconder marcadores para feições selecionadas',
                 'iconPath':os.path.join(iconRootPath, 'vertex.png'),
-                'shortcut': 'B',
                 'callback': self.showMarkersOnlySelectedFeatures
             },
             {
                 'name': 'Suavizador de linhas',
                 'iconPath':os.path.join(iconRootPath, 'smoothLayer.png'),
-                'shortcut': '',
                 'callback': self.smoothLine
             },
             {
                 'name': 'Fechar linha',
                 'iconPath':os.path.join(iconRootPath, 'closeLine.png'),
-                'shortcut': '',
                 'callback': self.closeLine
             },
             {
                 'name': 'Aparar linha',
                 'iconPath':os.path.join(iconRootPath, 'trim.png'),
-                'shortcut': '',
                 'callback': lambda: self.qgis.activeTool('TrimLineMapTool')
             },
             {
                 'name': 'Expandir linha',
                 'iconPath':os.path.join(iconRootPath, 'expand.png'),
-                'shortcut': '',
                 'callback': lambda: self.qgis.activeTool('ExpandLineMapTool')
             },
             {
                 'name': 'Paginar raster para cima',
                 'iconPath':os.path.join(iconRootPath, 'pageup.png'),
-                'shortcut': '',
                 'callback': lambda direction='up': self.pageRaster(direction)
             },
             {
                 'name': 'Paginar raster para baixo',
                 'iconPath':os.path.join(iconRootPath, 'pagedown.png'),
-                'shortcut': '',
                 'callback': lambda direction='down': self.pageRaster(direction)
             },
             {
                 'name': 'Criar nova visualização de mapa',
                 'iconPath':os.path.join(iconRootPath, 'newmapview.png'),
-                'shortcut': '',
                 'callback': lambda: self.qgis.createNewMapView()
             },
             {
                 'name': 'Convergir vertices de feições',
                 'iconPath':os.path.join(iconRootPath, 'convergencepoint.png'),
-                'shortcut': '',
                 'callback': lambda: self.qgis.activeTool('ConvergencePoint')
-            },
+            }
         ]
 
     def getCustomQgisSettings(self):

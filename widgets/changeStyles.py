@@ -21,6 +21,13 @@ class ChangeStyles(Widget):
         self.stylesCb.addItems(styles)
         self.stylesCb.setCurrentIndex(self.stylesCb.findText(defaultStyle))
 
+    def page(self):
+        nextIndex = self.stylesCb.currentIndex() + 1
+        if nextIndex == self.stylesCb.count():
+            self.stylesCb.setCurrentIndex(0)
+            return
+        self.stylesCb.setCurrentIndex(nextIndex)
+
     @QtCore.pyqtSlot(str)
     def on_stylesCb_currentTextChanged(self, text):
         self.getController().changeMapLayerStyle(text)

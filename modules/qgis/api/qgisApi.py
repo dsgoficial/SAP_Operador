@@ -355,34 +355,27 @@ class QgisApi(IQgisApi):
         iface.mainWindow().menuBar().insertMenu(iface.firstRightStandardMenu().menuAction(), menu)
         return menu
 
-    def setHiddenLayers(self, b):
-        if b:
-            iface.actionHideSelectedLayers().trigger()
-        else:
-            iface.actionShowSelectedLayers().trigger()
-
     def canvasRefresh(self):
         iface.mapCanvas().refresh()
 
-    def getShortcutKey(self, shortcutKeyName):
+    """ def getShortcutKey(self, shortcutKeyName):
         keys = {
             'Y': QtCore.Qt.Key_Y,
             'B': QtCore.Qt.Key_B,
         }
         if not shortcutKeyName in keys:
             return
-        return keys[shortcutKeyName]
+        return keys[shortcutKeyName] """
 
-    def createAction(self, name, iconPath, callback, shortcutKeyName, checkable):
+    def createAction(self, name, iconPath, callback, checkable):
         a = QAction(
             QIcon(iconPath),
             name,
             iface.mainWindow()
         )
-        if self.getShortcutKey(shortcutKeyName):
-            a.setShortcut(self.getShortcutKey(shortcutKeyName))
         a.setCheckable(checkable)
         a.triggered.connect(callback)
+        gui.QgsGui.shortcutsManager().registerAction(a, '')
         return a
 
     def addActionDigitizeToolBar(self, action):

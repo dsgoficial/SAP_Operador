@@ -8,6 +8,12 @@ from qgis import core, gui, utils
 import os
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
+
+    iconRootPath = os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'icons'
+    )
     
     def __init__(
             self,
@@ -31,7 +37,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.prodToolsSettings = prodToolsSettings
         self.sapActivity = None
         self.productionTools = None
-        self.changeStyles = None
+        self.changeStyleWidget = None
         self.qgis.on('readProject', self.readProjectCallback)
 
     def closedDock(self):
@@ -66,16 +72,27 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         for shortcut in shortcuts:
             self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'])
 
-    def loadChangeStyles(self):
-        self.changeStyles = self.guiFactory.getWidget('ChangeStyles', controller=self)
-        self.qgis.addWidgetToolBar(self.changeStyles)
+    def loadChangeStyleTool(self):
+        if self.changeStyleWidget and self.changeStyleAction:
+            return
+        self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
+        self.changeStyleAction = self.qgis.createAction(
+            'Paginar estilo',
+            os.path.join(self.iconRootPath, 'changeStyles.png'),
+            self.changeStyleWidget.page
+        )
+        self.qgis.addWidgetToolBar(self.changeStyleWidget)
+        self.qgis.addActionToolBar(self.changeStyleAction)
+            
+    def changeMapLayerStyle(self, styleName):
+        self.qgis.changeMapLayerStyles(styleName)
 
     def loadDockWidget(self, sapActivity=None):
         self.sapActivity = self.sap.getActivity() if sapActivity is None else sapActivity
         if not self.sapActivity:
             return
         self.loadShortcuts()
-        self.loadChangeStyles()
+        self.loadChangeStyleTool()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')        
 
@@ -134,9 +151,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getActivityInputs(self):
         return self.sapActivity.getInputs()
 
-    def changeMapLayerStyle(self, styleName):
-        self.qgis.changeMapLayerStyles(styleName)
-
     def loadActivityLayers(self, onlyWithFeatures):
         loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
@@ -164,7 +178,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.sapActivity.getLayerStyles(),
             defaultStyle
         )
-        self.changeStyles.loadStyles(self.getActivityStyles(), defaultStyle)
+        self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
         """ matchAndApplyQmlStylesToLayers = self.processingFactory.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
