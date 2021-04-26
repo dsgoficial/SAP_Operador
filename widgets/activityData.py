@@ -18,23 +18,14 @@ class ActivityData(Widget, IActivityDataWidget):
             'activityData.ui'
         )
 
-    def setStyles(self, styles):
-        self.stylesCb.addItems(styles)
-
     def onlyWithFeatures(self):
         return self.onlyWithGeomCkb.isChecked()
-
-    def getStyle(self):
-        return self.stylesCb.currentText()
 
     @QtCore.pyqtSlot(bool)
     def on_loadLayersBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getController().loadActivityLayers( 
-                self.onlyWithFeatures(),
-                self.getStyle()
-            )
+            self.getController().loadActivityLayers(self.onlyWithFeatures())
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 

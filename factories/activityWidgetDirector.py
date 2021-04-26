@@ -12,7 +12,6 @@ class ActivityWidgetDirector:
 
     def constructActivityDataWidget(self, builder, controller):
         builder.setController(controller)
-        builder.setStyles(controller.getActivityStyles())
 
     def constructActivityInputsWidget(self, builder, controller):
         builder.setController(controller)

@@ -9,10 +9,6 @@ class IActivityDataWidgetBuilder(ABC):
     @abstractmethod
     def setController(self, *args):
         pass
-
-    @abstractmethod
-    def setStyles(self, *args):
-        pass
   
     @abstractmethod
     def getResult(self):

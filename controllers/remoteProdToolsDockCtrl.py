@@ -137,7 +137,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def changeMapLayerStyle(self, styleName):
         self.qgis.changeMapLayerStyles(styleName)
 
-    def loadActivityLayers(self, onlyWithFeatures, styleName):
+    def loadActivityLayers(self, onlyWithFeatures):
         loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
@@ -166,11 +166,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
         self.changeStyles.loadStyles(self.getActivityStyles(), defaultStyle)
 
-        matchAndApplyQmlStylesToLayers = self.processingFactory.createProcessing('MatchAndApplyQmlStylesToLayers', self)
+        """ matchAndApplyQmlStylesToLayers = self.processingFactory.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
             'layersQml': self.sapActivity.getLayersQml(styleName),
             'layerIds': loadedLayerIds
-        })
+        }) """
 
         assignValueMapToLayers = self.processingFactory.createProcessing('AssignValueMapToLayers', self)
         database = self.getActivityDatabase()

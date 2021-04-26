@@ -14,9 +14,6 @@ class ActivityDataWidgetBuilder(IActivityDataWidgetBuilder):
     def setController(self, controller):
         self.obj.setController( controller )
 
-    def setStyles(self, styles):
-        self.obj.setStyles(styles)
-
     def getResult(self):
         obj = self.obj
         self.reset()
