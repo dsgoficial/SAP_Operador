@@ -158,3 +158,9 @@ class QgisCtrl(IQgisCtrl):
 
     def removeActionToolBar(self, action):
         self.apiQGis.removeActionToolBar(action)
+
+    def loadDefaultFieldValue(self, loadedLayerIds):
+        self.apiQGis.loadDefaultFieldValue(loadedLayerIds)
+
+    def zoomToFeature(self, layerId, layerSchema, layerName):
+        self.apiQGis.zoomToFeature(layerId, layerSchema, layerName)

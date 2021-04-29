@@ -11,7 +11,33 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         uic.loadUi(self.getUiPath(), self)
         self.setWindowTitle(Config.NAME)
         self.controller = None
-        self.shortcutTE.setReadOnly(True)
+        self.shortcutTE.setReadOnly(True)   
+        self.errorWidget = None
+        self.tabWidget.currentChanged.connect(self.handleTabChanged)  
+
+    def handleTabChanged(self, idx):
+        if idx == self.getTabIndexByName('errors'):  
+            self.setBadgeTabErrorsEnabled(False) 
+    
+    def getTabIndexByName(self, tabName):
+        return self.tabWidget.indexOf(self.tabWidget.findChild(QtWidgets.QWidget, tabName))
+
+    def isCurrentTab(self, tabName):
+        tabIdx = self.tabWidget.indexOf(self.tabWidget.findChild(QtWidgets.QWidget, tabName))
+        return tabIdx == self.tabWidget.currentIndex()
+
+    def setBadgeTabErrorsEnabled(self, enable):
+        if enable and self.isCurrentTab('errors'):
+            return
+        badgeIconPath =  os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons',
+            'badgeError.svg'
+        )
+        iconPath = badgeIconPath if enable else ''
+        idx = self.tabWidget.indexOf(self.tabWidget.findChild(QtWidgets.QWidget, 'errors'))
+        self.tabWidget.setTabIcon( idx, QtGui.QIcon( iconPath ) )
 
     def setController(self, controller):
         self.controller = controller
@@ -69,6 +95,13 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
 
     def addPomodoro(self, pomodoro):
         self.pomodoroArea.layout().addWidget(pomodoro)
+
+    def addErrorWidget(self, widget):
+        self.errorWidget = widget
+        self.errorArea.layout().addWidget(widget)
+
+    def getErrorWidget(self):
+        return self.errorWidget
 
     def addLineageLabel(self, lineage):
         text = "Etapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(

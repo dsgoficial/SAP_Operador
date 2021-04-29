@@ -25,7 +25,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         self.prodToolsSettings = prodToolsSettings
         self.sapActivity = None
         self.productionTools = None
-        self.qgis.on('readProject', self.readProjectCallback)
+        self.qgis.on('ReadProject', self.readProjectCallback)
 
     def readProjectCallback(self):
         self.prodToolsSettings.initSaveTimer()
@@ -35,7 +35,8 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         
     def unload(self):
         self.removeDock()
-
+        self.qgis.off('ReadProject', self.readProjectCallback)
+        
     def closedDock(self):
         pass
 

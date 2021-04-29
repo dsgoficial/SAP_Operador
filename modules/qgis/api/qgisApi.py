@@ -396,9 +396,10 @@ class QgisApi(IQgisApi):
 
     def getEvents(self):
         return {
-            'readProject': core.QgsProject.instance().readProject,
+            'ReadProject': core.QgsProject.instance().readProject,
             'SaveAllEdits': iface.actionSaveAllEdits().triggered,
             'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
+            'MessageLog': core.QgsApplication.messageLog().messageReceived,
         }
 
     def on(self, event, callback):
@@ -579,10 +580,30 @@ class QgisApi(IQgisApi):
     def removeMessageBar(self, messageBar):
         iface.messageBar().popWidget(messageBar)
 
+    def loadDefaultFieldValue(self, loadedLayerIds):
+        for layerId in loadedLayerIds:
+            layer = core.QgsProject.instance().mapLayers()[layerId]
+            idx = layer.fields().indexOf('data_modificacao')
+            if idx < 0:
+                continue
+            valueDefinition = layer.defaultValueDefinition(idx)
+            valueDefinition.setApplyOnUpdate(True)
+            valueDefinition.setExpression('now()')
+            layer.setDefaultValueDefinition(idx, valueDefinition)
 
-
-
-
+    
+    def zoomToFeature(self, layerId, layerSchema, layerName):
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        for layer in loadedLayers:
+            if not(
+                    layer.dataProvider().uri().schema() == layerSchema
+                    and
+                    layer.dataProvider().uri().table() == layerName
+                ):
+                continue
+            layer.select(int(layerId))
+            iface.actionZoomToSelected().trigger()
+            break
 
 
 

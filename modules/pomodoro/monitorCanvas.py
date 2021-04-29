@@ -18,12 +18,12 @@ class MonitorCanvas(QThread, UserHistoric):
     def startMonitoring(self):
         self.isMonitoring = True
         self.hasChangedCanvas = True
-        print('Started monitoring')
+        #print('Started monitoring')
         iface.mapCanvas().mapCanvasRefreshed.connect(self.updateMonitoring)
 
     def stopMonitoring(self):
         self.isMonitoring = False
-        print('Stopped monitoring')
+        #print('Stopped monitoring')
         # try:
         #     iface.mapCanvas().mapCanvasRefreshed.disconnect(self.updateMonitoring)
         # except TypeError:
