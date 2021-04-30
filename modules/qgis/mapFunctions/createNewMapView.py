@@ -32,14 +32,16 @@ class CreateNewMapView(MapFunction):
     
     def createTheme(self):
         layers = iface.layerTreeView().selectedLayers()
-        themeRecords = core.QgsMapThemeCollection.MapThemeRecord()
-        [ themeRecords.addLayerRecord( core.QgsMapThemeCollection.MapThemeLayerRecord(layer) ) for layer in layers ]
         themeCollection = core.QgsProject.instance().mapThemeCollection()
         themeName = "{0}{1}".format(
             layers[0].name() if len(layers) == 1 else 'tema_misto',
             '' if len(themeCollection.mapThemes()) == 0 else len(themeCollection.mapThemes())
         )
-        themeCollection.insert(themeName, themeRecords)
+        root = core.QgsProject().instance().layerTreeRoot().clone()
+        root.clear()
+        [ root.insertLayer(idx, layer) for idx, layer in enumerate(layers)]
+        model = core.QgsLayerTreeModel(root)
+        themeCollection.insert(themeName, core.QgsMapThemeCollection.createThemeFromCurrentState(root, model))
         return themeName
 
     def openMapView(self):
