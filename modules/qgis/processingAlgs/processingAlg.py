@@ -39,7 +39,6 @@ from qgis.core import (QgsProcessing,
                        QgsVectorLayer)
 import os
 from qgis.utils import iface
-from Ferramentas_Producao.modules.spellchecker.spellchecker import SpellChecker
 import re
 
 class ProcessingAlg(QgsProcessingAlgorithm):
