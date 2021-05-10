@@ -13,4 +13,4 @@ class QuestionMessageBox(IMessage):
             title, 
             text
         )
-        return result == 16384
+        return result == QtWidgets.QMessageBox.Yes
