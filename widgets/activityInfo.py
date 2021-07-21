@@ -14,6 +14,10 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton.clicked.connect(
             lambda: self.getController().showEndActivityDialog()
         )
+        self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
+        self.reportErrorButton.clicked.connect(
+            lambda: self.getController().showReportErrorDialog()
+        )
 
     def setEPSG(self, title, description):
         self.layout.addWidget(
@@ -56,10 +60,6 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             )
         )
         layout.addWidget(self.endActivityButton)
-        self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
-        self.reportErrorButton.clicked.connect(
-            lambda: self.getController().showReportErrorDialog()
-        )
         layout.addWidget(self.reportErrorButton)
         self.layout.addLayout(layout)
 

@@ -17,3 +17,7 @@ class InputLayer(InputData):
         if not group:
             group = root.addGroup(self.groupName)
         return group
+
+    def addMapLayer(self, layer, position=1):
+        group = self.getGroupLayer()
+        group.insertLayer(position, core.QgsProject.instance().addMapLayer(layer, False))

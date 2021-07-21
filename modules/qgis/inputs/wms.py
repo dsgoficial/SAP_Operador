@@ -17,8 +17,7 @@ class Wms(InputLayer):
             )
             return
 
-        group = self.getGroupLayer()
-        group.insertLayer(0, core.QgsProject.instance().addMapLayer(layer, False))
+        self.addMapLayer( layer )
 
 
         

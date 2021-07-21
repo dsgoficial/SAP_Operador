@@ -94,7 +94,6 @@ class Postgis(InputLayer):
         mapValues = database.getAttributeValueMap(layerName, dbSchema)
         self.loadValueMap(layer, mapValues)
 
-        group = self.getGroupLayer()
-        group.insertLayer(0, layer)
+        self.addMapLayer( layer )
         
         

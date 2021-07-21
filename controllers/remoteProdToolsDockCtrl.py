@@ -259,22 +259,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             options=QtWidgets.QFileDialog.ShowDirsOnly
         )
 
-    def requestFilePath(self, inputData):
-        for d in inputData:
-            if not d['caminho_padrao']:
-                return True
-        return False
-
     def loadActivityInputs(self, inputData):
         results = []
         if not inputData:
             return
-        if self.requestFilePath(inputData):            
-            pathDest = self.getPathDest()
-            if not pathDest:
-                return
         for data in inputData:
-            if not data['caminho_padrao']:
+            if data['tipo_insumo_id'] in [1]:
+                pathDest = self.getPathDest()
+                if not pathDest:
+                    continue
                 data['caminho_padrao'] = pathDest
             result = self.qgis.loadInputData(data)
             results.append(result)

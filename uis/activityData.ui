@@ -25,10 +25,47 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QComboBox" name="menusCb"/>
+    <widget class="QComboBox" name="menusCb">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>26</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>26</height>
+      </size>
+     </property>
+    </widget>
    </item>
    <item row="0" column="2">
     <widget class="QPushButton" name="loadMenuBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>26</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>26</height>
+      </size>
+     </property>
      <property name="text">
       <string>Carregar Menu</string>
      </property>
@@ -43,6 +80,24 @@
    </item>
    <item row="2" column="2">
     <widget class="QPushButton" name="loadLayersBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>26</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>26</height>
+      </size>
+     </property>
      <property name="text">
       <string>Carregar Camadas</string>
      </property>
@@ -59,13 +114,13 @@
      <property name="minimumSize">
       <size>
        <width>27</width>
-       <height>27</height>
+       <height>26</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>27</width>
-       <height>27</height>
+       <height>26</height>
       </size>
      </property>
      <property name="text">

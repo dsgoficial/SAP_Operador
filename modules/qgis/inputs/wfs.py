@@ -14,8 +14,7 @@ class Wfs(InputLayer):
             if not layer.isValid():
                 unloadedFiles.append(d)
                 continue
-            group = self.getGroupLayer()
-            group.insertLayer(0, core.QgsProject.instance().addMapLayer(layer, False))
+            self.addMapLayer( layer )
         if not unloadedFiles:
             return
 

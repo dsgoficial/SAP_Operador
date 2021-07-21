@@ -129,12 +129,6 @@ class QgisApi(IQgisApi):
                 continue
             core.QgsProject.instance().removeMapLayer(currentLyr)
 
-    def loadInputData(self, data):
-        inputData = self.inputDataFactory.createInputDataType( data['tipo_insumo_id'] )
-        if not inputData:
-            return
-        return inputData.load(data)
-
     def getLayerUriFromId(self, layerId):
         loadedLayers = core.QgsProject.instance().mapLayers()
         if not(layerId in loadedLayers):

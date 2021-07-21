@@ -17,6 +17,5 @@ class InputRaster(InputLayer):
         s.setValue("Projections/defaultBehavior", defaultBehavior)
         if not layer.isValid():
             return False
-        group = self.getGroupLayer()
-        group.insertLayer(0, core.QgsProject.instance().addMapLayer(layer, False))
+        self.addMapLayer( layer )
         return True

@@ -9,13 +9,10 @@ class VirtualLayer(InputLayer):
         super(VirtualLayer, self).__init__()
     
     def load(self, data):
-        layer = core.QgsProject.instance().addMapLayer(
-            core.QgsVectorLayer(
-                data['query'],
-                data['nome'], 
-                "virtual"
-            ), 
-            False
+        layer = core.QgsVectorLayer(
+            data['query'],
+            data['nome'], 
+            "virtual"
         )
 
         doc = QDomDocument()
@@ -23,5 +20,4 @@ class VirtualLayer(InputLayer):
         layer.importNamedStyle(doc)
         layer.triggerRepaint()
 
-        group = self.getGroupLayer()
-        group.insertLayer(0, layer)
+        self.addMapLayer( layer, 0 )
