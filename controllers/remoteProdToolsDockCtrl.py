@@ -168,8 +168,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         })
         loadedLayerIds = result['OUTPUT']
 
-        assingFilterToLayers = self.processingFactory.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
+        if not( self.sapActivity.getTypeProductionData() == 2 ):
+            assingFilterToLayers = self.processingFactory.createProcessing('AssingFilterToLayers', self)
+            assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
     
         if onlyWithFeatures:
             self.qgis.removeLayersWithouFeatures(loadedLayerIds)
