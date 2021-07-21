@@ -26,8 +26,6 @@ class ActivityInfoWidgetBuilder(IActivityInfoWidgetBuilder):
         self.obj.setNotes( title, notes )
 
     def setRequirements(self, title, requirements):
-        if not requirements:
-            return
         self.obj.setRequirements(title, requirements)
 
     def setButtons(self):

@@ -266,14 +266,6 @@ class QgisApi(IQgisApi):
     def createQgisAction(self, actionType, description, command):
         return core.QgsAction(actionType, description, command)
 
-    def runProcessingModel(self, parametersData):
-        doc = QDomDocument()
-        doc.setContent(parametersData['model_xml'])
-        model = core.QgsProcessingModelAlgorithm()
-        model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
-        processing.runAndLoadResults(model, {})
-        return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
-
     def changeMapLayerStyles(self, styleName):
         for layer in core.QgsProject.instance().mapLayers().values():
             #lyr.styleManager().styles()
@@ -416,9 +408,10 @@ class QgisApi(IQgisApi):
         return iface.mapCanvas().mapTool()
 
     def loadProcessingProvider(self, iconPath):
-        fpProcProvider = self.processingProviderFactory.createProvider('fp')
+        pass
+        """ fpProcProvider = self.processingProviderFactory.createProvider('fp')
         fpProcProvider.setIconPath(iconPath)
-        core.QgsApplication.processingRegistry().addProvider(fpProcProvider)
+        core.QgsApplication.processingRegistry().addProvider(fpProcProvider) """
 
     def runMapFunctions(self, functionList):
         for functionData in functionList:

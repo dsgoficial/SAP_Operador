@@ -76,7 +76,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         for shortcut in shortcuts:
             self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'])
 
-    def loadChangeStyleTool(self):
+    def loadChangeStyleTool(self, stylesName):
         if self.changeStyleWidget and self.changeStyleAction:
             return
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -85,6 +85,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             os.path.join(self.iconRootPath, 'changeStyles.png'),
             self.changeStyleWidget.page
         )
+        self.changeStyleWidget.loadStyles(stylesName, stylesName[0])
         self.qgis.addWidgetToolBar(self.changeStyleWidget)
         self.qgis.addActionToolBar(self.changeStyleAction)
             
@@ -96,7 +97,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if not self.sapActivity:
             return
         self.loadShortcuts()
-        self.loadChangeStyleTool()
+        self.loadChangeStyleTool( self.sapActivity.getStylesName() )
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')        
 

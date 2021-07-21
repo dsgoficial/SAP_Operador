@@ -9,6 +9,11 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         super(ActivityInfo, self).__init__(controller)
         self.layout = QtWidgets.QVBoxLayout()
         self.setLayout(self.layout)
+        self.endActivityButton = QtWidgets.QPushButton('Finalizar', self)
+        self.endActivityButton.setEnabled(False)
+        self.endActivityButton.clicked.connect(
+            lambda: self.getController().showEndActivityDialog()
+        )
 
     def setEPSG(self, title, description):
         self.layout.addWidget(
@@ -33,6 +38,8 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     
     def setRequirements(self, title, requirements):
         self.layout.addWidget( QtWidgets.QLabel("<b>{0}</b>".format(title), self) )
+        if not requirements:
+            self.endActivityButton.setEnabled(True)
         for item in requirements:
             cbx = QtWidgets.QCheckBox(item['descricao'], self)
             cbx.stateChanged.connect( self.updateEndActivityButton )
@@ -47,11 +54,6 @@ class ActivityInfo(Widget, IActivityInfoWidget):
                 QtWidgets.QSizePolicy.Expanding,
                 QtWidgets.QSizePolicy.Expanding
             )
-        )
-        self.endActivityButton = QtWidgets.QPushButton('Finalizar', self)
-        self.endActivityButton.setEnabled(False)
-        self.endActivityButton.clicked.connect(
-            lambda: self.getController().showEndActivityDialog()
         )
         layout.addWidget(self.endActivityButton)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)

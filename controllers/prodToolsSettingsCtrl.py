@@ -1,7 +1,6 @@
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
 from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
-
 import os
 
 class ProdToolsSettingsCtrl(ProdToolsCtrl):
@@ -9,7 +8,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
     def __init__(
             self,
             qgis,
-            timerFactory=TimerFactory()
+            timerFactory=TimerFactory(),
         ):
         super(ProdToolsSettingsCtrl, self).__init__()
         self.qgis = qgis
@@ -172,16 +171,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'callback': self.closeLine
             },
             {
-                'name': 'Aparar linha',
-                'iconPath':os.path.join(iconRootPath, 'trim.png'),
-                'callback': lambda: self.qgis.activeTool('TrimLineMapTool')
-            },
-            {
-                'name': 'Expandir linha',
-                'iconPath':os.path.join(iconRootPath, 'expand.png'),
-                'callback': lambda: self.qgis.activeTool('ExpandLineMapTool')
-            },
-            {
                 'name': 'Paginar raster para cima',
                 'iconPath':os.path.join(iconRootPath, 'pageup.png'),
                 'callback': lambda direction='up': self.pageRaster(direction)
@@ -202,6 +191,18 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'callback': lambda: self.qgis.activeTool('ConvergencePoint')
             }
         ]
+
+        
+        """ {
+            'name': 'Aparar linha',
+            'iconPath':os.path.join(iconRootPath, 'trim.png'),
+            'callback': lambda: self.qgis.activeTool('TrimLineMapTool')
+        },
+        {
+            'name': 'Expandir linha',
+            'iconPath':os.path.join(iconRootPath, 'expand.png'),
+            'callback': lambda: self.qgis.activeTool('ExpandLineMapTool')
+        } """
 
     def getCustomQgisSettings(self):
         return {
