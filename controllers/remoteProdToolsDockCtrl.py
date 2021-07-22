@@ -137,6 +137,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             )
             return
         self.sap.showEndActivityDialog(self.reload)
+        self.qgis.cleanProject()
 
     def showReportErrorDialog(self):
         self.sap.showReportErrorDialog(self.reload)

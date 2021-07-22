@@ -185,9 +185,6 @@ class QgisApi(IQgisApi):
         else:
             iface.actionShowSelectedLayers().trigger()
 
-    def canvasRefresh(self):
-        iface.mapCanvas().refresh()
-
     def getShortcutKey(self, shortcutKeyName):
         keys = {
             'Y': QtCore.Qt.Key_Y,
@@ -397,6 +394,7 @@ class QgisApi(IQgisApi):
     def cleanProject(self):
         core.QgsProject.instance().removeAllMapLayers()
         core.QgsProject.instance().layerTreeRoot().removeAllChildren()
+        self.canvasRefresh()
 
     def getCurrentMapTool(self):
         return iface.mapCanvas().mapTool()
