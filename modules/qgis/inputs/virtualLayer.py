@@ -19,5 +19,5 @@ class VirtualLayer(InputLayer):
         doc.setContent(data['qml'])
         layer.importNamedStyle(doc)
         layer.triggerRepaint()
-
+        layer.setCrs( core.QgsCoordinateReferenceSystem( int(data['epsg']) ) )
         self.addMapLayer( layer, 0 )

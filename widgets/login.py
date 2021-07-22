@@ -19,7 +19,6 @@ class Login(QtWidgets.QDialog, ILogin):
         self.controller = controller
         self.messageFactory = messageFactory
         self.currentFrame = None
-        self.loadLoginFrame(0)
 
     def setController(self, controller):
         self.controller = controller

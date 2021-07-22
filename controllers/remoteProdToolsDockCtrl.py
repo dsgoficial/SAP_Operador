@@ -237,6 +237,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
         self.qgis.loadInputData({
             'query': self.sapActivity.getFrameQuery(),
+            'epsg': self.sapActivity.getEPSG(),
             'nome': 'moldura',
             'tipo_insumo_id': 100,
             'qml': self.sapActivity.getFrameQml()
