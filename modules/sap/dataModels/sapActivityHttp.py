@@ -27,7 +27,7 @@ class SapActivityHttp:
         return self.getData()['dados']['atividade']['nome']
 
     def getUserName(self):
-        return self.getData()['dados']['usuario_nome']
+        return self.getData()['dados']['login']
 
     def getId(self):
         return self.getData()['dados']['atividade']['id']

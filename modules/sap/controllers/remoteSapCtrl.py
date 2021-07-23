@@ -3,6 +3,7 @@ from Ferramentas_Producao.modules.sap.factories.sapApiHttpSingleton import SapAp
 from Ferramentas_Producao.modules.sap.factories.dataModelFactory import DataModelFactory
 from Ferramentas_Producao.modules.sap.factories.guiFactory import GUIFactory
 from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from PyQt5 import QtCore, uic, QtWidgets
 
 class RemoteSapCtrl(SapCtrl):
     
@@ -125,18 +126,16 @@ class RemoteSapCtrl(SapCtrl):
             return []
         return response['dados']
     
-    def showReportErrorDialog(self, callback):
+    def showReportErrorDialog(self):
         reportErrorDialog = self.guiFactory.createReportErrorDialog(self)
         reportErrorDialog.loadErrorsTypes(
             self.getErrorsTypes()
         )
-        reportErrorDialog.exec_()
-        callback()
+        return reportErrorDialog.exec_() == QtWidgets.QDialog.Accepted	
 
-    def showEndActivityDialog(self, callback):
+    def showEndActivityDialog(self):
         endActivityDialog = self.guiFactory.createEndActivityDialog(self)
-        endActivityDialog.exec_()
-        callback()
+        return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
         
     def reportError(self, errorId, errorDescription):
         return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription)
