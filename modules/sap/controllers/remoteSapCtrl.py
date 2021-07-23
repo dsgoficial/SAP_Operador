@@ -46,19 +46,6 @@ class RemoteSapCtrl(SapCtrl):
             self.qgis.getPluginsVersions()
         )
         return response['success']
-        
-    def getCurrentActivity(self):
-        response = self.sapApi.getActivity()
-        if not( 'dados' in response and response['dados'] ):
-            self.showErrorMessageBox(
-                self.qgis.getMainWindow(),
-                'Aviso',
-                response['message']
-            )
-            return None
-        response['usuario'] = self.qgis.getProjectVariable('productiontools:user')
-        response['senha'] = self.qgis.getProjectVariable('productiontools:password')
-        return response
 
     def initActivity(self):
         response = self.sapApi.initActivity()
