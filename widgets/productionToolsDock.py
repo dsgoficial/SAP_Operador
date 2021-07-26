@@ -114,4 +114,4 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         )
         label = QtWidgets.QLabel(text)
         label.setStyleSheet('QLabel { background-color: white }')
-        self.lineageArea.layout().addWidget(label)
+        self.lineageArea.layout().insertWidget(0, label)
