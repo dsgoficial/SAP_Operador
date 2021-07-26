@@ -30,7 +30,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setDescription(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                "<b>{0}</b><br>{1}".format(title, description), 
+                '<span style="font-size: 15px;">{0}</span>'.format(description), 
                 self
             )
         )
