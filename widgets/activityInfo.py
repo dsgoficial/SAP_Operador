@@ -41,9 +41,10 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             self.layout.addWidget(QtWidgets.QLabel(note, self))
     
     def setRequirements(self, title, requirements):
-        self.layout.addWidget( QtWidgets.QLabel("<b>{0}</b>".format(title), self) )
         if not requirements:
             self.endActivityButton.setEnabled(True)
+            return
+        self.layout.addWidget( QtWidgets.QLabel("<b>{0}</b>".format(title), self) )
         for item in requirements:
             cbx = QtWidgets.QCheckBox(item['descricao'], self)
             cbx.stateChanged.connect( self.updateEndActivityButton )
