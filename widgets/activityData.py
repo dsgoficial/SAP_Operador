@@ -32,3 +32,15 @@ class ActivityData(Widget, IActivityDataWidget):
     @QtCore.pyqtSlot(bool)
     def on_summaryBtn_clicked(self):
         self.getController().showActivityDataSummary()
+
+    def loadMenus(self, menus):
+        self.setVisibleWidgetsLayout( self.menuLayout, True if menus else False )
+        return self.menusCb.addItems(menus)
+
+    def setVisibleWidgetsLayout(self, layout, visible):
+        for idx in range(layout.count()):
+            item = layout.itemAt(idx)
+            widget = item.widget()
+            if widget is None:
+                continue
+            widget.setVisible( visible )
