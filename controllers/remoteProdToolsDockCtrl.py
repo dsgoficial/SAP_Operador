@@ -361,6 +361,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         messageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
+        self.productionTools.close() if self.productionTools else ''
         if self.sap.isValidActivity():
             self.prodToolsSettings.initSaveTimer()
             return
