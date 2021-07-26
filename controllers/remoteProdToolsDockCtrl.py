@@ -105,7 +105,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
     
     def getShortcutQgisDescription(self):
-        return self.prodToolsSettings.getShortcutQgisDescription()
+        return self.sapActivity.getShortcutsDescription()
 
     def getActivityDescription(self):
         return self.sapActivity.getDescription()

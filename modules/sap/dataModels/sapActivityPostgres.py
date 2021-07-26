@@ -15,6 +15,9 @@ class SapActivityPostgres:
     def getLayerGroup(self, layerName):
         return layerName.split('_')[0]
 
+    def getShortcutsDescription(self):
+        return ''
+
     def getFormRules(self, layerName):
         rules = {}
         for data in self.getRules():

@@ -348,6 +348,16 @@ class SapActivityHttp:
     def getShortcuts(self):
         return self.getData()['dados']['atividade']['atalhos']
 
+    def getShortcutsDescription(self):
+        descriptionHtml = ''
+        for shortcut in self.getData()['dados']['atividade']['atalhos']:
+            descriptionHtml += '<b>{0}:</b> {1}<br>'.format(
+                shortcut['ferramenta'], 
+                shortcut['atalho'] if shortcut['atalho'] else ''
+            )
+        return '<div>{0}</div>'.format(descriptionHtml)
+        return self.getData()['dados']['atividade']['atalhos']
+
     def getFrameQml(self):
         return '''<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
             <qgis styleCategories="Symbology" version="3.4.12-Madeira">
