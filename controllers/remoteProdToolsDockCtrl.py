@@ -271,6 +271,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def loadActivityInputs(self, inputData):
         results = []
         if not inputData:
+            self.showInfoMessageBox(None, 'Aviso', 'Selecione o(s) insumo(s)!')
             return
         for data in inputData:
             if data['tipo_insumo_id'] in [1]:
@@ -291,6 +292,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + fmeData
 
     def runRoutine(self, routineData):
+        if not routineData:
+            self.showInfoMessageBox(None, 'Aviso', 'Selecione uma rotina!')
+            return
         if self.qgis.hasModifiedLayers():
             self.showHtmlMessageDialog(
                 self.qgis.getMainWindow(),
