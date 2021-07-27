@@ -31,6 +31,7 @@ class ReportErrorDialog(SapDialog):
         )
 
     def loadErrorsTypes(self, errorsTypes):
+        self.errorsTypes.clear()
         for item in errorsTypes:
             self.errorsTypesCb.addItem(
                 item['tipo_problema'],
