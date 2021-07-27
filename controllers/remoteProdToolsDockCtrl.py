@@ -20,10 +20,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             sap,
             qgis,
             databaseFactory,
-            processingFactory,
+            processingFactoryDsgTools,
             fme,
             pomodoro,
             prodToolsSettings,
+            toolFactoryDsgTools,
             guiFactory=GUIFactory()
         ):
         super(RemoteProdToolsDockCtrl, self).__init__()
@@ -31,10 +32,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis = qgis
         self.fme = fme
         self.databaseFactory = databaseFactory
-        self.processingFactory = processingFactory
+        self.processingFactoryDsgTools = processingFactoryDsgTools
         self.guiFactory = guiFactory
         self.pomodoro = pomodoro
         self.prodToolsSettings = prodToolsSettings
+        self.toolFactoryDsgTools = toolFactoryDsgTools
         self.sapActivity = None
         self.productionTools = None
         self.changeStyleWidget = None
@@ -165,7 +167,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sapActivity.getInputs()
 
     def loadActivityLayers(self, onlyWithFeatures):
-        loadLayersFromPostgis = self.processingFactory.createProcessing('LoadLayersFromPostgis', self)
+        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
             'dbHost' : self.sapActivity.getDatabaseServer(), 
@@ -177,13 +179,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         loadedLayerIds = result['OUTPUT']
 
         if not( self.sapActivity.getTypeProductionData() == 2 ):
-            assingFilterToLayers = self.processingFactory.createProcessing('AssingFilterToLayers', self)
+            assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
             assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
     
         if onlyWithFeatures:
             self.qgis.removeLayersWithouFeatures(loadedLayerIds)
 
-        groupLayers = self.processingFactory.createProcessing('GroupLayers', self)
+        groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
 
         defaultStyle = self.getActivityStyles()[0]
@@ -194,13 +196,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
         self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
-        """ matchAndApplyQmlStylesToLayers = self.processingFactory.createProcessing('MatchAndApplyQmlStylesToLayers', self)
+        """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
             'layersQml': self.sapActivity.getLayersQml(styleName),
             'layerIds': loadedLayerIds
         }) """
 
-        assignValueMapToLayers = self.processingFactory.createProcessing('AssignValueMapToLayers', self)
+        assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
         database = self.getActivityDatabase()
         assignValueMapToLayers.run({
             'valueMaps': {
@@ -210,34 +212,34 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) 
 
-        assignMeasureColumnToLayers = self.processingFactory.createProcessing('AssignMeasureColumnToLayers', self)
+        assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
 
-        assignAliasesToLayers = self.processingFactory.createProcessing('AssignAliasesToLayers', self)
+        assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
         assignAliasesToLayers.run({
             'aliases': self.sapActivity.getLayerALiases(),
             'layerIds': loadedLayerIds
         })
 
-        assignActionsToLayers = self.processingFactory.createProcessing('AssignActionsToLayers', self)
+        assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
         assignActionsToLayers.run({
             'actions': self.sapActivity.getLayerActions(),
             'layerIds': loadedLayerIds
         })
 
-        assignDefaultFieldValueToLayers = self.processingFactory.createProcessing('AssignDefaultFieldValueToLayers', self)
+        assignDefaultFieldValueToLayers = self.processingFactoryDsgTools.createProcessing('AssignDefaultFieldValueToLayers', self)
         assignDefaultFieldValueToLayers.run({
             'defaultValues': self.sapActivity.getLayerDefaultFieldValue(),
             'layerIds': loadedLayerIds
         })
 
-        assignExpressionFieldToLayers = self.processingFactory.createProcessing('AssignExpressionFieldToLayers', self)
+        assignExpressionFieldToLayers = self.processingFactoryDsgTools.createProcessing('AssignExpressionFieldToLayers', self)
         assignExpressionFieldToLayers.run({
             'expressions': self.sapActivity.getLayerExpressionField(),
             'layerIds': loadedLayerIds
         })
 
-        assignConditionalStyleToLayers = self.processingFactory.createProcessing('AssignConditionalStyleToLayers', self)
+        assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({
             'conditionals': self.sapActivity.getLayerConditionalStyle(),
             'layerIds': loadedLayerIds
@@ -319,7 +321,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         #self.qgis.getSettingsVariable('productiontools:user')
 
     def runFMESAP(self, routineData):
-        runFMESAP = self.processingFactory.createProcessing('RunFMESAP', self)
+        runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
         output = runFMESAP.run({
             'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
             'fmeRoutine': routineData,
@@ -335,7 +337,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return html
 
     def runRuleStatistics(self, routineData):
-        ruleStatistics = self.processingFactory.createProcessing('RuleStatistics', self)
+        ruleStatistics = self.processingFactoryDsgTools.createProcessing('RuleStatistics', self)
         return ruleStatistics.run({
             'rules': routineData['ruleStatistics'],
             'layers': self.sapActivity.getLayers()

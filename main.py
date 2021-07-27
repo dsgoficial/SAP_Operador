@@ -12,6 +12,7 @@ from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
 from Ferramentas_Producao.modules.fme.factories.fmeApiSingleton import FmeApiSingleton
 from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Producao.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
+from Ferramentas_Producao.modules.dsgTools.factories.toolFactory import ToolFactory
 from Ferramentas_Producao.modules.database.factories.databaseFactory import DatabaseFactory
 from Ferramentas_Producao.modules.pomodoro.pomodoro import Pomodoro
 from Ferramentas_Producao.config import Config
@@ -28,16 +29,17 @@ class Main:
             sap=RemoteSapCtrl( self.qgisCtrl ),
             qgis=self.qgisCtrl,
             databaseFactory=DatabaseFactory(),
-            processingFactory=ProcessingQgisFactory(),
+            processingFactoryDsgTools=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
             pomodoro=Pomodoro(self.iface),
-            prodToolsSettings=self.prodToolsSettingsCtrl
+            prodToolsSettings=self.prodToolsSettingsCtrl,
+            toolFactoryDsgTools=ToolFactory()
         )
         self.localProdToolsDockCtrl = LocalProdToolsDockCtrl(
             sap=LocalSapCtrl( self.qgisCtrl ),
             qgis=self.qgisCtrl,
             databaseFactory=DatabaseFactory(),
-            processingFactory=ProcessingQgisFactory(),
+            processingFactoryDsgTools=ProcessingQgisFactory(),
             prodToolsSettings=self.prodToolsSettingsCtrl
         )
         self.loginCtrl = LoginCtrl(
