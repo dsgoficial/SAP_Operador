@@ -35,7 +35,7 @@ class EndActivityDialog(SapDialog):
     def on_endBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            #self.getController().endActivity(withoutCorrection=False)
+            self.getController().endActivity(withoutCorrection=False)
             self.accept()
         except Exception as e:
             self.showErrorMessageBox('Erro', str(e))
