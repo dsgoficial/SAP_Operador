@@ -397,3 +397,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def zoomToFeature(self, layerId, layerSchema, layerName):
         self.qgis.zoomToFeature(layerId, layerSchema, layerName)  
+    
+    def getSapMenus(self):
+        return self.sapActivity.getMenus()
+
+    def loadMenu(self, menu):
+        try:
+            customFeatureTool = self.toolFactoryDsgTools.getTool('CustomFeatureTool', self)
+            customFeatureTool.run( menu )
+        except Exception as e:
+            self.showErrorMessageBox( None, 'Erro', str(e) )
