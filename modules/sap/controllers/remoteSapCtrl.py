@@ -65,7 +65,7 @@ class RemoteSapCtrl(SapCtrl):
         response = self.sapApi.getActivity()
         if 'dados' in response and response['dados']:  
             self.activityDataModel.setData(response)
-            self.qgis.setSettingsVariable(
+            self.qgis.setProjectVariable(
                 'productiontools:activityName', 
                 self.activityDataModel.getDescription()
             )
@@ -135,7 +135,7 @@ class RemoteSapCtrl(SapCtrl):
             and
             self.qgis.getProjectVariable('productiontools:password')
             and
-            self.qgis.getSettingsVariable('productiontools:activityName')
+            self.qgis.getProjectVariable('productiontools:activityName')
         )
 
     def hasValidAuthentication(self):
@@ -155,4 +155,4 @@ class RemoteSapCtrl(SapCtrl):
             return True   
         currentActivity = self.dataModelFactory.createDataModel('SapActivityHttp')
         currentActivity.setData(response)
-        return self.qgis.getSettingsVariable('productiontools:activityName') == currentActivity.getDescription()
+        return self.qgis.getProjectVariable('productiontools:activityName') == currentActivity.getDescription()
