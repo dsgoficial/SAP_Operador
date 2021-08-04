@@ -9,6 +9,7 @@ class RemoteSapCtrl(SapCtrl):
     
     def __init__(self, 
             qgis,
+            activityData=None,
             messageFactory=UtilsFactory().createMessageFactory(),
             sapApi=SapApiHttpSingleton.getInstance(),
             dataModelFactory=DataModelFactory(),
@@ -21,6 +22,7 @@ class RemoteSapCtrl(SapCtrl):
         self.sapApi = sapApi
         self.guiFactory = guiFactory
         self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
+        self.activityDataModel.setData( activityData ) if activityData else ''
 
     def showErrorMessageBox(self, parent, title, message):
         parent = self.qgis.getMainWindow() if not parent else parent

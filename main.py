@@ -16,14 +16,15 @@ from Ferramentas_Producao.modules.dsgTools.factories.toolFactory import ToolFact
 from Ferramentas_Producao.modules.database.factories.databaseFactory import DatabaseFactory
 from Ferramentas_Producao.modules.pomodoro.pomodoro import Pomodoro
 from Ferramentas_Producao.config import Config
+from qgis.utils import iface
 
 class Main:
 
     def __init__(self, iface):    
         super(Main, self).__init__()
         self.plugin_dir = os.path.dirname(__file__)
-        self.iface = iface
         self.qgisCtrl = QgisCtrl()
+        self.externalInstance = None
         self.prodToolsSettingsCtrl = ProdToolsSettingsCtrl( self.qgisCtrl )
         self.remoteProdToolsDockCtrl = RemoteProdToolsDockCtrl(
             sap=RemoteSapCtrl( self.qgisCtrl ),
@@ -31,7 +32,7 @@ class Main:
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            pomodoro=Pomodoro(self.iface),
+            pomodoro=Pomodoro( iface ),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
         )
@@ -47,7 +48,6 @@ class Main:
             remoteProdToolsDockCtrl=self.remoteProdToolsDockCtrl,
             localProdToolsDockCtrl=self.localProdToolsDockCtrl
         )
-        self.externalInstances = []
     
     def getPluginIconPath(self):
         return os.path.join(
@@ -78,15 +78,18 @@ class Main:
     def startPlugin(self, b):
         self.loginCtrl.showView()
 
-    def startPluginExternally(self, remoteSapCtrl):
-        remoteProdToolsDockCtrl = RemoteProdToolsDockCtrl(
-            sap=remoteSapCtrl,
-            qgis=self.qgisCtrl,
+    def startPluginExternally(self, activityData):
+        if self.externalInstance:
+            self.externalInstance.close()
+        qgisCtrl = QgisCtrl()
+        self.externalInstance = RemoteProdToolsDockCtrl(
+            sap=RemoteSapCtrl( qgisCtrl, activityData ),
+            qgis=qgisCtrl,
             databaseFactory=DatabaseFactory(),
-            processingFactory=ProcessingQgisFactory(),
+            processingFactoryDsgTools=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            pomodoro=Pomodoro(self.iface),
-            prodToolsSettings=self.prodToolsSettingsCtrl
+            pomodoro=Pomodoro( iface ),
+            prodToolsSettings=ProdToolsSettingsCtrl( qgisCtrl ),
+            toolFactoryDsgTools=ToolFactory()
         )
-        remoteProdToolsDockCtrl.loadDockWidget()
-        self.externalInstances.append(remoteProdToolsDockCtrl)
+        self.externalInstance.loadDockWidget()
