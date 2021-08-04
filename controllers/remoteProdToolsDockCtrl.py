@@ -40,13 +40,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.sapActivity = None
         self.productionTools = None
         self.changeStyleWidget = None
+        self.changeStyleAction = None
         self.qgis.on('ReadProject', self.readProjectCallback)
         self.qgis.on('MessageLog', self.handleMessageLogPostgis)
         self.loadedLayerIds = []
 
     def closedDock(self):
         #self.changeStyleWidget.clearStyles() if self.changeStyleWidget else ''
-        pass
+        self.productionTools.close() if self.productionTools else ''
         
     def authUser(self, username, password, server):
         self.qgis.setProjectVariable('productiontools:user', username)
@@ -79,17 +80,20 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'])
 
     def loadChangeStyleTool(self, stylesName):
-        if self.changeStyleWidget and self.changeStyleAction:
+        if not self.changeStyleWidget:
+            self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
+            self.qgis.addWidgetToolBar(self.changeStyleWidget)
+        if not self.changeStyleAction:    
+            self.changeStyleAction = self.qgis.createAction(
+                'Paginar estilo',
+                os.path.join(self.iconRootPath, 'changeStyles.png'),
+                self.changeStyleWidget.page
+            )
+            self.qgis.addActionToolBar(self.changeStyleAction)
+        self.changeStyleWidget.clearStyles()
+        if not stylesName:
             return
-        self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
-        self.changeStyleAction = self.qgis.createAction(
-            'Paginar estilo',
-            os.path.join(self.iconRootPath, 'changeStyles.png'),
-            self.changeStyleWidget.page
-        )
         self.changeStyleWidget.loadStyles(stylesName, stylesName[0])
-        self.qgis.addWidgetToolBar(self.changeStyleWidget)
-        self.qgis.addActionToolBar(self.changeStyleAction)
             
     def changeMapLayerStyle(self, styleName):
         self.qgis.changeMapLayerStyles(styleName)

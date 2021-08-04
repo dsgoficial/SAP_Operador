@@ -79,17 +79,10 @@ class Main:
         self.loginCtrl.showView()
 
     def startPluginExternally(self, activityData):
-        if self.externalInstance:
-            self.externalInstance.close()
-        qgisCtrl = QgisCtrl()
-        self.externalInstance = RemoteProdToolsDockCtrl(
-            sap=RemoteSapCtrl( qgisCtrl, activityData ),
-            qgis=qgisCtrl,
-            databaseFactory=DatabaseFactory(),
-            processingFactoryDsgTools=ProcessingQgisFactory(),
-            fme=FmeApiSingleton.getInstance(),
-            pomodoro=Pomodoro( iface ),
-            prodToolsSettings=ProdToolsSettingsCtrl( qgisCtrl ),
-            toolFactoryDsgTools=ToolFactory()
+        if self.remoteProdToolsDockCtrl:
+            self.remoteProdToolsDockCtrl.closedDock()
+        remoteSapCtrl = RemoteSapCtrl( self.qgisCtrl )
+        remoteSapCtrl.setupActivityDataModel( activityData )
+        self.remoteProdToolsDockCtrl.loadDockWidget( 
+            remoteSapCtrl.getActivityDataModel()
         )
-        self.externalInstance.loadDockWidget()
