@@ -40,7 +40,8 @@ class CustomFeatureTool:
             properties['color'] = tuple( properties['color'] )
             properties['keywords'] = set( properties['keywords'] )
             s.addButton(properties)
-        s.setDynamicShortcut(setup['state']['dynamicShortcut'])       
+        s.setDynamicShortcut(setup['state']['dynamicShortcut']) 
+        customFeatureTool.hideToolEditButton( True )      
         customFeatureTool._order[s.name()] = setup['order']
         customFeatureTool.addButtonSetup(s)
         customFeatureTool.slider.setValue( 16 )
