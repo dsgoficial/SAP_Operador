@@ -192,13 +192,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
 
-        defaultStyle = self.getActivityStyles()[0]
-        self.qgis.loadMapLayerStyles(
-            loadedLayerIds,
-            self.sapActivity.getLayerStyles(),
-            defaultStyle
-        )
-        self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+        defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
+        if defaultStyle:
+            self.qgis.loadMapLayerStyles(
+                loadedLayerIds,
+                self.sapActivity.getLayerStyles(),
+                defaultStyle
+            )
+            self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
         """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
