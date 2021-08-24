@@ -2,6 +2,7 @@ import json, requests, socket
 
 from Ferramentas_Producao.modules.sap.interfaces.ISapApi import ISapApi
 
+TIMEOUT = 15
 
 class SapHttp(ISapApi):   
 
@@ -15,7 +16,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), headers=headers, timeout=8)
+        response = session.post(url, data=json.dumps(postData), headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
@@ -25,7 +26,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.get(url, headers=headers, timeout=8)
+        response = session.get(url, headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
@@ -34,7 +35,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), headers=headers, timeout=8)
+        response = session.put(url, data=json.dumps(postData), headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
@@ -43,7 +44,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.delete(url, data=json.dumps(postData), headers=headers, timeout=8)
+        response = session.delete(url, data=json.dumps(postData), headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
