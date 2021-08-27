@@ -75,8 +75,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>549</width>
-             <height>603</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -129,31 +129,6 @@
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_4"/>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="errors">
-       <attribute name="title">
-        <string>Erros</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
-        <item>
-         <widget class="QScrollArea" name="scrollArea_2">
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QWidget" name="errorArea">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>549</width>
-             <height>603</height>
-            </rect>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_6"/>
           </widget>
          </widget>
         </item>
