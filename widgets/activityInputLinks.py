@@ -8,6 +8,7 @@ class ActivityInputLinks(Widget):
     def __init__(self, controller=None):
         super(ActivityInputLinks, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
+        self.inputData = []
 
     def getUiPath(self):
         return os.path.join(
@@ -32,6 +33,10 @@ class ActivityInputLinks(Widget):
                 label.setText(item['nome'])
             label.customData = json.dumps(item)
             self.addWidget(label)
+        self.inputData = inputData
+
+    def hasData(self):
+        return self.inputData != []
 
     def adjustWidgets(self):
         self.scrollAreaContents.layout().addSpacerItem(

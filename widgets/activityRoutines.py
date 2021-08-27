@@ -8,6 +8,7 @@ class ActivityRoutines(Widget):
     def __init__(self, controller=None):
         super(ActivityRoutines, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
+        self.routines = []
 
     def getUiPath(self):
         return os.path.join(
@@ -27,6 +28,10 @@ class ActivityRoutines(Widget):
             rb = QtWidgets.QRadioButton(item['description'], self)
             rb.customData = json.dumps(item)
             self.addWidget(rb)
+        self.routines = routines
+
+    def hasData(self):
+        return self.routines != []
 
     def getRoutineSelected(self):
         for idx in range(self.scrollAreaContents.layout().count()):

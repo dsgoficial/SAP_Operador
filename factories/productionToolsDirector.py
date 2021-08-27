@@ -34,6 +34,8 @@ class ProductionToolsDirector:
             
         ]
         for i, widget in enumerate(widgets):
+            if not widget['widget'].hasData():
+                continue
             builder.addActivityWidget(widget['name'], widget['widget'])
             if not(i == (len(widgets) - 1)):
                 builder.addLine()

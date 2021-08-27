@@ -25,3 +25,6 @@ class Widget(QtWidgets.QWidget, IWidget):
     def showInfoMessageBox(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
+
+    def hasData(self):
+        return True
