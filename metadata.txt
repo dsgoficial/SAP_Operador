@@ -4,7 +4,7 @@ email=me@example.com
 author=1cgeo
 qgisMinimumVersion=3.10
 description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
-version=3.8.3
+version=3.8.4
 repository=https://github.com/1cgeo/Ferramentas_Producao
 icon=icons/production.png
 ; end of mandatory metadata
