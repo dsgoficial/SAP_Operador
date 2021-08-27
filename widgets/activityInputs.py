@@ -9,7 +9,7 @@ class ActivityInputs(Widget):
         super(ActivityInputs, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
         self.inputData = []
-        
+
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -27,6 +27,7 @@ class ActivityInputs(Widget):
         for item in inputData:
             cbx = QtWidgets.QCheckBox(item['nome'], self)
             cbx.customData = json.dumps(item)
+            cbx.setChecked(True)
             self.addWidget(cbx)
         self.inputData = inputData
 
