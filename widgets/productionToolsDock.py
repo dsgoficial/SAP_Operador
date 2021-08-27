@@ -12,7 +12,6 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.setWindowTitle(Config.NAME)
         self.controller = None
         self.shortcutTE.setReadOnly(True)   
-        self.errorWidget = None
         self.tabWidget.currentChanged.connect(self.handleTabChanged)  
 
     def handleTabChanged(self, idx):
@@ -95,13 +94,6 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
 
     def addPomodoro(self, pomodoro):
         self.pomodoroArea.layout().addWidget(pomodoro)
-
-    def addErrorWidget(self, widget):
-        self.errorWidget = widget
-        self.errorArea.layout().addWidget(widget)
-
-    def getErrorWidget(self):
-        return self.errorWidget
 
     def addLineageLabel(self, lineage):
         text = "Etapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(

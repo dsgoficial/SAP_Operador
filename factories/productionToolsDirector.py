@@ -1,5 +1,4 @@
 from Ferramentas_Producao.factories.activityWidgetFactory import ActivityWidgetFactory
-from Ferramentas_Producao.factories.errorWidgetSingleton import ErrorWidgetSingleton
 
 class ProductionToolsDirector:
 
@@ -43,7 +42,6 @@ class ProductionToolsDirector:
             builder.addLineageLabel(lineage)
         builder.setShortcutDescription(controller.getShortcutQgisDescription())
         builder.addPomodoro(controller.getPomodoroWidget())
-        builder.addErrorWidget( ErrorWidgetSingleton.getInstance(controller) )
 
 
     def constructLocalProductionToolsDock(self, builder, controller):

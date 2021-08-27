@@ -31,9 +31,6 @@ class ProductionToolsBuilder(IProductionToolsBuilder):
     def addPomodoro(self, pomodoro):
         self.obj.addPomodoro(pomodoro)
 
-    def addErrorWidget(self, widget):
-        self.obj.addErrorWidget(widget)
-
     def setShortcutDescription(self, description):
         self.obj.setShortcutDescription(description)
 

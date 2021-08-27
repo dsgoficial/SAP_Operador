@@ -42,7 +42,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.changeStyleWidget = None
         self.changeStyleAction = None
         self.qgis.on('ReadProject', self.readProjectCallback)
-        self.qgis.on('MessageLog', self.handleMessageLogPostgis)
         self.loadedLayerIds = []
 
     def closedDock(self):
@@ -61,7 +60,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def unload(self):
         self.removeDock()
         self.qgis.off('ReadProject', self.readProjectCallback)
-        self.qgis.off('MessageLog', self.handleMessageLogPostgis)
         self.pomodoro.unload()
 
     def reload(self):
@@ -383,19 +381,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             </p>
             '''
         )
-
-    def handleMessageLogPostgis(self, *args):
-        if not( args[1].lower() == 'postgis'):
-            return
-        text = args[0]
-        if not 'feição desatualizada:' in text.lower():
-            return
-        layerName, layerId = text.lower().split('feição desatualizada:')[-1].split('-')
-        errorWidget = self.productionTools.getErrorWidget()
-        errorWidget.addRow(layerId, layerName, 'feição desatualizada')
-        errorWidget.adjustColumns() 
-        self.showErrorMessageBox(None, 'Erro', 'Algumas feições não foram modificadas!')
-        self.productionTools.setBadgeTabErrorsEnabled(True)    
 
     def zoomToFeature(self, layerId, layerSchema, layerName):
         self.qgis.zoomToFeature(layerId, layerSchema, layerName)  
