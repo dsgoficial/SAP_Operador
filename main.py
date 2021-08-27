@@ -1,21 +1,21 @@
 import os
 
-from Ferramentas_Producao.controllers.loginCtrl import LoginCtrl
-from Ferramentas_Producao.controllers.remoteProdToolsDockCtrl import RemoteProdToolsDockCtrl
-from Ferramentas_Producao.controllers.localProdToolsDockCtrl import LocalProdToolsDockCtrl
-from Ferramentas_Producao.controllers.prodToolsSettingsCtrl import ProdToolsSettingsCtrl
+from .controllers.loginCtrl import LoginCtrl
+from .controllers.remoteProdToolsDockCtrl import RemoteProdToolsDockCtrl
+from .controllers.localProdToolsDockCtrl import LocalProdToolsDockCtrl
+from .controllers.prodToolsSettingsCtrl import ProdToolsSettingsCtrl
 
-from Ferramentas_Producao.modules.sap.controllers.remoteSapCtrl import RemoteSapCtrl
-from Ferramentas_Producao.modules.sap.controllers.localSapCtrl import LocalSapCtrl
+from .modules.sap.controllers.remoteSapCtrl import RemoteSapCtrl
+from .modules.sap.controllers.localSapCtrl import LocalSapCtrl
 
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
-from Ferramentas_Producao.modules.fme.factories.fmeApiSingleton import FmeApiSingleton
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
-from Ferramentas_Producao.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
-from Ferramentas_Producao.modules.dsgTools.factories.toolFactory import ToolFactory
-from Ferramentas_Producao.modules.database.factories.databaseFactory import DatabaseFactory
-from Ferramentas_Producao.modules.pomodoro.pomodoro import Pomodoro
-from Ferramentas_Producao.config import Config
+from .modules.qgis.qgisCtrl import QgisCtrl
+from .modules.fme.factories.fmeApiSingleton import FmeApiSingleton
+from .modules.utils.factories.utilsFactory import UtilsFactory
+from .modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
+from .modules.dsgTools.factories.toolFactory import ToolFactory
+from .modules.database.factories.databaseFactory import DatabaseFactory
+from .modules.pomodoro.pomodoro import Pomodoro
+from .config import Config
 from qgis.utils import iface
 
 class Main:

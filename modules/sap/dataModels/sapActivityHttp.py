@@ -360,36 +360,58 @@ class SapActivityHttp:
 
     def getFrameQml(self):
         return '''<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-            <qgis styleCategories="Symbology" version="3.4.12-Madeira">
-            <renderer-v2 forceraster="0" enableorderby="0" symbollevels="0" type="singleSymbol">
+            <qgis styleCategories="Symbology" version="3.18.1-Zürich">
+            <renderer-v2 type="invertedPolygonRenderer" forceraster="0" enableorderby="0" preprocessing="0">
+                <renderer-v2 type="singleSymbol" forceraster="0" enableorderby="0" symbollevels="0">
                 <symbols>
-                <symbol name="0" alpha="1" clip_to_extent="1" type="fill" force_rhr="0">
-                    <layer pass="0" locked="0" class="SimpleFill" enabled="1">
-                    <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
-                    <prop v="214,32,26,0" k="color"/>
-                    <prop v="bevel" k="joinstyle"/>
-                    <prop v="0,0" k="offset"/>
-                    <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
-                    <prop v="MM" k="offset_unit"/>
-                    <prop v="157,0,254,255" k="outline_color"/>
-                    <prop v="solid" k="outline_style"/>
-                    <prop v="0.6" k="outline_width"/>
-                    <prop v="MM" k="outline_width_unit"/>
-                    <prop v="solid" k="style"/>
+                    <symbol type="fill" force_rhr="0" name="0" alpha="1" clip_to_extent="1">
                     <data_defined_properties>
                         <Option type="Map">
-                        <Option name="name" type="QString" value=""/>
+                        <Option type="QString" name="name" value=""/>
                         <Option name="properties"/>
-                        <Option name="type" type="QString" value="collection"/>
+                        <Option type="QString" name="type" value="collection"/>
                         </Option>
                     </data_defined_properties>
+                    <layer class="SimpleFill" locked="0" enabled="1" pass="0">
+                        <Option type="Map">
+                        <Option type="QString" name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                        <Option type="QString" name="color" value="255,13,29,77"/>
+                        <Option type="QString" name="joinstyle" value="bevel"/>
+                        <Option type="QString" name="offset" value="0,0"/>
+                        <Option type="QString" name="offset_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                        <Option type="QString" name="offset_unit" value="MM"/>
+                        <Option type="QString" name="outline_color" value="157,0,254,255"/>
+                        <Option type="QString" name="outline_style" value="solid"/>
+                        <Option type="QString" name="outline_width" value="0.6"/>
+                        <Option type="QString" name="outline_width_unit" value="MM"/>
+                        <Option type="QString" name="style" value="solid"/>
+                        </Option>
+                        <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+                        <prop v="255,13,29,77" k="color"/>
+                        <prop v="bevel" k="joinstyle"/>
+                        <prop v="0,0" k="offset"/>
+                        <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+                        <prop v="MM" k="offset_unit"/>
+                        <prop v="157,0,254,255" k="outline_color"/>
+                        <prop v="solid" k="outline_style"/>
+                        <prop v="0.6" k="outline_width"/>
+                        <prop v="MM" k="outline_width_unit"/>
+                        <prop v="solid" k="style"/>
+                        <data_defined_properties>
+                        <Option type="Map">
+                            <Option type="QString" name="name" value=""/>
+                            <Option name="properties"/>
+                            <Option type="QString" name="type" value="collection"/>
+                        </Option>
+                        </data_defined_properties>
                     </layer>
-                </symbol>
+                    </symbol>
                 </symbols>
                 <rotation/>
                 <sizescale/>
+                </renderer-v2>
             </renderer-v2>
             <blendMode>0</blendMode>
             <featureBlendMode>0</featureBlendMode>
             <layerGeometryType>2</layerGeometryType>
-        </qgis>'''
+            </qgis>'''
