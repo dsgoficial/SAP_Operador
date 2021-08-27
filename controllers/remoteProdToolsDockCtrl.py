@@ -170,7 +170,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getActivityInputs(self):
         return self.sapActivity.getInputs()
 
-    def loadActivityLayers(self, onlyWithFeatures):
+    def loadActivityLayers(self):
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
@@ -186,9 +186,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
             assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
     
-        if onlyWithFeatures:
-            self.qgis.removeLayersWithouFeatures(loadedLayerIds)
-
         groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
 

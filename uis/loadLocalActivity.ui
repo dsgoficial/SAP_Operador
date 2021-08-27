@@ -14,17 +14,27 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="2">
-    <widget class="QComboBox" name="stylesCb"/>
+   <item row="0" column="0" colspan="4">
+    <layout class="QGridLayout" name="gridLayoutItems"/>
    </item>
-   <item row="2" column="3">
+   <item row="1" column="3">
     <widget class="QPushButton" name="loadBtn">
      <property name="text">
       <string>Carregar</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="1" column="1">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Estilo:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QComboBox" name="stylesCb"/>
+   </item>
+   <item row="1" column="0">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -36,23 +46,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Estilo:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="4">
-    <layout class="QGridLayout" name="gridLayoutItems"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="onlyGeomCbx">
-     <property name="text">
-      <string>Apenas com geometria</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

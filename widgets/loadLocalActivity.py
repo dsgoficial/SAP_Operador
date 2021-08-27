@@ -44,7 +44,6 @@ class LoadLocalActivity(Widget, IActivityDataWidget):
             self.getController().loadActivityLayers(
                 self.layersSelectItems.getSelections(),
                 self.workspaceSelectItems.getSelections(),
-                self.onlyGeomCbx.isChecked(),
                 self.stylesCb.currentText()
             )
             self.workspaceSelectItems.reset()

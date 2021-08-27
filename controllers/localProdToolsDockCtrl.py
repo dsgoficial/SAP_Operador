@@ -68,7 +68,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             self.sapActivity.getDatabasePassword()
         )
 
-    def loadActivityLayers(self, layerNames, workspaceNames, onlyWithFeatures, styleName):
+    def loadActivityLayers(self, layerNames, workspaceNames, styleName):
         messageBar, progress = self.qgis.createProgressMessageBar('Carregando camadas...')
         progress.setMaximum(7)
         progress.setValue(1)
@@ -95,9 +95,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
                     'qml': frame['qml']
                 })
     
-        if onlyWithFeatures:
-            self.qgis.removeLayersWithouFeatures(loadedLayerIds)
-
         groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
 

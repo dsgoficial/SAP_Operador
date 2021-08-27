@@ -18,14 +18,11 @@ class ActivityData(Widget, IActivityDataWidget):
             'activityData.ui'
         )
 
-    def onlyWithFeatures(self):
-        return self.onlyWithGeomCkb.isChecked()
-
     @QtCore.pyqtSlot(bool)
     def on_loadLayersBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getController().loadActivityLayers(self.onlyWithFeatures())
+            self.getController().loadActivityLayers()
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
