@@ -32,7 +32,7 @@ class Main:
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            pomodoro=Pomodoro( iface ),
+            pomodoro=None, #Pomodoro( iface ),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
         )

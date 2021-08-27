@@ -12,6 +12,7 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.setWindowTitle(Config.NAME)
         self.controller = None
         self.shortcutTE.setReadOnly(True)   
+        self.tabWidget.removeTab( 3 )
         self.tabWidget.currentChanged.connect(self.handleTabChanged)  
 
     def handleTabChanged(self, idx):
