@@ -85,10 +85,10 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         lineA = QtWidgets.QFrame()
         lineA.setFrameShape(QtWidgets.QFrame.HLine)
         lineA.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.mainArea.layout().addWidget(lineA)
+        self.mainArea.layout().insertWidget(0, lineA)
 
     def addActivityWidget(self, name, widget):
-        self.mainArea.layout().addWidget(widget)
+        self.mainArea.layout().insertWidget(0, widget)
 
     def setShortcutDescription(self, description):
         self.shortcutTE.setHtml(description)

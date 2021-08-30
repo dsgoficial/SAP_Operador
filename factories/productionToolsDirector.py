@@ -32,7 +32,7 @@ class ProductionToolsDirector:
             }
             
         ]
-        for i, widget in enumerate(widgets):
+        for i, widget in enumerate(reversed(widgets)):
             if not widget['widget'].hasData():
                 continue
             builder.addActivityWidget(widget['name'], widget['widget'])
