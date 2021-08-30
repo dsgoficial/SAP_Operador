@@ -1,16 +1,25 @@
+# This file contains metadata for your plugin. Since
+# version 2.0 of QGIS this is the proper way to supply
+# information about a plugin. The old method of
+# embedding metadata in __init__.py will
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
 [general]
 name=Ferramentas de Produção
-email=me@example.com
-author=1cgeo
 qgisMinimumVersion=3.10
 description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
 version=3.8.4
-repository=https://github.com/1cgeo/Ferramentas_Producao
-icon=icons/production.png
-; end of mandatory metadata
+author=Brazilian Army Geographic Service
 
+# Tags are comma separated with spaces allowed
+tags=EDGV,PostGIS,Spatialite,Brazilian,Army,Exército,Brasileiro,DSG,Diretoria,Serviço,Geográfico,BDGEx,Database,Spatial,INDE,SDI,Infrastructure,Image,Fusion,HSV,Model,Script
+
+icon=icons/production.png
 # experimental flag
 experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
+

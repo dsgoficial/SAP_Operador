@@ -1,4 +1,7 @@
-import os
+import os, sys
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 
 from .controllers.loginCtrl import LoginCtrl
 from .controllers.remoteProdToolsDockCtrl import RemoteProdToolsDockCtrl
