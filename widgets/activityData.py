@@ -41,3 +41,6 @@ class ActivityData(Widget, IActivityDataWidget):
             if widget is None:
                 continue
             widget.setVisible( visible )
+
+    def enabledMenuButton(self, enable):
+        self.loadMenuBtn.setEnabled( enable )

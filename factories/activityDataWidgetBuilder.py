@@ -14,6 +14,9 @@ class ActivityDataWidgetBuilder(IActivityDataWidgetBuilder):
     def setController(self, controller):
         self.obj.setController( controller )
 
+    def enabledMenuButton(self, enable):
+        self.obj.enabledMenuButton( enable )
+
     def getResult(self):
         obj = self.obj
         self.reset()

@@ -257,7 +257,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.loadLayerActions(loadedLayerIds)
         
         self.prodToolsSettings.initSaveTimer()
-        self.loadMenu()
 
     def setLoadedLayerIds(self, loadedLayerIds):
         self.loadedLayerIds = loadedLayerIds
@@ -391,9 +390,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sapActivity.getMenus()
 
     def loadMenu(self):
-        #try:
+        try:
             self.acquisitionMenu.removeMenuDock() if self.acquisitionMenu else ''
             customFeatureTool = self.toolFactoryDsgTools.getTool('CustomFeatureTool', self)
             self.acquisitionMenu = customFeatureTool.run( self.getSapMenus() )
-        #except Exception as e:
-        #    self.showErrorMessageBox( None, 'Erro', str(e) )
+        except Exception as e:
+            self.showErrorMessageBox( None, 'Erro', str(e) )
