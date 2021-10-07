@@ -11,9 +11,6 @@ class ActivityDataWidgetBuilder(IActivityDataWidgetBuilder):
     def reset(self):
         self.obj = ActivityData()
 
-    def loadMenus(self, menus):
-        self.obj.loadMenus( menus )
-
     def setController(self, controller):
         self.obj.setController( controller )
 

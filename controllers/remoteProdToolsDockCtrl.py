@@ -43,6 +43,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.changeStyleAction = None
         self.qgis.on('ReadProject', self.readProjectCallback)
         self.loadedLayerIds = []
+        self.acquisitionMenu = None
 
     def closedDock(self):
         #self.changeStyleWidget.clearStyles() if self.changeStyleWidget else ''
@@ -256,6 +257,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.loadLayerActions(loadedLayerIds)
         
         self.prodToolsSettings.initSaveTimer()
+        self.loadMenu()
 
     def setLoadedLayerIds(self, loadedLayerIds):
         self.loadedLayerIds = loadedLayerIds
@@ -388,9 +390,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getSapMenus(self):
         return self.sapActivity.getMenus()
 
-    def loadMenu(self, menu):
-        try:
+    def loadMenu(self):
+        #try:
+            self.acquisitionMenu.removeMenuDock() if self.acquisitionMenu else ''
             customFeatureTool = self.toolFactoryDsgTools.getTool('CustomFeatureTool', self)
-            customFeatureTool.run( menu )
-        except Exception as e:
-            self.showErrorMessageBox( None, 'Erro', str(e) )
+            self.acquisitionMenu = customFeatureTool.run( self.getSapMenus() )
+        #except Exception as e:
+        #    self.showErrorMessageBox( None, 'Erro', str(e) )

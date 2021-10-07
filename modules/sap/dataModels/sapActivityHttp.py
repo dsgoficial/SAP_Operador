@@ -1,3 +1,5 @@
+import json
+
 class SapActivityHttp:
 
     def __init__(self):
@@ -36,7 +38,12 @@ class SapActivityHttp:
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
 
     def getMenus(self):
-        return self.getData()['dados']['atividade']['menus']
+        formatedMenus = []
+        for data in self.getData()['dados']['atividade']['menus']:
+            formatedMenu = json.loads( data['definicao_menu'] )
+            formatedMenu['menuName'] = data['nome']
+            formatedMenus.append( formatedMenu )
+        return formatedMenus
 
     def getActivityGroupName(self):
         """ return "{}_{}".format(

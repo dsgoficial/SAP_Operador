@@ -30,25 +30,6 @@ class ActivityData(Widget, IActivityDataWidget):
     def on_summaryBtn_clicked(self):
         self.getController().showActivityDataSummary()
 
-    @QtCore.pyqtSlot(bool)
-    def on_loadMenuBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        try:
-            self.getController().loadMenu(
-                self.menusCb.itemData( self.menusCb.currentIndex() )
-            )
-        finally:
-            QtWidgets.QApplication.restoreOverrideCursor()
-
-    def loadMenus(self, menus):
-        self.setVisibleWidgetsLayout( self.menuLayout, True if menus else False )
-        self.menusCb.clear()
-        for item in menus:
-            self.menusCb.addItem(
-                item['nome'],
-                item['definicao_menu']
-            )
-
     def setVisibleWidgetsLayout(self, layout, visible):
         for idx in range(layout.count()):
             item = layout.itemAt(idx)

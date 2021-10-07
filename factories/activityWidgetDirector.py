@@ -11,7 +11,6 @@ class ActivityWidgetDirector:
         builder.setButtons()
 
     def constructActivityDataWidget(self, builder, controller):
-        builder.loadMenus( controller.getSapMenus() )
         builder.setController(controller)
 
     def constructActivityInputsWidget(self, builder, controller):
