@@ -141,18 +141,20 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Salve todas suas alterações antes de finalizar!'
             )
             return
+        self.qgis.cleanProject()
         result = self.sap.showEndActivityDialog()
         if not result:
             return
         self.reload()
-        self.qgis.cleanProject()
+        
 
     def showReportErrorDialog(self):
+        self.qgis.cleanProject()
         result = self.sap.showReportErrorDialog()
         if not result:
             return
         self.reload()
-        self.qgis.cleanProject()
+        
 
     def getActivityDatabase(self):
         return self.databaseFactory.createPostgres(
