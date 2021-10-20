@@ -183,10 +183,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         })
         loadedLayerIds = result['OUTPUT']
 
-        if not( self.sapActivity.getTypeProductionData() == 2 ):
-            assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-            assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
-    
+        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
+        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
+
         groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
 
