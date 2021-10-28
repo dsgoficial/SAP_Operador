@@ -1,6 +1,8 @@
 
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
+from Ferramentas_Producao.factories.spatialVerificationFactory import SpatialVerificationFactory
+
 from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
 from PyQt5 import QtWidgets
 from qgis import core, gui, utils
@@ -25,7 +27,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             pomodoro,
             prodToolsSettings,
             toolFactoryDsgTools,
-            guiFactory=GUIFactory()
+            guiFactory=GUIFactory(),
+            spatialVerificationFactory=SpatialVerificationFactory()
         ):
         super(RemoteProdToolsDockCtrl, self).__init__()
         self.sap = sap
@@ -34,6 +37,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.databaseFactory = databaseFactory
         self.processingFactoryDsgTools = processingFactoryDsgTools
         self.guiFactory = guiFactory
+        self.spatialVerificationFactory = spatialVerificationFactory
         #self.pomodoro = pomodoro
         self.prodToolsSettings = prodToolsSettings
         self.toolFactoryDsgTools = toolFactoryDsgTools
@@ -44,6 +48,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.on('ReadProject', self.readProjectCallback)
         self.loadedLayerIds = []
         self.acquisitionMenu = None
+        self.validateUserOperations = self.spatialVerificationFactory.createVerification( 
+            'ValidateUserOperations', 
+            self.qgis 
+        )
 
     def closedDock(self):
         #self.changeStyleWidget.clearStyles() if self.changeStyleWidget else ''
@@ -104,7 +112,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadShortcuts()
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
-        self.qgis.addDockWidget(self.productionTools, side='left')        
+        self.qgis.addDockWidget(self.productionTools, side='left')  
+        self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )    
 
     def removeDock(self):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
@@ -146,7 +155,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if not result:
             return
         self.reload()
-        
 
     def showReportErrorDialog(self):
         self.qgis.cleanProject()
@@ -155,7 +163,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.reload()
         
-
     def getActivityDatabase(self):
         return self.databaseFactory.createPostgres(
             self.sapActivity.getDatabaseName(), 
@@ -258,6 +265,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.loadLayerActions(loadedLayerIds)
         
         self.prodToolsSettings.initSaveTimer()
+
+        self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
+        self.validateUserOperations.start()
 
     def setLoadedLayerIds(self, loadedLayerIds):
         self.loadedLayerIds = loadedLayerIds

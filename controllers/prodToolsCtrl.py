@@ -6,6 +6,7 @@ class ProdToolsCtrl:
             self,
             messageFactory=UtilsFactory().createMessageFactory()
         ):
+        super(ProdToolsCtrl, self).__init__()
         self.messageFactory = messageFactory
 
     def showHtmlMessageDialog(self, parent, title, message):

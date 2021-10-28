@@ -346,8 +346,11 @@ class SapActivityHttp:
 
     def getFrameQuery(self):
         return "?query=SELECT geom_from_wkt('{0}') as geometry".format(
-            self.getWorkUnitGeometry().split(';')[1]
+            self.getFrameWkt()
         )
+
+    def getFrameWkt(self):
+        return self.getWorkUnitGeometry().split(';')[1]
 
     def getEPSG(self):
         return self.getWorkUnitGeometry().split(';')[0].split('=')[1]

@@ -164,3 +164,9 @@ class QgisCtrl(IQgisCtrl):
 
     def zoomToFeature(self, layerId, layerSchema, layerName):
         self.apiQGis.zoomToFeature(layerId, layerSchema, layerName)
+
+    def getLoadedVectorLayers(self):
+        return self.apiQGis.getLoadedVectorLayers()
+
+    def getActiveVectorLayer(self):
+        return self.apiQGis.getActiveVectorLayer()

@@ -455,6 +455,19 @@ class QgisApi(IQgisApi):
             iface.actionZoomToSelected().trigger()
             break
 
+    def getLoadedVectorLayers(self):
+        return [
+            l
+            for l in core.QgsProject.instance().mapLayers().values()
+            if l.type() == core.QgsMapLayer.VectorLayer
+        ]
+    
+    def getActiveVectorLayer(self):
+        activeLayer = iface.activeLayer()
+        if not( activeLayer.type() == core.QgsMapLayer.VectorLayer ):
+            return
+        return activeLayer
+
 
 
 
