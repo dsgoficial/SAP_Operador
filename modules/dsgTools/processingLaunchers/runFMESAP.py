@@ -10,16 +10,29 @@ class RunFMESAP(Processing):
         self.processingId = 'dsgtools:runremotefme'
         
     def getParameters(self, parameters):
+        fmeParameters = {}
+        for parameter in parameters['fmeRoutine']['parameters']:
+            if 'dbarea' in parameter:
+                fmeParameters[parameter] = "'{}'".format(parameters['workUnitGeometry'])
+            elif 'dbname' in parameter:
+                fmeParameters[parameter] = parameters['dbName']
+            elif 'dbport' in parameter:
+                fmeParameters[parameter] = parameters['dbPort']
+            elif 'dbhost' in parameter:
+                fmeParameters[parameter] = parameters['dbHost']
+            elif 'dbuser' in parameter:
+                fmeParameters[parameter] = parameters['dbUser']
+            elif 'dbpassword' in parameter:
+                fmeParameters[parameter] = parameters['dbPassword']
+            elif 'sapsubfase' in parameter:
+                fmeParameters[parameter] = parameters['sapSubfase']
+            else:
+                fmeParameters[parameter] = ''
         return { 
             'FME_MANAGER' : {
                 'auth': None, 
                 'parameters': {
-                    'parametros': {
-                        'dbarea_where_clause': "'{}'".format(parameters['workUnitGeometry']), 
-                        'dbhost_HOST_POSTGIS': parameters['dbHost'], 
-                        'dbname_SourceDataset_POSTGIS': parameters['dbName'], 
-                        'dbport_PORT_POSTGIS': parameters['dbPort']
-                    }
+                    'parametros': fmeParameters
                 }, 
                 'proxy_dict': None, 
                 'server': parameters['fmeRoutine']['server'], 

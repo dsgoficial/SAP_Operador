@@ -6,6 +6,7 @@ class SapActivityHttp:
         self.data = {}
 
     def setData(self, data):
+        print( data )
         self.data = data
 
     def getData(self):
@@ -193,6 +194,9 @@ class SapActivityHttp:
             }
             for item in self.getData()['dados']['atividade']['camadas']
         ]
+
+    def getSubphaseId(self):
+        return self.getData()['dados']['atividade']['subfase_id']
     
     def getLayerExpressionField(self):
         return [

@@ -334,12 +334,16 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def runFMESAP(self, routineData):
         runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
+        print( routineData )
         output = runFMESAP.run({
             'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
             'fmeRoutine': routineData,
             'dbName': self.sapActivity.getDatabaseName(),
             'dbPort': self.sapActivity.getDatabasePort(),
-            'dbHost': self.sapActivity.getDatabaseServer()
+            'dbHost': self.sapActivity.getDatabaseServer(),
+            'dbUser': self.sapActivity.getDatabaseUserName(),
+            'dbPassword': self.sapActivity.getDatabasePassword(),
+            'sapSubfase': self.sapActivity.getSubphaseId()
         })
         summary = output['result']['dados']['sumario']
         html = "<p>[rotina nome] : {0}</p>".format(routineData['rotina'])
