@@ -112,8 +112,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadShortcuts()
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
-        self.qgis.addDockWidget(self.productionTools, side='left')  
-        self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )    
+        self.qgis.addDockWidget(self.productionTools, side='left')    
 
     def removeDock(self):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
@@ -266,6 +265,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         
         self.prodToolsSettings.initSaveTimer()
 
+        self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
 
