@@ -260,7 +260,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'tipo_insumo_id': 100,
             'qml': self.sapActivity.getFrameQml()
         })
-        self.qgis.loadDefaultFieldValue(loadedLayerIds)
+        #self.qgis.loadDefaultFieldValue(loadedLayerIds)
         self.qgis.loadLayerActions(loadedLayerIds)
         
         self.prodToolsSettings.initSaveTimer()
