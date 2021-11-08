@@ -468,7 +468,7 @@ class QgisApi(IQgisApi):
     
     def getActiveVectorLayer(self):
         activeLayer = iface.activeLayer()
-        if not( activeLayer.type() == core.QgsMapLayer.VectorLayer ):
+        if not( activeLayer and activeLayer.type() == core.QgsMapLayer.VectorLayer ):
             return
         return activeLayer
 
