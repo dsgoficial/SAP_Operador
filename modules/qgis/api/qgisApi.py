@@ -194,8 +194,12 @@ class QgisApi(IQgisApi):
             if not layerSettings:
                 continue
             for style in layerSettings[0]['styles']:
-                mapLayerStyle = core.QgsMapLayerStyle(style['qml'])
-                layer.styleManager().addStyle(style['name'], mapLayerStyle)
+                """ mapLayerStyle = core.QgsMapLayerStyle(style['qml'])
+                layer.styleManager().addStyle(style['name'], mapLayerStyle) """
+                doc = QDomDocument()
+                doc.setContent(data['qml'])
+                layer.importNamedStyle(doc, core.QgsMapLayer.Symbology | core.QgsMapLayer.Labeling )
+                layer.styleManager().addStyleFromLayer(style['name'])
             layer.styleManager().removeStyle('default')
             layer.styleManager().setCurrentStyle(defaultStyle)
 
