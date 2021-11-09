@@ -189,6 +189,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Convergir vertices de feições',
                 'iconPath':os.path.join(iconRootPath, 'convergencepoint.png'),
                 'callback': lambda: self.qgis.activeTool('ConvergencePoint')
+            },
+            {
+                'name': 'Alternar visualização de raster',
+                'iconPath':os.path.join(iconRootPath, 'selectRaster.png'),
+                'callback': lambda: self.qgis.startSelectRaster()
             }
         ]
 

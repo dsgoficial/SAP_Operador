@@ -482,6 +482,10 @@ class QgisApi(IQgisApi):
             return
         return activeLayer
 
+    def startSelectRaster(self):
+        selectRaster = self.mapFunctionsFactory.getFunction('SelectRaster')
+        selectRaster.run()
+
 
 
 

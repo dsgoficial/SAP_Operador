@@ -4,6 +4,7 @@ from Ferramentas_Producao.modules.qgis.mapFunctions.trimLine import TrimLine
 from Ferramentas_Producao.modules.qgis.mapFunctions.expandLine import ExpandLine
 from Ferramentas_Producao.modules.qgis.mapFunctions.createNewMapView import CreateNewMapView
 from Ferramentas_Producao.modules.qgis.mapFunctions.convergencePoint import ConvergencePoint
+from Ferramentas_Producao.modules.qgis.mapFunctions.selectRaster import SelectRaster
 
 class MapFunctionsFactory:
 
@@ -14,6 +15,7 @@ class MapFunctionsFactory:
             'TrimLine':  TrimLine,
             'ExpandLine':  ExpandLine,
             'CreateNewMapView': CreateNewMapView,
-            'ConvergencePoint': ConvergencePoint
+            'ConvergencePoint': ConvergencePoint,
+            'SelectRaster': SelectRaster
         }
         return functionNames[functionName]()

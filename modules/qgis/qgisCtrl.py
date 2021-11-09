@@ -173,3 +173,6 @@ class QgisCtrl(IQgisCtrl):
 
     def setPrimaryKeyReadOnly(self, layerIds, option):
         self.apiQGis.setPrimaryKeyReadOnly(layerIds, option)
+    
+    def startSelectRaster(self):
+        self.apiQGis.startSelectRaster()
