@@ -56,7 +56,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             return
         self.saveTimer = self.timerFactory.createTimer('Timer')
         self.saveTimer.addCallback(self.saveMessage)
-        self.saveTimer.start(1000*60*5)
+        self.saveTimer.start(1000*60*10)
         self.qgis.on('SaveAllEdits', self.saveTimer.reset)
         self.qgis.on('SaveActiveLayerEdits', self.saveTimer.reset)
 
