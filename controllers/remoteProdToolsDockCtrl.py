@@ -262,6 +262,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         })
         #self.qgis.loadDefaultFieldValue(loadedLayerIds)
         self.qgis.loadLayerActions(loadedLayerIds)
+
+        self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
         
         self.prodToolsSettings.initSaveTimer()
 

@@ -341,6 +341,16 @@ class QgisApi(IQgisApi):
                 gui.QgsGui.mapLayerActionRegistry().addMapLayerAction(customAction)
                 customAction.triggeredForFeature.connect(actions[name].execute)
 
+    def setPrimaryKeyReadOnly(self, layerIds, option):
+        layers = core.QgsProject.instance().mapLayers()
+        for layerId in layers:
+            if not(layerId in layerIds):
+                continue
+            layer = layers[layerId]
+            editFormConfig = layer.editFormConfig()
+            for fieldIdx in layer.primaryKeyAttributes():
+                editFormConfig.setReadOnly(fieldIdx, option)
+
     def getMainWindow(self):
         return iface.mainWindow()
         

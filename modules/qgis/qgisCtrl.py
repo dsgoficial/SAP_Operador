@@ -170,3 +170,6 @@ class QgisCtrl(IQgisCtrl):
 
     def getActiveVectorLayer(self):
         return self.apiQGis.getActiveVectorLayer()
+
+    def setPrimaryKeyReadOnly(self, layerIds, option):
+        self.apiQGis.setPrimaryKeyReadOnly(layerIds, option)
