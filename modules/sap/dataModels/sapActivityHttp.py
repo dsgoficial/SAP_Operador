@@ -6,7 +6,6 @@ class SapActivityHttp:
         self.data = {}
 
     def setData(self, data):
-        print( data )
         self.data = data
 
     def getData(self):

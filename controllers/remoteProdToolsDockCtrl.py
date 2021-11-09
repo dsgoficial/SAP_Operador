@@ -334,7 +334,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def runFMESAP(self, routineData):
         runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
-        print( routineData )
         output = runFMESAP.run({
             'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
             'fmeRoutine': routineData,
