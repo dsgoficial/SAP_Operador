@@ -253,13 +253,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         })
 
-        self.qgis.loadInputData({
-            'query': self.sapActivity.getFrameQuery(),
-            'epsg': self.sapActivity.getEPSG(),
-            'nome': 'moldura',
-            'tipo_insumo_id': 100,
-            'qml': self.sapActivity.getFrameQml()
-        })
+        frameQuery = self.sapActivity.getFrameQuery()
+        if not self.frameLoaded( frameQuery ):
+            self.qgis.loadInputData({
+                'query': self.sapActivity.getFrameQuery(),
+                'epsg': self.sapActivity.getEPSG(),
+                'nome': 'moldura',
+                'tipo_insumo_id': 100,
+                'qml': self.sapActivity.getFrameQml()
+            })
         #self.qgis.loadDefaultFieldValue(loadedLayerIds)
         self.qgis.loadLayerActions(loadedLayerIds)
 
@@ -270,6 +272,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
+
+    def frameLoaded(self, frameQuery):
+        layers = self.qgis.getLoadedVectorLayers()
+        for l in layers:
+            if not( l.source() == frameQuery ):
+                continue
+            return True
+        return False
 
     def setLoadedLayerIds(self, loadedLayerIds):
         self.loadedLayerIds = loadedLayerIds
