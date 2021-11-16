@@ -171,16 +171,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'callback': self.closeLine
             },
             {
-                'name': 'Paginar raster para cima',
-                'iconPath':os.path.join(iconRootPath, 'pageup.png'),
-                'callback': lambda direction='up': self.pageRaster(direction)
-            },
-            {
-                'name': 'Paginar raster para baixo',
-                'iconPath':os.path.join(iconRootPath, 'pagedown.png'),
-                'callback': lambda direction='down': self.pageRaster(direction)
-            },
-            {
                 'name': 'Criar nova visualização de mapa',
                 'iconPath':os.path.join(iconRootPath, 'newmapview.png'),
                 'callback': lambda: self.qgis.createNewMapView()
