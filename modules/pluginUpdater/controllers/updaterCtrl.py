@@ -1,6 +1,6 @@
 from modules.pluginUpdater.factories.updaterFactory import UpdaterFactory
 from modules.pluginUpdater.factories.guiFactory import GuiFactory
-from modules.qgis.controllers.qgisCtrl import QgisCtrl
+from modules.qgis.qgisCtrl import QgisCtrl
 import json
 import os
 import subprocess
