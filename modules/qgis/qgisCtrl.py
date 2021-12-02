@@ -176,3 +176,16 @@ class QgisCtrl(IQgisCtrl):
     
     def startSelectRaster(self):
         self.apiQGis.startSelectRaster()
+
+    ########################
+    def getQgisPluginsDirPath(self):
+        return self.apiQGis.getQgisPluginsDirPath()
+
+    def getPluginPaths(self):
+        return self.apiQGis.getPluginPaths()
+
+    def createMenuBar(self, menuName):
+        return self.apiQGis.createMenuBar(menuName)
+
+    def closeQgis(self):
+        self.apiQGis.closeQgis()

@@ -15,7 +15,9 @@ from PyQt5.QtWidgets import QAction, QMenu
 from PyQt5.QtGui import QIcon
 import math, uuid
 from configparser import ConfigParser
-
+import subprocess
+import platform
+import shutil
 
 class QgisApi(IQgisApi):
 
@@ -486,6 +488,58 @@ class QgisApi(IQgisApi):
         selectRaster = self.mapFunctionsFactory.getFunction('SelectRaster')
         selectRaster.run()
 
+    def getQgisPluginsDirPath(self):
+        settingsPath = core.QgsApplication.qgisSettingsDirPath()
+        if platform.system().lower() == 'windows':
+            settingsPath = settingsPath.replace('/', '\\')
+        return os.path.join(
+            settingsPath,
+            'python',
+            'plugins'
+        )
 
+    def getPluginPaths(self):
+        if platform.system().lower() == 'windows':
+            return self.getWindowsPluginPaths()
+        else:
+            return self.getLinuxPluginPaths()
+
+    def getWindowsPluginPaths(self):
+        repositoryPluginsPath = self.getQgisPluginsDirPath()
+        p = subprocess.Popen(
+            'cmd /u /c "dir {0} /B"'.format(repositoryPluginsPath), 
+            stdout=subprocess.PIPE, 
+            shell=True
+        )
+        result = p.communicate()
+        return [
+            (name, os.path.join(repositoryPluginsPath, name))
+            for name in result[0].decode('u16').split('\r\n')
+        ]
+
+    def getLinuxPluginPaths(self):
+        repositoryPluginsPath = self.getQgisPluginsDirPath()
+        p = subprocess.Popen(
+            'ls {0}'.format(repositoryPluginsPath), 
+            stdout=subprocess.PIPE, 
+            shell=True
+        )
+        result = p.communicate()
+        print(result)
+        return []
+
+    def createMenuBar(self, menuName):
+        menu = QtWidgets.QMenu(iface.mainWindow())
+        menu.setObjectName(menuName)
+        menu.setTitle(menuName)
+        iface.mainWindow().menuBar().insertMenu(
+            iface.firstRightStandardMenu().menuAction(), 
+            menu
+        )
+        return menu
+
+    def closeQgis(self):
+        core.QgsApplication.taskManager().cancelAll()
+        iface.actionExit().trigger()
 
 

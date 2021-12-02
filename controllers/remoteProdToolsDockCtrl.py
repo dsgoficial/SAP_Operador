@@ -72,6 +72,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         #self.pomodoro.unload()
 
     def reload(self):
+        self.prodToolsSettings.checkPluginUpdates()
         if self.productionTools is None:
             return
         self.sapActivity = self.sap.getActivity()
@@ -112,7 +113,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadShortcuts()
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
-        self.qgis.addDockWidget(self.productionTools, side='left')    
+        self.qgis.addDockWidget(self.productionTools, side='left')
+        self.prodToolsSettings.checkPluginUpdates()    
 
     def removeDock(self):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''
@@ -394,6 +396,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         messageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
+        self.prodToolsSettings.checkPluginUpdates()
         self.productionTools.close() if self.productionTools else ''
         if self.sap.isValidActivity():
             self.prodToolsSettings.initSaveTimer()

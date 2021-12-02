@@ -10,6 +10,7 @@ from .controllers.prodToolsSettingsCtrl import ProdToolsSettingsCtrl
 
 from .modules.sap.controllers.remoteSapCtrl import RemoteSapCtrl
 from .modules.sap.controllers.localSapCtrl import LocalSapCtrl
+from .modules.pluginUpdater.controllers.updaterCtrl import UpdaterCtrl
 
 from .modules.qgis.qgisCtrl import QgisCtrl
 from .modules.fme.factories.fmeApiSingleton import FmeApiSingleton
@@ -28,7 +29,11 @@ class Main:
         self.plugin_dir = os.path.dirname(__file__)
         self.qgisCtrl = QgisCtrl()
         self.externalInstance = None
-        self.prodToolsSettingsCtrl = ProdToolsSettingsCtrl( self.qgisCtrl )
+        self.updaterCtrl = UpdaterCtrl( self.qgisCtrl )
+        self.prodToolsSettingsCtrl = ProdToolsSettingsCtrl( 
+            self.qgisCtrl,
+            self.updaterCtrl 
+        )
         self.remoteProdToolsDockCtrl = RemoteProdToolsDockCtrl(
             sap=RemoteSapCtrl( self.qgisCtrl ),
             qgis=self.qgisCtrl,

@@ -1,0 +1,9 @@
+*.log
+*.sql
+Tools/LoadData/Layers/forms/*.ui
+*.pyc
+*.bkp
+.pyc
+.DS_Store
+.vscode
+*.pickle

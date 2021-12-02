@@ -1,6 +1,7 @@
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
 from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
+
 import os
 
 class ProdToolsSettingsCtrl(ProdToolsCtrl):
@@ -8,10 +9,12 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
     def __init__(
             self,
             qgis,
+            pluginUpdater,
             timerFactory=TimerFactory(),
         ):
         super(ProdToolsSettingsCtrl, self).__init__()
         self.qgis = qgis
+        self.pluginUpdater = pluginUpdater
         self.timerFactory = timerFactory
         self.saveTimer = None
         self.showMarkers = True
@@ -30,7 +33,8 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
 
     def createActionsMenuBar(self):
         menuBarActions = []
-        for actionConfig in self.getMenuBarActionSettings():
+        actions = self.getMenuBarActionSettings() + self.pluginUpdater.getUpdaterActions()
+        for actionConfig in actions:
             action = self.qgis.createAction(
                 actionConfig['name'],
                 actionConfig['iconPath'],
@@ -142,6 +146,9 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'Erro',
                 '<p style="color:red">{0}</p>'.format(result[1])
             )
+
+    def checkPluginUpdates(self):
+        self.pluginUpdater.checkUpdates()
     
     def getMenuBarActionSettings(self):
         iconRootPath = os.path.join(
