@@ -55,7 +55,7 @@ class Postgis(InputLayer):
                 continue
             if not(field.name() in attributes):
                 continue
-            widgetSetup = QgsEditorWidgetSetup(
+            widgetSetup = core.QgsEditorWidgetSetup(
                 'ValueMap',
                 {'map': valueMap[attributes.index(field.name())]['valueMap']}
             )
