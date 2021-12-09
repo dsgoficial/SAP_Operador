@@ -42,7 +42,7 @@ class Postgis(InputLayer):
             or 
             'id_' in field.name() 
             or 
-            i in layer.primaryKeyAttributes()
+            field in layer.primaryKeyAttributes()
         )
 
     def loadValueMap(self, lyr, valueMap):
