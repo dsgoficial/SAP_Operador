@@ -63,6 +63,7 @@ class Postgis(InputLayer):
         return lyr
     
     def load(self, fileData):
+        print(fileData)
         dbAddress, dbName, dbSchema, layerName = fileData['caminho'].split('/')
         dbHost, dbPort = dbAddress.split(':') 
         dbUser = fileData['usuario']
@@ -80,7 +81,7 @@ class Postgis(InputLayer):
         )
         layer = core.QgsProject.instance().addMapLayer(
             core.QgsVectorLayer(uri, layerName, "postgres"), 
-            False
+            True
         )
         layer.setReadOnly(True)
 
@@ -94,6 +95,6 @@ class Postgis(InputLayer):
         mapValues = database.getAttributeValueMap(layerName, dbSchema)
         self.loadValueMap(layer, mapValues)
 
-        self.addMapLayer( layer )
+        #self.addMapLayer( layer )
         
         
