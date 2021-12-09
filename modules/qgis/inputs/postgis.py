@@ -64,7 +64,7 @@ class Postgis(InputLayer):
     
     def load(self, fileData):
         dbAddress, dbName, dbSchema, layerName = fileData['caminho'].split('/')
-        dbHost, dbPort = db_address.split(':') 
+        dbHost, dbPort = dbAddress.split(':') 
         dbUser = fileData['usuario']
         dbPassword = fileData['senha']
         uri = self.getUri(
