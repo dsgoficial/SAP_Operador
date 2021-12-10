@@ -29,6 +29,8 @@ class UpdaterCtrl:
     def getUpdater(self):
         if platform.system().lower() == 'windows':
             return self.updaterFactory.create('WindowsUpdater', self.qgis)
+        if platform.system().lower() == 'linux':
+            return self.updaterFactory.create('LinuxUpdater', self.qgis)
 
     def getUpdaterActions(self):
         iconRootPath = os.path.join(
@@ -60,8 +62,8 @@ class UpdaterCtrl:
     def checkUpdates(self):
         if not self.validSettings():
             return
-        update = self.updater.checkUpdates()
-        if not update:
+        updates = self.updater.checkUpdates()
+        if not updates:
             return
         self.openMessageDialog()
         self.time.start(1000*20)
@@ -69,13 +71,23 @@ class UpdaterCtrl:
     def validSettings(self):
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'settings.json'), 'r') as f:
             data = json.loads(f.read())
-        if platform.system().lower() == 'windows':
-            if (
-                'windows' in data 
-                and 
-                'repository' in data['windows'] 
-                and 
+        try:
+            if platform.system().lower() == 'windows':
+                if (
                 data['windows']['repository']
-            ):
-                return True
-        return False
+                ):
+                    return True
+            if platform.system().lower() == 'linux':
+                if (
+                    data['linux']['repository']
+                    and 
+                    data['linux']['login']
+                    and 
+                    data['linux']['password']
+                    and 
+                    data['linux']['domain']
+                ):
+                    return True
+        except Exception as e:
+            print(str(e))
+            return False

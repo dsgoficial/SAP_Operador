@@ -525,8 +525,10 @@ class QgisApi(IQgisApi):
             shell=True
         )
         result = p.communicate()
-        print(result)
-        return []
+        return [
+            (name, os.path.join(repositoryPluginsPath, name))
+            for name in result[0].decode('u8').split('\n')
+        ]
 
     def createMenuBar(self, menuName):
         menu = QtWidgets.QMenu(iface.mainWindow())
