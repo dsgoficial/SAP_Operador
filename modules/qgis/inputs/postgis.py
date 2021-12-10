@@ -81,7 +81,7 @@ class Postgis(InputLayer):
         )
         layer = core.QgsProject.instance().addMapLayer(
             core.QgsVectorLayer(uri, layerName, "postgres"), 
-            True
+            False
         )
         layer.setReadOnly(True)
 
@@ -95,6 +95,10 @@ class Postgis(InputLayer):
         mapValues = database.getAttributeValueMap(layerName, dbSchema)
         self.loadValueMap(layer, mapValues)
 
-        #self.addMapLayer( layer )
+        self.addMapLayer( layer )
+
+    def addMapLayer(self, layer, position=1):
+        group = self.getGroupLayer()
+        group.insertLayer(position, layer)
         
         
