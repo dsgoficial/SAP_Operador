@@ -1,0 +1,14 @@
+{
+    "windows": {
+        "login": "",
+        "password": "",
+        "domain": "",
+        "repository": ""
+    },
+    "linux": {
+        "login": "",
+        "password": "",
+        "domain": "",
+        "repository": ""
+    }
+}

@@ -63,7 +63,6 @@ class Postgis(InputLayer):
         return lyr
     
     def load(self, fileData):
-        print(fileData)
         dbAddress, dbName, dbSchema, layerName = fileData['caminho'].split('/')
         dbHost, dbPort = dbAddress.split(':') 
         dbUser = fileData['usuario']

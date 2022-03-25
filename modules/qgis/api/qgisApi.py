@@ -446,7 +446,7 @@ class QgisApi(IQgisApi):
     def removeMessageBar(self, messageBar):
         iface.messageBar().popWidget(messageBar)
 
-    def loadDefaultFieldValue(self, loadedLayerIds):
+    """ def loadDefaultFieldValue(self, loadedLayerIds):
         for layerId in loadedLayerIds:
             layer = core.QgsProject.instance().mapLayers()[layerId]
             idx = layer.fields().indexOf('data_modificacao')
@@ -455,7 +455,7 @@ class QgisApi(IQgisApi):
             valueDefinition = layer.defaultValueDefinition(idx)
             valueDefinition.setApplyOnUpdate(True)
             valueDefinition.setExpression('now()')
-            layer.setDefaultValueDefinition(idx, valueDefinition)
+            layer.setDefaultValueDefinition(idx, valueDefinition) """
 
     
     def zoomToFeature(self, layerId, layerSchema, layerName):

@@ -237,12 +237,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         })
 
-        assignDefaultFieldValueToLayers = self.processingFactoryDsgTools.createProcessing('AssignDefaultFieldValueToLayers', self)
-        assignDefaultFieldValueToLayers.run({
-            'defaultValues': self.sapActivity.getLayerDefaultFieldValue(),
-            'layerIds': loadedLayerIds
-        })
-
         assignExpressionFieldToLayers = self.processingFactoryDsgTools.createProcessing('AssignExpressionFieldToLayers', self)
         assignExpressionFieldToLayers.run({
             'expressions': self.sapActivity.getLayerExpressionField(),
@@ -264,7 +258,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        #self.qgis.loadDefaultFieldValue(loadedLayerIds)
+
         self.qgis.loadLayerActions(loadedLayerIds)
 
         self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
@@ -301,9 +295,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if not inputData:
             self.showInfoMessageBox(None, 'Aviso', 'Selecione o(s) insumo(s)!')
             return
+
+        needPath = next((item for item in inputData if item["tipo_insumo_id"] == 1), None)
+        if needPath:
+            pathDest = self.getPathDest()
         for data in inputData:
             if data['tipo_insumo_id'] in [1]:
-                pathDest = self.getPathDest()
                 if not pathDest:
                     continue
                 data['caminho_padrao'] = pathDest
