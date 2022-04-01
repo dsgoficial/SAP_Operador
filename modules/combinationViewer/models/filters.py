@@ -24,16 +24,16 @@ class Filters:
         def readAttributes(f):
             values = []
             for fieldName in selectedFields:
-                values.append(feature[fieldName])
+                values.append(f[fieldName])
             attributeLists.append(values)
         
         pool = concurrent.futures.ThreadPoolExecutor(os.cpu_count()-1)
-        futures = []
+        futures = set()
         for layer in selectedLayers:
-            for feature in layer.getFeatures():
-                futures.append(pool.submit(readAttributes, feature))
-        concurrent.futures.wait(futures)   
-
+            features = list(layer.getFeatures())
+            for feature in features:
+                futures.add(pool.submit(readAttributes, feature))
+        concurrent.futures.wait(futures, timeout=None, return_when=concurrent.futures.ALL_COMPLETED)
         attributeCountMap = {
             ','.join([str(n) for n in attributes]): attributeLists.count(attributes) 
             for attributes in attributeLists
@@ -61,6 +61,8 @@ class Filters:
         for layer in selectedLayers:
             layer.selectByExpression(filterExpression)
             count = layer.selectedFeatureCount()
+            if count == 0:
+                continue
             rows.append(
                 [
                     layer.name(),
@@ -74,6 +76,26 @@ class Filters:
         for fields in fieldLists:
             expressions = []
             for n in fields:
-                expressions.append('"{}" is {}'.format(n, fields[n]))
+                expressions.append(
+                    '"{}" is {}'.format(
+                        n,
+                        self.formatValue(fields[n]) 
+                    )
+                )
             allExpressions.append(' AND '.join(expressions))
         return ' AND '.join(allExpressions) 
+
+    def formatValue(self, value):
+        if self.isNumber(value):
+            return value
+        if value == 'NULL':
+            return value
+        return "'{}'".format(value)
+
+    def isNumber(self, value):
+        for t in [int, float]:
+            try:
+                t(value)
+            except:
+                return False
+        return True
