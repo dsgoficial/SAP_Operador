@@ -81,6 +81,7 @@ class Main:
         self.remoteProdToolsDockCtrl.unload()
         self.localProdToolsDockCtrl.unload()
         self.prodToolsSettingsCtrl.unload()
+        self.qgisCtrl.removeActionToolBar(self.action)
         self.qgisCtrl.unload()
         
     def startPlugin(self, b):

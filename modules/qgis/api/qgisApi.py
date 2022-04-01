@@ -40,7 +40,7 @@ class QgisApi(IQgisApi):
 
     def unload(self):
         self.unloadProcessingProvider()
-        iface.mainWindow().removeToolBar(self.customToolBar)
+        del self.customToolBar
 
     def unloadProcessingProvider(self):    
         fpProcProvider = self.processingProviderFactory.createProvider('fp')

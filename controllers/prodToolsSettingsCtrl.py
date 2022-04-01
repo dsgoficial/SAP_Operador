@@ -1,7 +1,7 @@
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
 from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
-
+from Ferramentas_Producao.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
 import os
 
 class ProdToolsSettingsCtrl(ProdToolsCtrl):
@@ -11,11 +11,13 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             qgis,
             pluginUpdater,
             timerFactory=TimerFactory(),
+            combinationViewer=CombinationViewerCtrl()
         ):
         super(ProdToolsSettingsCtrl, self).__init__()
         self.qgis = qgis
         self.pluginUpdater = pluginUpdater
         self.timerFactory = timerFactory
+        self.combinationViewer = combinationViewer
         self.saveTimer = None
         self.showMarkers = True
         self.menuBarActions = []
@@ -191,6 +193,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Alternar visualização de raster',
                 'iconPath':os.path.join(iconRootPath, 'selectRaster.png'),
                 'callback': lambda: self.qgis.startSelectRaster()
+            },
+            {
+                'name': 'Visualizado de combinações',
+                'iconPath':os.path.join(iconRootPath, 'combinationViewer.svg'),
+                'callback': lambda: self.combinationViewer.openDialog()
             }
         ]
 
