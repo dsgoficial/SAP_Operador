@@ -55,35 +55,33 @@ class Filters:
             )
         return rows
 
-    def getLayersByAttributes(self, selectedAttributes, selectedLayers):
-        filterExpression = self.getFilterExpression(selectedAttributes)
-        rows = []
-        for layer in selectedLayers:
-            layer.selectByExpression(filterExpression)
-            count = layer.selectedFeatureCount()
-            if count == 0:
-                continue
-            rows.append(
-                [
-                    layer.name(),
-                    count
-                ]
-            )
-        return rows
+    def getLayersByAttributes(self, attributeLists, selectedLayers):
+        expressions = [ self.getFilterExpression(n) for n in attributeLists ]
+        rows = {}
+        for expression in expressions:
+            total = 0
+            for layer in selectedLayers:
+                layer.selectByExpression(expression)
+                count = layer.selectedFeatureCount()
+                if count == 0:
+                    continue
+                layerName = layer.name()
+                if layerName in rows:
+                    rows[layerName] += count
+                    continue
+                rows[layerName] = count
+        return [ [k, rows[k]] for k in rows]
 
-    def getFilterExpression(self, fieldLists):
-        allExpressions = []
-        for fields in fieldLists:
-            expressions = []
-            for n in fields:
-                expressions.append(
-                    '"{}" is {}'.format(
-                        n,
-                        self.formatValue(fields[n]) 
-                    )
+    def getFilterExpression(self, fields):
+        expressions = []
+        for n in fields:
+            expressions.append(
+                '"{}" is {}'.format(
+                    n,
+                    self.formatValue(fields[n]) 
                 )
-            allExpressions.append(' AND '.join(expressions))
-        return ' AND '.join(allExpressions) 
+            )
+        return ' AND '.join(expressions) 
 
     def formatValue(self, value):
         if self.isNumber(value):

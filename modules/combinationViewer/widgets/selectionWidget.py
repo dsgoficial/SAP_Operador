@@ -101,6 +101,8 @@ class SelectionWidget(QtWidgets.QWidget, TableFunctions):
             row = []
             for colIdx in range(tableWidget.columnCount()):
                 item = tableWidget.item(rowIdx, colIdx)
+                if item is None:
+                    continue
                 row.append(item.text())
             tableWidget.removeRow(rowIdx)
             rows.append(row)
@@ -113,6 +115,8 @@ class SelectionWidget(QtWidgets.QWidget, TableFunctions):
             row = []
             for colIdx in range(tableWidget.columnCount()):
                 item = tableWidget.item(rowIdx, colIdx)
+                if item is None:
+                    continue
                 row.append(item.text())
             tableWidget.removeRow(rowIdx)
             rows.append(row)
@@ -125,6 +129,8 @@ class SelectionWidget(QtWidgets.QWidget, TableFunctions):
             row = []
             for colIdx in range(tableWidget.columnCount()):
                 item = tableWidget.item(rowIdx, colIdx)
+                if item is None:
+                    continue
                 row.append(item.text())
             rows.append(row)
         return rows
