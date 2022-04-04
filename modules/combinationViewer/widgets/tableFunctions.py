@@ -1,5 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from .qTableWidgetIntegerItem import QTableWidgetIntegerItem
 
 class TableFunctions(QtCore.QObject):
 
@@ -12,7 +13,11 @@ class TableFunctions(QtCore.QObject):
         return str(value)
 
     def createNotEditableItem(self, value):
-        item = QtWidgets.QTableWidgetItem(self.validateValue(value))
+        itemValue = self.validateValue(value)
+        try:
+            item = QTableWidgetIntegerItem(itemValue)
+        except:
+            item = QtWidgets.QTableWidgetItem(itemValue)
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return item
 
