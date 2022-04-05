@@ -24,6 +24,11 @@ class Filters:
         def readAttributes(f):
             values = []
             for fieldName in selectedFields:
+                fieldConfig = f.fields().field(f.fields().indexOf(fieldName)).editorWidgetSetup().config()
+                if 'map' in fieldConfig:
+                    inv_map = {v: k for k, v in fieldConfig['map'].items()}
+                    values.append(inv_map[f[fieldName]])
+                    continue
                 values.append(f[fieldName])
             attributeLists.append(values)
         
@@ -56,29 +61,36 @@ class Filters:
         return rows
 
     def getLayersByAttributes(self, attributeLists, selectedLayers):
-        expressions = [ self.getFilterExpression(n) for n in attributeLists ]
-        rows = {}
-        for expression in expressions:
-            total = 0
-            for layer in selectedLayers:
+        rows = []
+        for layer in selectedLayers:
+            for attributes in attributeLists:
+                layer.removeSelection()
+                expression = self.createExpression(layer.fields(), attributes)
+                if not expression:
+                    continue
                 layer.selectByExpression(expression)
                 count = layer.selectedFeatureCount()
-                if count == 0:
-                    continue
-                layerName = layer.name()
-                if layerName in rows:
-                    rows[layerName] += count
-                    continue
-                rows[layerName] = count
-        return [ [k, rows[k]] for k in rows]
+                case = ';\n'.join([ '{} ({})'.format(attributes[k], k) for k in attributes ])
+                rows.append([case, layer.name(), count])
+        return rows
 
-    def getFilterExpression(self, fields):
+    def createExpression(self, qgsFields, fields):        
         expressions = []
         for n in fields:
+            fieldIndex = qgsFields.indexOf(n)
+            if fieldIndex < 0:
+                return
+            fieldConfig = qgsFields.field(fieldIndex).editorWidgetSetup().config()
+            if 'map' in fieldConfig and not(fields[n] in fieldConfig['map']):
+                return
+            elif 'map' in fieldConfig:
+                value = fieldConfig['map'][fields[n]]
+            else:
+                value = fields[n]
             expressions.append(
                 '"{}" is {}'.format(
                     n,
-                    self.formatValue(fields[n]) 
+                    self.formatValue(value) 
                 )
             )
         return ' AND '.join(expressions) 
