@@ -1,0 +1,13 @@
+{
+    "camadas": [
+        "teste"
+    ],
+    "metadata": {
+        "CBERS 4A": [
+            {
+                "nome": "nome",
+                "valor": "selva"
+            }
+        ]
+    }
+}

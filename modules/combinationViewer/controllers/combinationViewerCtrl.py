@@ -15,6 +15,7 @@ class CombinationViewerCtrl:
         self.qgis = qgis
         self.filters = filters
         self.dlg = None
+        self.qgis.on('LayersAdded', self.refreshDialog)
 
     def openDialog(self):
         if self.dlg:
@@ -24,6 +25,9 @@ class CombinationViewerCtrl:
             self.getLoadedVectorLayerNames()
         )
         self.dlg.show()
+
+    def refreshDialog(self, layers):
+        pass
 
     def getLoadedVectorLayers(self):
         return self.qgis.getLoadedVectorLayers()

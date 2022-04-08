@@ -177,7 +177,6 @@ class QgisCtrl(IQgisCtrl):
     def startSelectRaster(self):
         self.apiQGis.startSelectRaster()
 
-    ########################
     def getQgisPluginsDirPath(self):
         return self.apiQGis.getQgisPluginsDirPath()
 
@@ -189,3 +188,6 @@ class QgisCtrl(IQgisCtrl):
 
     def closeQgis(self):
         self.apiQGis.closeQgis()
+
+    def getVisibleRasters(self):
+        return self.apiQGis.getVisibleRasters()

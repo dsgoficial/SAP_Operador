@@ -255,13 +255,19 @@ class QgisApi(IQgisApi):
             'SaveAllEdits': iface.actionSaveAllEdits().triggered,
             'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
             'MessageLog': core.QgsApplication.messageLog().messageReceived,
+            'LayersAdded': core.QgsProject.instance().layersAdded
         }
 
     def on(self, event, callback):
         self.getEvents()[event].connect(callback)
+        return True
 
     def off(self, event, callback):
-        self.getEvents()[event].disconnect(callback)
+        try:
+            self.getEvents()[event].disconnect(callback)
+            return True
+        except:
+            return False
 
     def cleanProject(self):
         core.QgsProject.instance().removeAllMapLayers()
@@ -293,6 +299,14 @@ class QgisApi(IQgisApi):
         else:
             iface.mapCanvas().setMapTool(tool)
 
+    def getVisibleRasters(self):
+        root = core.QgsProject.instance().layerTreeRoot()
+        return [
+            tl.layer()
+            for tl in root.findLayers()
+            if tl.isVisible() and tl.layer().type() == core.QgsMapLayer.RasterLayer
+        ]
+
     def pageRaster(self, direction):
         groupName = 'imagens_dinamicas'
         root = core.QgsProject.instance().layerTreeRoot()
@@ -313,6 +327,7 @@ class QgisApi(IQgisApi):
         
         def pageDown(currentPostion, images):
             return 0 if currentPostion == (len(images)-1) else (currentPostion + 1)
+
         def pageUp(currentPostion, images):
             return (len(images)-1) if currentPostion == 0 else (currentPostion - 1)
         pageFunctions = {
