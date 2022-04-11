@@ -28,7 +28,9 @@ class RasterMetadata:
     def disconnectLayersSignal(self):
         for lyr in self.getLayers():
             try:
-                lyr.featureAdded.disconnect(self.loadMetadata)
+                lyr.featureAdded.disconnect(
+                    self.loadMetadata
+                )
             except:
                 pass
         
@@ -62,32 +64,34 @@ class RasterMetadata:
         return json.dumps(self.getConfig(), indent=4)
 
     def loadMetadata(self, featureId):
-        if featureId >= 0:
-            return
-        layer = self.getController().getActiveVectorLayer()
-        if not layer:
-            raise 'Não há um VectorLayer ativo!'
-        config = self.getConfig()
-        if not(layer.name() in config['camadas']):
-            return
-        feature = layer.getFeature(featureId)
-        if not feature.isValid():
-            return
-
-        rasters = self.getController().getVisibleRasters()
-        if len(rasters) != 1:
-            raise 'Selecione no mínimo um RasterLayer!'
-        raster = rasters[0]
-        if not(raster.name() in config['metadata']):
-            return
-        
-        for attribute in config['metadata'][raster.name()]:
-            fieldIdx = feature.fields().indexOf(attribute['nome'])
-            if fieldIdx < 0:
-                continue
-            feature[attribute['nome']] = attribute['valor']
-        layer.updateFeature(feature)     
-        self.getController().canvasRefresh()   
+        try:
+            if featureId >= 0:
+                return
+            layer = self.getController().getActiveVectorLayer()
+            if not layer:
+                raise Exception('Não há um "VectorLayer" ativo!')
+            config = self.getConfig()
+            if not(layer.name() in config['camadas']):
+                return
+            feature = layer.getFeature(featureId)
+            if not feature.isValid():
+                return
+            rasters = self.getController().getVisibleRasters()
+            if len(rasters) != 1:
+                raise Exception('Para carregar o metadados da image de haver um, e apenas um, "RasterLayer" visível!')
+            raster = rasters[0]
+            if not(raster.name() in config['metadata']):
+                return
+            for attribute in config['metadata'][raster.name()]:
+                fieldIdx = feature.fields().indexOf(attribute['nome'])
+                if fieldIdx < 0:
+                    continue
+                feature[attribute['nome']] = attribute['valor']
+            layer.updateFeature(feature)     
+            self.getController().canvasRefresh() 
+        except Exception as e:
+            self.getController().showErrorMessageBox(str(e))
+          
          
 
     

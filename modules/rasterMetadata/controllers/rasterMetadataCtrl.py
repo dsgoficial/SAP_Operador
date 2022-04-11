@@ -1,7 +1,7 @@
 from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
-#from Ferramentas_Producao.modules.rasterMetadata.models.filters import Filters
 from Ferramentas_Producao.modules.rasterMetadata.factories.widgetFactory import WidgetFactory
 from Ferramentas_Producao.modules.rasterMetadata.models.rasterMetadata import RasterMetadata
+from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
 
 class RasterMetadataCtrl:
     
@@ -9,13 +9,19 @@ class RasterMetadataCtrl:
             self,
             RasterMetadata=RasterMetadata,
             widgetFactory=WidgetFactory(),
-            qgis=QgisCtrl()
+            qgis=QgisCtrl(),
+            messageFactory=UtilsFactory().createMessageFactory()
         ):
         self.widgetFactory = widgetFactory
         self.qgis = qgis
         self.rasterMetadata = RasterMetadata(self)
         self.dlg = None
         self.enabled = False
+        self.messageFactory = messageFactory
+    
+    def showErrorMessageBox(self, message):
+        messageDlg = self.messageFactory.createMessage('ErrorMessageBox')
+        messageDlg.show(self.qgis.getMainWindow(), 'Erro', message)
 
     def connectQgisSignals(self):
         self.qgis.on('LayersAdded', self.layersAdded)
