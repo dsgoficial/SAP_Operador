@@ -237,21 +237,4 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             u'qgis/default_selection_color_alpha': u'63'
         }
 
-    def loadCustomQgisShortcuts(self):
-        for setting in self.getShortcutsQgis():
-            self.qgis.updateShortcut(
-                setting['descricao'],
-                setting['shorcut'],
-            )
-
-    def getShortcutsQgis(self):
-        return [
-            {
-                'shorcut': 'Z',
-                'descricao': 'Sair do QGIS'
-            },
-            {
-                'shorcut': 'Z',
-                'descricao': 'Exit QGIS'
-            }
-        ]
+    
