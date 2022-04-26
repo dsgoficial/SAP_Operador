@@ -238,12 +238,12 @@ class QgisApi(IQgisApi):
 
     def setActionShortcut(self, actionName, shortcut):
         for a in gui.QgsGui.shortcutsManager().listActions():
-            if actionName.lower() == a.text().lower():
-                a.setShortcut('')
-                gui.QgsGui.shortcutsManager().setObjectKeySequence(a, shortcut)
             if shortcut.lower() == a.shortcut().toString().lower():
                 a.setShortcut('')
                 gui.QgsGui.shortcutsManager().setObjectKeySequence(a, '')
+            if actionName.lower() == a.text().lower():
+                a.setShortcut('')
+                gui.QgsGui.shortcutsManager().setObjectKeySequence(a, shortcut)
 
     def canvasRefresh(self):
         iface.mapCanvas().refresh()
