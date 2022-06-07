@@ -85,7 +85,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def loadShortcuts(self):
         shortcuts = self.sapActivity.getShortcuts()
         for shortcut in shortcuts:
-            self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'])
+            self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'] if shortcut['atalho'] else '')
 
     def loadChangeStyleTool(self, stylesName):
         if not self.changeStyleWidget:
@@ -181,6 +181,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def loadActivityLayers(self):
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+        print({ 
+            'dbName' : self.sapActivity.getDatabaseName(), 
+            'dbHost' : self.sapActivity.getDatabaseServer(), 
+            'layerNames' : self.getActivityLayerNames(), 
+            'dbPassword' : self.sapActivity.getDatabasePassword(), 
+            'dbPort' : self.sapActivity.getDatabasePort(), 
+            'dbUser' : self.sapActivity.getDatabaseUserName() 
+        })
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
             'dbHost' : self.sapActivity.getDatabaseServer(), 
