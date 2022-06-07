@@ -91,7 +91,7 @@ class WindowsUpdater:
         self.deleteFolder(destPath)
         self.createFolder(destPath)
         p = subprocess.Popen(
-             'cmd /u /c "xcopy {0} {1} /s /e /h"'.format(origPath, destPath), 
+             'cmd /u /c "xcopy {0} {1} /s /e /h /Y"'.format(origPath, destPath), 
              stdout=subprocess.PIPE, 
              shell=True
         )
