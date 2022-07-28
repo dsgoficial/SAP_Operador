@@ -23,6 +23,10 @@ class RemoteSapCtrl(SapCtrl):
         self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
 
     def setupActivityDataModel(self, data):
+        if not('login' in data):
+            data['login'] = self.qgis.getProjectVariable('productiontools:user')
+        if not('senha' in data):
+            data['senha'] = self.qgis.getProjectVariable('productiontools:password')
         self.activityDataModel.setData( data ) 
 
     def getActivityDataModel(self):
@@ -70,7 +74,8 @@ class RemoteSapCtrl(SapCtrl):
     def getActivity(self):
         response = self.sapApi.getActivity()
         if 'dados' in response and response['dados']:  
-            self.activityDataModel.setData(response)
+            self.setupActivityDataModel(response)
+            #self.activityDataModel.setData(response)
             self.qgis.setProjectVariable(
                 'productiontools:activityName', 
                 self.activityDataModel.getDescription()
@@ -84,7 +89,8 @@ class RemoteSapCtrl(SapCtrl):
             return None
         response = self.initActivity()
         if response:
-            self.activityDataModel.setData(response)
+            self.setupActivityDataModel(response)
+            #self.activityDataModel.setData(response)
             return self.activityDataModel
         self.showInfoMessageBox(
             self.qgis.getMainWindow(),
@@ -103,8 +109,8 @@ class RemoteSapCtrl(SapCtrl):
                 response['message']
             )
             return None
-        response['usuario'] = self.qgis.getProjectVariable('productiontools:user')
-        response['senha'] = self.qgis.getProjectVariable('productiontools:password')
+        #response['usuario'] = self.qgis.getProjectVariable('productiontools:user')
+        #response['senha'] = self.qgis.getProjectVariable('productiontools:password')
         return response
 
     def endActivity(self, withoutCorrection):
@@ -160,5 +166,6 @@ class RemoteSapCtrl(SapCtrl):
         if not response:
             return True   
         currentActivity = self.dataModelFactory.createDataModel('SapActivityHttp')
-        currentActivity.setData(response)
+        self.setupActivityDataModel(response)
+        #currentActivity.setData(response)
         return self.qgis.getProjectVariable('productiontools:activityName') == currentActivity.getDescription()
