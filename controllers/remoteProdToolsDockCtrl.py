@@ -181,14 +181,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def loadActivityLayers(self):
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        print({ 
-            'dbName' : self.sapActivity.getDatabaseName(), 
-            'dbHost' : self.sapActivity.getDatabaseServer(), 
-            'layerNames' : self.getActivityLayerNames(), 
-            'dbPassword' : self.sapActivity.getDatabasePassword(), 
-            'dbPort' : self.sapActivity.getDatabasePort(), 
-            'dbUser' : self.sapActivity.getDatabaseUserName() 
-        })
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
             'dbHost' : self.sapActivity.getDatabaseServer(), 
