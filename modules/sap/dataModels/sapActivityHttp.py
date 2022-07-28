@@ -276,19 +276,12 @@ class SapActivityHttp:
         return path.split(':')[0]
 
     def getDatabasePort(self):
-<<<<<<< HEAD
         path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
         return path.split(':')[1].split('/')[0]
 
     def getDatabaseName(self):
         path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
         return path.split(':')[1].split('/')[1]
-=======
-        return self.getData()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[1].split('/')[0]
-
-    def getDatabaseName(self):
-        return self.getData()['dados']['atividade']['dado_producao']['configuracao_producao'].split(':')[1].split('/')[1]
->>>>>>> 8b571dfdb0773f1e288a0689082b9278f349463c
     
     def getWorkUnitGeometry(self):
         return self.getData()['dados']['atividade']['geom']
