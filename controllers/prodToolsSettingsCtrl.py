@@ -230,7 +230,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             'qgis/digitizing/default_snapping_tolerance' : '10',
             'qgis/digitizing/default_snap_enabled' : 'true', 
             u'qgis/digitizing/default_snap_type' : u'Vertex',
-            'Map/scales' : '1:2217000,1:740000,1:370000,1:250000,1:100000,1:85000,1:50000,1:25000,1:10000,1:5000,1:2000,1:1000,1:500,1:250',
+            'Map/scales' : '1:2217000,1:740000,1:370000,1:250000,1:185000,1:100000,1:50000,1:25000,1:10000,1:5000,1:2000,1:1000,1:500,1:250',
             'qgis/digitizing/line_width' : '3',
             'qgis/digitizing/line_color_alpha' : '63',
             'qgis/digitizing/fill_color_alpha' : '40',
