@@ -78,6 +78,9 @@ class QgisCtrl(IQgisCtrl):
     def setActionShortcut(self, actionName, shortcut):
         self.apiQGis.setActionShortcut(actionName, shortcut)
 
+    def cleanDuplicateShortcut(self, actionName, shortcut):
+        self.apiQGis.cleanDuplicateShortcut(actionName, shortcut)
+
     def addMenuBar(self, name):
         return self.apiQGis.addMenuBar(name)
 
