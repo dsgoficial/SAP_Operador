@@ -76,7 +76,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.prodToolsSettings.addActionMenu(self.prevStyleAction)
 
     def closedDock(self):
-        #self.changeStyleWidget.clearStyles() if self.changeStyleWidget else ''
+        if self.changeStyleWidget:
+            self.changeStyleWidget.clearStyles()
+            self.changeStyleWidget.setEnabled(False)
         self.productionTools.close() if self.productionTools else ''
         
     def authUser(self, username, password, server):
