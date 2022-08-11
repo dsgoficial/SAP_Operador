@@ -109,6 +109,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def loadShortcuts(self):
         shortcuts = self.sapActivity.getShortcuts()
         for shortcut in shortcuts:
+            self.qgis.cleanDuplicateShortcut(shortcut['ferramenta'], shortcut['atalho'] if shortcut['atalho'] else '')
+        for shortcut in shortcuts:
             self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'] if shortcut['atalho'] else '')
 
     def loadChangeStyleTool(self, stylesName):

@@ -26,6 +26,8 @@ class SapActivityHttp:
         return []
 
     def getDescription(self):
+        if not self.getData():
+            return ''
         return self.getData()['dados']['atividade']['nome']
 
     def getUserName(self):
