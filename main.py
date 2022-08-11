@@ -68,6 +68,8 @@ class Main:
 
     def initGui(self):
         self.qgisCtrl.load()
+        self.prodToolsSettingsCtrl.load()
+        self.remoteProdToolsDockCtrl.loadChangeStyleWidget()
         self.action = self.qgisCtrl.createAction(
             Config.NAME,
             self.getPluginIconPath(),
@@ -75,7 +77,7 @@ class Main:
         )
         self.qgisCtrl.addActionToolBar(self.action)
         self.qgisCtrl.loadProcessingProvider(self.getPluginIconPath())
-        self.prodToolsSettingsCtrl.load()
+        
         
     def unload(self):
         self.remoteProdToolsDockCtrl.unload()

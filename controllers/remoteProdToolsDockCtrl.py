@@ -44,7 +44,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.sapActivity = None
         self.productionTools = None
         self.changeStyleWidget = None
-        self.changeStyleAction = None
+        self.nextStyleAction = None
+        self.prevStyleAction = None
         self.qgis.on('ReadProject', self.readProjectCallback)
         self.loadedLayerIds = []
         self.acquisitionMenu = None
@@ -52,6 +53,27 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'ValidateUserOperations', 
             self.qgis 
         )
+
+    def loadChangeStyleWidget(self):
+        self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
+        self.qgis.addWidgetToolBar(self.changeStyleWidget)
+        self.changeStyleWidget.setEnabled(False)
+        if not self.nextStyleAction: 
+            self.nextStyleAction = self.qgis.createAction(
+                'Próximo estilo',
+                os.path.join(self.iconRootPath, 'nextStyle.png'),
+                lambda:''
+            )
+            self.changeStyleWidget.setNextAction(self.nextStyleAction)   
+            self.prodToolsSettings.addActionMenu(self.nextStyleAction)
+        if not self.prevStyleAction: 
+            self.prevStyleAction = self.qgis.createAction(
+                'Último estilo',
+                os.path.join(self.iconRootPath, 'prevStyle.png'),
+                lambda:''
+            )
+            self.changeStyleWidget.setPrevAction(self.prevStyleAction)   
+            self.prodToolsSettings.addActionMenu(self.prevStyleAction)
 
     def closedDock(self):
         #self.changeStyleWidget.clearStyles() if self.changeStyleWidget else ''
@@ -88,16 +110,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.qgis.setActionShortcut(shortcut['ferramenta'], shortcut['atalho'] if shortcut['atalho'] else '')
 
     def loadChangeStyleTool(self, stylesName):
-        if not self.changeStyleWidget:
-            self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
-            self.qgis.addWidgetToolBar(self.changeStyleWidget)
-        if not self.changeStyleAction:    
-            self.changeStyleAction = self.qgis.createAction(
-                'Paginar estilo',
-                os.path.join(self.iconRootPath, 'changeStyles.png'),
-                self.changeStyleWidget.page
-            )
-            self.qgis.addActionToolBar(self.changeStyleAction)
+        self.changeStyleWidget.setEnabled(True)
         self.changeStyleWidget.clearStyles()
         if not stylesName:
             return

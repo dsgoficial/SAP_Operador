@@ -90,8 +90,8 @@ class QgisCtrl(IQgisCtrl):
     def removeActionDigitizeToolBar(self, action):
         self.apiQGis.removeActionDigitizeToolBar(action)
     
-    def createAction(self, name, iconPath, callback, checkable=False):
-        return self.apiQGis.createAction(name, iconPath, callback, checkable)
+    def createAction(self, name, iconPath, callback, checkable=False, register=False):
+        return self.apiQGis.createAction(name, iconPath, callback, checkable, register)
 
     def deleteAction(self, action):
         self.apiQGis.deleteAction(action)

@@ -59,6 +59,9 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         for action in self.getMenuBarActions():
             self.menuBarMain.addAction(action)
 
+    def addActionMenu(self, action):
+        self.menuBarMain.addAction(action)
+
     def initSaveTimer(self):
         if self.saveTimer:
             self.saveTimer.reset()

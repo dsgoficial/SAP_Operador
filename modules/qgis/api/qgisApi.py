@@ -141,7 +141,7 @@ class QgisApi(IQgisApi):
             return
         return keys[shortcutKeyName]
 
-    def createAction(self, name, iconPath, callback, shortcutKeyName):
+    def createAction(self, name, iconPath, callback, shortcutKeyName, register=False):
         a = QAction(
             QIcon(iconPath),
             name,
@@ -150,6 +150,8 @@ class QgisApi(IQgisApi):
         if self.getShortcutKey(shortcutKeyName):
             a.setShortcut(self.getShortcutKey(shortcutKeyName))
         a.triggered.connect(callback)
+        if register:
+            gui.QgsGui.shortcutsManager().registerAction(a)
         return a
 
     def addActionDigitizeToolBar(self, action):
