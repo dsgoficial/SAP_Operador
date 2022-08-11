@@ -389,6 +389,17 @@ class QgisApi(IQgisApi):
 
     def getMainWindow(self):
         return iface.mainWindow()
+
+    def enableNMEA(self):
+        docks = iface.mainWindow().findChildren(QtWidgets.QDockWidget)
+        GPSInformation = next(filter(lambda o: o.objectName() == 'GPSInformation', docks) , None)
+        if not GPSInformation:
+            return
+        buttons = GPSInformation.findChildren(QtWidgets.QPushButton)
+        mBtnLogFile = next(filter(lambda o: o.objectName() == 'mBtnLogFile', buttons) , None)
+        if not mBtnLogFile:
+            return
+        mBtnLogFile.setEnabled(True)
         
     def updateMainWindow(self, customizationData):
         mSettings = core.QSettings()

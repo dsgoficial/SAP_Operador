@@ -209,6 +209,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Raster Metadata Atribute',
                 'iconPath':os.path.join(iconRootPath, 'raster.png'),
                 'callback': lambda: self.rasterMetadata.openDialog()
+            },
+            {
+                'name': 'Habilitar NMEA',
+                'iconPath':os.path.join(iconRootPath, 'nmea.png'),
+                'callback': self.qgis.enableNMEA
             }
         ]
 

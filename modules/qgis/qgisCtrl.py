@@ -194,3 +194,6 @@ class QgisCtrl(IQgisCtrl):
 
     def getVisibleRasters(self):
         return self.apiQGis.getVisibleRasters()
+
+    def enableNMEA(self):
+        self.apiQGis.enableNMEA()
