@@ -257,9 +257,9 @@ class QgisApi(IQgisApi):
 
     def setActionShortcut(self, actionName, shortcut):
         for a in gui.QgsGui.shortcutsManager().listActions():
-            if not(actionName.lower() == a.text().lower()):
+            if not(actionName.lower() == a.text().lower().replace('&','')):
                 continue
-            a.setShortcut('')
+            a.setShortcut(shortcut)
             gui.QgsGui.shortcutsManager().setObjectKeySequence(a, shortcut)
 
     def canvasRefresh(self):
