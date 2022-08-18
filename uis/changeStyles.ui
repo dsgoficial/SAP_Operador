@@ -2,11 +2,14 @@
 <ui version="4.0">
  <class>Form</class>
  <widget class="QWidget" name="Form">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>280</width>
+    <width>410</width>
     <height>48</height>
    </rect>
   </property>
@@ -23,6 +26,20 @@
    </item>
    <item row="0" column="1">
     <widget class="QComboBox" name="stylesCb"/>
+   </item>
+   <item row="0" column="2">
+    <widget class="QToolButton" name="nextTBtn">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="3">
+    <widget class="QToolButton" name="prevTBtn">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

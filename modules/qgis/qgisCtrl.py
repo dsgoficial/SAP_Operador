@@ -78,6 +78,9 @@ class QgisCtrl(IQgisCtrl):
     def setActionShortcut(self, actionName, shortcut):
         self.apiQGis.setActionShortcut(actionName, shortcut)
 
+    def cleanDuplicateShortcut(self, actionName, shortcut):
+        self.apiQGis.cleanDuplicateShortcut(actionName, shortcut)
+
     def addMenuBar(self, name):
         return self.apiQGis.addMenuBar(name)
 
@@ -87,8 +90,8 @@ class QgisCtrl(IQgisCtrl):
     def removeActionDigitizeToolBar(self, action):
         self.apiQGis.removeActionDigitizeToolBar(action)
     
-    def createAction(self, name, iconPath, callback, checkable=False):
-        return self.apiQGis.createAction(name, iconPath, callback, checkable)
+    def createAction(self, name, iconPath, callback, checkable=False, register=False):
+        return self.apiQGis.createAction(name, iconPath, callback, checkable, register)
 
     def deleteAction(self, action):
         self.apiQGis.deleteAction(action)
@@ -191,3 +194,6 @@ class QgisCtrl(IQgisCtrl):
 
     def getVisibleRasters(self):
         return self.apiQGis.getVisibleRasters()
+
+    def enableNMEA(self):
+        self.apiQGis.enableNMEA()

@@ -24,12 +24,27 @@ class ChangeStyles(Widget):
     def clearStyles(self):
         self.stylesCb.clear()
 
-    def page(self):
+    def next(self):
         nextIndex = self.stylesCb.currentIndex() + 1
         if nextIndex == self.stylesCb.count():
             self.stylesCb.setCurrentIndex(0)
             return
         self.stylesCb.setCurrentIndex(nextIndex)
+
+    def prev(self):
+        nextIndex = self.stylesCb.currentIndex() - 1
+        if nextIndex < 0:
+            self.stylesCb.setCurrentIndex(0)
+            return
+        self.stylesCb.setCurrentIndex(nextIndex)
+
+    def setNextAction(self, action):
+        action.triggered.connect(self.next)
+        self.nextTBtn.setDefaultAction(action)
+
+    def setPrevAction(self, action):
+        action.triggered.connect(self.prev)
+        self.prevTBtn.setDefaultAction(action)
 
     @QtCore.pyqtSlot(str)
     def on_stylesCb_currentTextChanged(self, text):

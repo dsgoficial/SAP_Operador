@@ -141,7 +141,7 @@ class QgisApi(IQgisApi):
             return
         return keys[shortcutKeyName]
 
-    def createAction(self, name, iconPath, callback, shortcutKeyName):
+    def createAction(self, name, iconPath, callback, shortcutKeyName, register=False):
         a = QAction(
             QIcon(iconPath),
             name,
@@ -150,6 +150,8 @@ class QgisApi(IQgisApi):
         if self.getShortcutKey(shortcutKeyName):
             a.setShortcut(self.getShortcutKey(shortcutKeyName))
         a.triggered.connect(callback)
+        if register:
+            gui.QgsGui.shortcutsManager().registerAction(a)
         return a
 
     def addActionDigitizeToolBar(self, action):
@@ -246,14 +248,19 @@ class QgisApi(IQgisApi):
                 continue
             QtCore.QSettings().setValue(qgisVariable, '')
 
+    def cleanDuplicateShortcut(self, actionName, shortcut):
+        for a in gui.QgsGui.shortcutsManager().listActions():
+            if not( shortcut.lower() == a.shortcut().toString().lower() ):
+                continue
+            a.setShortcut('')
+            gui.QgsGui.shortcutsManager().setObjectKeySequence(a, '')
+
     def setActionShortcut(self, actionName, shortcut):
         for a in gui.QgsGui.shortcutsManager().listActions():
-            if shortcut.lower() == a.shortcut().toString().lower():
-                a.setShortcut('')
-                gui.QgsGui.shortcutsManager().setObjectKeySequence(a, '')
-            if actionName.lower() == a.text().lower():
-                a.setShortcut('')
-                gui.QgsGui.shortcutsManager().setObjectKeySequence(a, shortcut)
+            if not(actionName.lower() == a.text().lower().replace('&','')):
+                continue
+            a.setShortcut(shortcut)
+            gui.QgsGui.shortcutsManager().setObjectKeySequence(a, shortcut)
 
     def canvasRefresh(self):
         iface.mapCanvas().refresh()
@@ -382,6 +389,17 @@ class QgisApi(IQgisApi):
 
     def getMainWindow(self):
         return iface.mainWindow()
+
+    def enableNMEA(self):
+        docks = iface.mainWindow().findChildren(QtWidgets.QDockWidget)
+        GPSInformation = next(filter(lambda o: o.objectName() == 'GPSInformation', docks) , None)
+        if not GPSInformation:
+            return
+        buttons = GPSInformation.findChildren(QtWidgets.QPushButton)
+        mBtnLogFile = next(filter(lambda o: o.objectName() == 'mBtnLogFile', buttons) , None)
+        if not mBtnLogFile:
+            return
+        mBtnLogFile.setEnabled(True)
         
     def updateMainWindow(self, customizationData):
         mSettings = core.QSettings()

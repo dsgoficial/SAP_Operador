@@ -59,6 +59,9 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         for action in self.getMenuBarActions():
             self.menuBarMain.addAction(action)
 
+    def addActionMenu(self, action):
+        self.menuBarMain.addAction(action)
+
     def initSaveTimer(self):
         if self.saveTimer:
             self.saveTimer.reset()
@@ -93,7 +96,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         settings = self.getCustomQgisSettings()
         self.qgis.cleanShortcuts(settings)
         self.qgis.setSettings(settings)
-        self.qgis.setActionShortcut('EnableSnappingAction', '')
+        #self.qgis.setActionShortcut('EnableSnappingAction', '')
 
     def onOffLayers(self):
         self.qgis.setHiddenLayers()
@@ -206,6 +209,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Raster Metadata Atribute',
                 'iconPath':os.path.join(iconRootPath, 'raster.png'),
                 'callback': lambda: self.rasterMetadata.openDialog()
+            },
+            {
+                'name': 'Habilitar NMEA',
+                'iconPath':os.path.join(iconRootPath, 'nmea.png'),
+                'callback': self.qgis.enableNMEA
             }
         ]
 
@@ -230,7 +238,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             'qgis/digitizing/default_snapping_tolerance' : '10',
             'qgis/digitizing/default_snap_enabled' : 'true', 
             u'qgis/digitizing/default_snap_type' : u'Vertex',
-            'Map/scales' : '1:250000,1:100000,1:50000,1:25000,1:10000,1:5000,1:2000,1:1000,1:500,1:250',
+            'Map/scales' : '1:2217000,1:740000,1:370000,1:250000,1:185000,1:100000,1:50000,1:25000,1:10000,1:5000,1:2000,1:1000,1:500,1:250',
             'qgis/digitizing/line_width' : '3',
             'qgis/digitizing/line_color_alpha' : '63',
             'qgis/digitizing/fill_color_alpha' : '40',
