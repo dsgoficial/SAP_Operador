@@ -211,7 +211,7 @@ class QgisApi(IQgisApi):
                 """ mapLayerStyle = core.QgsMapLayerStyle(style['qml'])
                 layer.styleManager().addStyle(style['name'], mapLayerStyle) """
                 doc = QDomDocument()
-                doc.setContent(data['qml'])
+                doc.setContent(style['qml'])
                 layer.importNamedStyle(doc, core.QgsMapLayer.Symbology | core.QgsMapLayer.Labeling )
                 layer.styleManager().addStyleFromLayer(style['name'])
             layer.styleManager().removeStyle('default')
