@@ -12,6 +12,7 @@ from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignExpressionF
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignConditionalStyleToLayers import AssignConditionalStyleToLayers
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.runFMESAP import RunFMESAP
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.ruleStatistics import RuleStatistics
+from Ferramentas_Producao.modules.dsgTools.processingLaunchers.setRemoveDuplicateNodePropertyOnLayers import SetRemoveDuplicateNodePropertyOnLayers
 
 
 class ProcessingQgisFactory(IProcessingFactory):
@@ -33,7 +34,8 @@ class ProcessingQgisFactory(IProcessingFactory):
             'AssignExpressionFieldToLayers': AssignExpressionFieldToLayers,
             'AssignConditionalStyleToLayers': AssignConditionalStyleToLayers,
             'RuleStatistics': RuleStatistics,
-            'RunFMESAP': RunFMESAP
+            'RunFMESAP': RunFMESAP,
+            'SetRemoveDuplicateNodePropertyOnLayers': SetRemoveDuplicateNodePropertyOnLayers,
         }
         return processingNames[processingName](controller)
             
