@@ -8,6 +8,7 @@ from PyQt5 import QtWidgets
 from qgis import core, gui, utils
 
 import os
+import json
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
@@ -253,12 +254,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'actions': self.sapActivity.getLayerActions(),
             'layerIds': loadedLayerIds
         })
-
-        assignExpressionFieldToLayers = self.processingFactoryDsgTools.createProcessing('AssignExpressionFieldToLayers', self)
-        assignExpressionFieldToLayers.run({
-            'expressions': self.sapActivity.getLayerExpressionField(),
-            'layerIds': loadedLayerIds
-        })
+        rules = self.sapActivity.getRules()
+        if rules != []:
+            assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
+            assignFormatRulesToLayers.run({
+                'rules': rules,
+                'layerIds': loadedLayerIds
+            })
 
         assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({

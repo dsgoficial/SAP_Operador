@@ -13,6 +13,7 @@ from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignConditional
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.runFMESAP import RunFMESAP
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.ruleStatistics import RuleStatistics
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.setRemoveDuplicateNodePropertyOnLayers import SetRemoveDuplicateNodePropertyOnLayers
+from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignFormatRulesToLayers import AssignFormatRulesToLayers
 
 
 class ProcessingQgisFactory(IProcessingFactory):
@@ -36,6 +37,7 @@ class ProcessingQgisFactory(IProcessingFactory):
             'RuleStatistics': RuleStatistics,
             'RunFMESAP': RunFMESAP,
             'SetRemoveDuplicateNodePropertyOnLayers': SetRemoveDuplicateNodePropertyOnLayers,
+            'AssignFormatRulesToLayers': AssignFormatRulesToLayers,
         }
         return processingNames[processingName](controller)
             

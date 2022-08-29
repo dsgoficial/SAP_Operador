@@ -3,10 +3,10 @@ from qgis import core, gui
 import processing
 import json
 
-class AssignExpressionFieldToLayers(Processing):
+class AssignFormatRulesToLayers(Processing):
     
     def __init__(self, controller):
-        super(AssignExpressionFieldToLayers, self).__init__()
+        super(AssignFormatRulesToLayers, self).__init__()
         self.processingId = 'dsgtools:assignformatrulestolayersalgorithm'
 
     def getParameters(self, parameters):
@@ -18,6 +18,7 @@ class AssignExpressionFieldToLayers(Processing):
             uris.append(uri)
         return {
                 'FILE': '.json',
-                'TEXT': json.dumps(parameters['expressions']),
+                'TEXT': json.dumps(parameters['rules']),
+                'CLEAN_BEFORE_ASSIGN': True,
                 'INPUT_LAYERS' : uris
             }
