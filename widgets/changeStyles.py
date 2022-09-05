@@ -1,6 +1,6 @@
 from Ferramentas_Producao.widgets.widget import Widget
 
-import os
+import os, sip
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 
 class ChangeStyles(Widget):
@@ -22,6 +22,8 @@ class ChangeStyles(Widget):
         self.stylesCb.setCurrentIndex(self.stylesCb.findText(defaultStyle))
 
     def clearStyles(self):
+        if sip.isdeleted(self.stylesCb):
+            return
         self.stylesCb.clear()
 
     def next(self):

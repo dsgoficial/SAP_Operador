@@ -18,7 +18,7 @@ class AssignFormatRulesToLayers(Processing):
             uris.append(uri)
         return {
                 'FILE': '.json',
-                'TEXT': json.dumps(parameters['rules']),
+                'TEXT': parameters['rules'][0]['regra'],
                 'CLEAN_BEFORE_ASSIGN': True,
                 'INPUT_LAYERS' : uris
             }

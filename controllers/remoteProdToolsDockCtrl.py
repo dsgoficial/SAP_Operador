@@ -9,6 +9,7 @@ from qgis import core, gui, utils
 
 import os
 import json
+import sip
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
@@ -77,7 +78,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.prodToolsSettings.addActionMenu(self.prevStyleAction)
 
     def closedDock(self):
-        if self.changeStyleWidget:
+        if not sip.isdeleted(self.changeStyleWidget):
             self.changeStyleWidget.clearStyles()
             self.changeStyleWidget.setEnabled(False)
         self.productionTools.close() if self.productionTools else ''
@@ -262,11 +263,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'layerIds': loadedLayerIds
             })
 
-        assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
+        """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({
             'conditionals': self.sapActivity.getLayerConditionalStyle(),
             'layerIds': loadedLayerIds
-        })
+        }) """
 
         setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
         setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})

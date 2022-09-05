@@ -306,16 +306,11 @@ class SapActivityHttp:
         ]
 
     def getRuleRoutines(self):
-        format_rules_data = {}
-        for i, d in enumerate(self.getRules()):
-            d['tipo_estilo'] = d['grupo_regra']
-            r, g, b = d['cor_rgb'].split(',')
-            d['corRgb'] = [ int(r), int(g), int(b) ]
-            format_rules_data[i] = d
-        if not format_rules_data:
+        rules = self.getRules()
+        if not rules:
             return []
         return[ {
-            'ruleStatistics' : format_rules_data, 
+            'ruleStatistics' : rules[0]['regra'], 
             'description' : "Estatísticas de regras.",
             'routineType' : 'rules'
         }]

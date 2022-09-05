@@ -31,5 +31,5 @@ class RuleStatistics(Processing):
         return { 
             'INPUTLAYERS' : layers,
             'RULEFILE' : '.json', 
-            'RULEDATA' : json.dumps(parameters['rules']) 
+            'RULEDATA' : parameters['rules']
         }
