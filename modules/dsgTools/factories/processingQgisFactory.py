@@ -14,6 +14,7 @@ from Ferramentas_Producao.modules.dsgTools.processingLaunchers.runFMESAP import 
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.ruleStatistics import RuleStatistics
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.setRemoveDuplicateNodePropertyOnLayers import SetRemoveDuplicateNodePropertyOnLayers
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignFormatRulesToLayers import AssignFormatRulesToLayers
+from Ferramentas_Producao.modules.dsgTools.processingLaunchers.createReviewGrid import CreateReviewGrid
 
 
 class ProcessingQgisFactory(IProcessingFactory):
@@ -38,6 +39,7 @@ class ProcessingQgisFactory(IProcessingFactory):
             'RunFMESAP': RunFMESAP,
             'SetRemoveDuplicateNodePropertyOnLayers': SetRemoveDuplicateNodePropertyOnLayers,
             'AssignFormatRulesToLayers': AssignFormatRulesToLayers,
+            'CreateReviewGrid': CreateReviewGrid,
         }
         return processingNames[processingName](controller)
             

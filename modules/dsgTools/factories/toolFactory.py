@@ -1,4 +1,5 @@
 from Ferramentas_Producao.modules.dsgTools.toolLaunchers.customFeatureTool import CustomFeatureTool
+from Ferramentas_Producao.modules.dsgTools.toolbarLaunchers.reviewToolbar import ReviewToolBar
 
 class ToolFactory:
 
@@ -7,7 +8,8 @@ class ToolFactory:
 
     def getTool(self, toolName, controller):
         toolNames = {
-            'CustomFeatureTool': CustomFeatureTool
+            'CustomFeatureTool': CustomFeatureTool,
+            'ReviewToolBar': ReviewToolBar,
         }
         return toolNames[toolName](controller)
             

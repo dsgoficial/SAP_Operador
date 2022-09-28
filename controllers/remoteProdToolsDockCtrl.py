@@ -445,3 +445,70 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.acquisitionMenu = customFeatureTool.run( self.getSapMenus() )
         except Exception as e:
             self.showErrorMessageBox( None, 'Erro', str(e) )
+    
+    def loadReviewTool(self):
+        frameQuery = self.sapActivity.getFrameQuery()
+        if not self.frameLoaded( frameQuery ):
+            self.qgis.loadInputData({
+                'query': self.sapActivity.getFrameQuery(),
+                'epsg': self.sapActivity.getEPSG(),
+                'nome': 'moldura',
+                'tipo_insumo_id': 100,
+                'qml': self.sapActivity.getFrameQml()
+            })
+        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+        result = loadLayersFromPostgis.run({ 
+            'dbName' : self.sapActivity.getDatabaseName(), 
+            'dbHost' : self.sapActivity.getDatabaseServer(), 
+            'layerNames' : ['aux_grid_revisao_a'], 
+            'dbPassword' : self.sapActivity.getDatabasePassword(), 
+            'dbPort' : self.sapActivity.getDatabasePort(), 
+            'dbUser' : self.sapActivity.getDatabaseUserName() 
+        })
+        loadedLayerIds = result['OUTPUT']
+        if loadedLayerIds == []:
+            return
+        gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
+        assingFilterToLayers.run(
+            {
+                'layers': [
+                    {
+                        'filter': f'atividade_id = {self.sapActivity.getId()}',
+                        'nome': 'aux_grid_revisao_a',
+                        'schema': gridLayer.dataProvider().uri().schema()
+                    }
+                ]
+            }
+        )
+        utils.iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        group = rootNode.findGroup('MOLDURA_E_INSUMOS')
+        lyrNode = rootNode.findLayer(loadedLayerIds[0])
+        myClone = lyrNode.clone()
+        group.insertChildNode(0, myClone)
+        rootNode.removeChildNode(lyrNode)
+        utils.iface.mapCanvas().freeze(False)
+        reviewToolBar = self.toolFactoryDsgTools.getTool('ReviewToolBar', self)
+        if gridLayer.featureCount() != 0:
+            reviewToolBar.run(gridLayer)
+            return
+        createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
+        result = createReviewGrid.run({
+            'input': core.QgsProject.instance().mapLayersByName('moldura')[0],
+            'x_grid_size': 0.01,
+            'y_grid_size': 0.008,
+            'related_task_id': self.sapActivity.getId()
+        })
+        outputLayer = result['OUTPUT']
+        gridLayer.startEditing()
+        gridLayer.beginEditCommand('FP: populando grid')
+        gridLayer.addFeatures(
+            core.QgsVectorLayerUtils.makeFeaturesCompatible(
+                outputLayer.getFeatures(),
+                gridLayer
+            )
+        )
+        gridLayer.endEditCommand()
+        gridLayer.commitChanges()
+        reviewToolBar.run(gridLayer)
