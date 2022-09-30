@@ -404,8 +404,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         dialog.exec_()
 
     def showHtmlMessageDialog(self, parent, title, message):
-        htmlMessageDlg = self.messageFactory.createMessage('HtmlMessageDialog')
-        htmlMessageDlg.show(parent, title, message)
+        self.htmlMessageDlg = self.messageFactory.createMessage('HtmlMessageDialog')
+        self.htmlMessageDlg.show(parent, title, message)
 
     def showInfoMessageBox(self, parent, title, message):
         messageDlg = self.messageFactory.createMessage('InfoMessageBox')
