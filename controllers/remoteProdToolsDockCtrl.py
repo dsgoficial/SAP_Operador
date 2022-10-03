@@ -470,25 +470,16 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
         assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run(
-            {
-                'layers': [
-                    {
-                        'filter': f'atividade_id = {self.sapActivity.getId()}',
-                        'nome': 'aux_grid_revisao_a',
-                        'schema': gridLayer.dataProvider().uri().schema()
-                    }
-                ]
-            }
-        )
-        utils.iface.mapCanvas().freeze(True)
-        rootNode = core.QgsProject.instance().layerTreeRoot()
-        group = rootNode.findGroup('MOLDURA_E_INSUMOS')
-        lyrNode = rootNode.findLayer(loadedLayerIds[0])
-        myClone = lyrNode.clone()
-        group.insertChildNode(0, myClone)
-        rootNode.removeChildNode(lyrNode)
-        utils.iface.mapCanvas().freeze(False)
+        assingFilterToLayers.run({
+            'layers': [
+                {
+                    'filter': f'atividade_id = {self.sapActivity.getId()}',
+                    'nome': 'aux_grid_revisao_a',
+                    'schema': gridLayer.dataProvider().uri().schema()
+                }
+            ]
+        })
+        self.moveLayerToGroup(loadedLayerIds[0])
         reviewToolBar = self.toolFactoryDsgTools.getTool('ReviewToolBar', self)
         if gridLayer.featureCount() != 0:
             reviewToolBar.run(gridLayer)
@@ -501,14 +492,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'related_task_id': self.sapActivity.getId()
         })
         outputLayer = result['OUTPUT']
-        gridLayer.startEditing()
-        gridLayer.beginEditCommand('FP: populando grid')
-        gridLayer.addFeatures(
-            core.QgsVectorLayerUtils.makeFeaturesCompatible(
-                outputLayer.getFeatures(),
-                gridLayer
-            )
-        )
-        gridLayer.endEditCommand()
-        gridLayer.commitChanges()
-        reviewToolBar.run(gridLayer)
+        reviewToolBar.run(gridLayer, outputLayer=outputLayer)
+
+    def moveLayerToGroup(self, loadedLayerId):
+        utils.iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        group = rootNode.findGroup('MOLDURA_E_INSUMOS')
+        lyrNode = rootNode.findLayer(loadedLayerId)
+        myClone = lyrNode.clone()
+        group.insertChildNode(0, myClone)
+        rootNode.removeChildNode(lyrNode)
+        utils.iface.mapCanvas().freeze(False)
