@@ -108,6 +108,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.loadShortcuts()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        self.qaToolBox.refreshToolboxObject()
 
     def loadShortcuts(self):
         shortcuts = self.sapActivity.getShortcuts()
@@ -171,7 +172,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Salve todas suas alterações antes de finalizar!'
             )
             return
-        if len(self.getDSGToolsQAWorkflows()) > 0 and not self.qaToolBox.allWorkflowsAreFinishedWithoutFlags():
+        if len(self.getDSGToolsQAWorkflows()) > 0 and (self.qaToolBox is None or not self.qaToolBox.allWorkflowsAreFinishedWithoutFlags()):
             self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',
@@ -518,5 +519,5 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def loadDsgToolsQAToolbox(self):
         if self.qaToolBox is not None:
             return
-        qaToolBox = self.toolFactoryDsgTools.getTool('QAToolBox', self)
-        self.qaToolBox = qaToolBox.run(self.getDSGToolsQAWorkflows())
+        self.qaToolBox = self.toolFactoryDsgTools.getTool('QAToolBox', self)
+        self.qaToolBox.run(self.getDSGToolsQAWorkflows())
