@@ -438,6 +438,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getSapMenus(self):
         return self.sapActivity.getMenus()
 
+    def getDSGToolsQAWorkflows(self):
+        return self.sapActivity.getWorkflows()
+
     def loadMenu(self):
         try:
             self.acquisitionMenu.removeMenuDock() if self.acquisitionMenu else ''
@@ -503,3 +506,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         group.insertChildNode(0, myClone)
         rootNode.removeChildNode(lyrNode)
         utils.iface.mapCanvas().freeze(False)
+
+    def loadDsgToolsQAToolbox(self):
+        pass
