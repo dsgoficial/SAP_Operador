@@ -55,6 +55,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'ValidateUserOperations', 
             self.qgis 
         )
+        self.qaToolBox = None
 
     def loadChangeStyleWidget(self):
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -168,6 +169,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 self.productionTools,
                 'Aviso',
                 'Salve todas suas alterações antes de finalizar!'
+            )
+            return
+        if len(self.getDSGToolsQAWorkflows()) > 0 and not self.qaToolBox.allWorkflowsAreFinishedWithoutFlags():
+            self.showInfoMessageBox(
+                self.productionTools,
+                'Aviso',
+                'Rode todos os processos de validação do DSGTools e corrija as flags antes de finalizar!'
             )
             return
         self.qgis.cleanProject()
@@ -508,4 +516,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         utils.iface.mapCanvas().freeze(False)
 
     def loadDsgToolsQAToolbox(self):
-        pass
+        if self.qaToolBox is not None:
+            return
+        qaToolBox = self.toolFactoryDsgTools.getTool('QAToolBox', self)
+        self.qaToolBox = qaToolBox.run(self.getDSGToolsQAWorkflows())
