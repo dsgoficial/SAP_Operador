@@ -68,7 +68,7 @@ class SapHttp(ISapApi):
                 "senha" : password,
                 'plugins' : pluginsVersion,
                 'qgis' : gisVersion,
-                'cliente' : 'sap_fg'
+                'cliente' : 'sap_fp'
             }
         )
         responseJson = response.json()
