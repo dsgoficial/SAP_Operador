@@ -19,6 +19,11 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             lambda: self.getController().showReportErrorDialog()
         )
 
+    def hideButtons(self, hide):
+        visible = not hide
+        self.endActivityButton.setVisible(visible)
+        self.reportErrorButton.setVisible(visible)
+
     def setEPSG(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(

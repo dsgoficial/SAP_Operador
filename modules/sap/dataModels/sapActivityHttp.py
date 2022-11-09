@@ -119,7 +119,7 @@ class SapActivityHttp:
 
 
     def getConditionalStyleNames(self):
-        return [ data['descricao'] for data in self.getRules() ]
+        return [ data['nome'] for data in self.getRules() ]
             
     def getLayers(self):
         layers = self.getData()['dados']['atividade']['camadas'][:]

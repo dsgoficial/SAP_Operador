@@ -133,7 +133,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')
-        self.prodToolsSettings.checkPluginUpdates()    
+        self.prodToolsSettings.checkPluginUpdates()  
+        return self.productionTools  
 
     def removeDock(self):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''

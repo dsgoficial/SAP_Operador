@@ -94,6 +94,10 @@ class Main:
             self.remoteProdToolsDockCtrl.closedDock()
         remoteSapCtrl = RemoteSapCtrl( self.qgisCtrl )
         remoteSapCtrl.setupActivityDataModel( activityData )
-        self.remoteProdToolsDockCtrl.loadDockWidget( 
+        productionTools = self.remoteProdToolsDockCtrl.loadDockWidget( 
             remoteSapCtrl.getActivityDataModel()
         )
+        widget = productionTools.getActivityWidget('Atividade:')
+        if not widget:
+            return
+        widget.hideButtons(True)

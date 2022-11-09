@@ -14,6 +14,7 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.shortcutTE.setReadOnly(True)   
         self.tabWidget.removeTab( 3 )
         self.tabWidget.currentChanged.connect(self.handleTabChanged)  
+        self.widgets = []
 
     def handleTabChanged(self, idx):
         if idx == self.getTabIndexByName('errors'):  
@@ -88,7 +89,17 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.mainArea.layout().insertWidget(0, lineA)
 
     def addActivityWidget(self, name, widget):
+        self.widgets.append({
+            'name': name,
+            'widget': widget
+        })
         self.mainArea.layout().insertWidget(0, widget)
+
+    def getActivityWidget(self, name):
+        found = next(filter(lambda item: item['name'] == name, self.widgets), None)
+        if found:
+            return found['widget']
+        return None
 
     def setShortcutDescription(self, description):
         self.shortcutTE.setHtml(description)
