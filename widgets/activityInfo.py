@@ -15,9 +15,13 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             lambda: self.getController().showEndActivityDialog()
         )
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
-        self.reportErrorButton.clicked.connect(
-            lambda: self.getController().showReportErrorDialog()
-        )
+        self.reportErrorButton.clicked.connect(self.reportError)
+
+    def reportError(self):
+        try:
+            self.getController().showReportErrorDialog()
+        except Exception as e:
+            self.showErrorMessageBox('Aviso', str(e))
 
     def hideButtons(self, hide):
         visible = not hide
