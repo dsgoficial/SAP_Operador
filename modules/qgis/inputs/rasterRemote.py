@@ -14,15 +14,8 @@ class RasterRemote(InputRaster):
                 '<p>erro: carregamento de raster remoto apenas no Windows</p>'
             )
             return
-
-        unloadedFiles = []
-        for d in fileData:
-            if not self.loadRaster(d['caminho'], d['nome'], d['epsg']):
-                unloadedFiles.append(d)
-        
-        if not unloadedFiles:
+        if self.loadRaster(fileData['caminho'], fileData['nome'], fileData['epsg']):
             return
-
         self.showErrorMessageBox(''.join(
             [
                 '<p>erro: falha ao carregar raster "{0}" remotamente</p>'.format(d['caminho'])
