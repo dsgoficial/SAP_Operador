@@ -358,6 +358,15 @@ class SapActivityHttp:
     def getEPSG(self):
         return self.getWorkUnitGeometry().split(';')[0].split('=')[1]
 
+    def getProject(self):
+        return self.getData()['dados']['atividade']['projeto'] if 'projeto' in self.getData()['dados']['atividade'] else '-'
+
+    def getLot(self):
+        return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
+
+    def getScale(self):
+        return '1:{}'.format(self.getData()['dados']['atividade']['denominador_escala']) if 'denominador_escala' in self.getData()['dados']['atividade'] else '-'
+
     def getShortcuts(self):
         return self.getData()['dados']['atividade']['atalhos']
 

@@ -157,6 +157,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getActivityEPSG(self):
         return self.sapActivity.getEPSG()
 
+    def getProject(self):
+        return self.sapActivity.getProject()
+
+    def getLot(self):
+        return self.sapActivity.getLot()
+
+    def getScale(self):
+        return self.sapActivity.getScale()
+
     def getUserName(self):
         return self.sapActivity.getUserName()
 

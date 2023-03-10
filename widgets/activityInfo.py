@@ -28,7 +28,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton.setVisible(visible)
         self.reportErrorButton.setVisible(visible)
 
-    def setEPSG(self, title, description):
+    def addObservation(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
                 "<b>{0}</b> {1}".format(title, description), 
