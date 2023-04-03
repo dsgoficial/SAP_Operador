@@ -214,6 +214,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def loadActivityLayers(self):
         scale = self.sapActivity.getScale()
         self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
+        self.qgis.setProjectVariable('productiontools_scale', int(scale.split(':')[-1]), encrypt=False)
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 
