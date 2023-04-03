@@ -2,7 +2,7 @@ import json, requests, socket
 
 from Ferramentas_Producao.modules.sap.interfaces.ISapApi import ISapApi
 
-TIMEOUT = 15
+TIMEOUT = 60 * 3
 
 class SapHttp(ISapApi):   
 
