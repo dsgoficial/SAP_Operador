@@ -21,8 +21,8 @@ class QgisCtrl(IQgisCtrl):
     def getMainWindow(self):
         return self.apiQGis.getMainWindow()
 
-    def setProjectVariable(self, key, value):
-        self.apiQGis.setProjectVariable(key, value)
+    def setProjectVariable(self, key, value, encrypt=True):
+        self.apiQGis.setProjectVariable(key, value, encrypt)
 
     def getProjectVariable(self, key):
         return self.apiQGis.getProjectVariable(key)

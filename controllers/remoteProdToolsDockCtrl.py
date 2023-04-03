@@ -163,6 +163,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getLot(self):
         return self.sapActivity.getLot()
 
+    def getBlock(self):
+        return self.sapActivity.getBlock()
+
     def getScale(self):
         return self.sapActivity.getScale()
 
@@ -209,6 +212,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sapActivity.getInputs()
 
     def loadActivityLayers(self):
+        scale = self.sapActivity.getScale()
+        self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({ 
             'dbName' : self.sapActivity.getDatabaseName(), 

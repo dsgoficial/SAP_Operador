@@ -55,7 +55,14 @@ class QgisApi(IQgisApi):
     def removeActionToolBar(self, action):
         self.customToolBar.removeAction(action)
     
-    def setProjectVariable(self, key, value):
+    def setProjectVariable(self, key, value, encrypt=True):
+        if not encrypt:
+            core.QgsExpressionContextUtils.setProjectVariable(
+                core.QgsProject().instance(), 
+                key,
+                value
+            )
+            return
         chiper_text = base64.b64encode(value.encode('utf-8'))
         core.QgsExpressionContextUtils.setProjectVariable(
             core.QgsProject().instance(), 

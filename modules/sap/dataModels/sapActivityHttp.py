@@ -11,6 +11,9 @@ class SapActivityHttp:
     def getData(self):
         return self.data
 
+    def getScale(self):
+        return self.getData()['dados']['atividade']['denominador_escala']
+
     def getNotes(self):
         notes = []
         activityData = self.getData()['dados']['atividade']
@@ -360,6 +363,10 @@ class SapActivityHttp:
 
     def getProject(self):
         return self.getData()['dados']['atividade']['projeto'] if 'projeto' in self.getData()['dados']['atividade'] else '-'
+
+    def getBlock(self):
+        print(self.getData())
+        return self.getData()['dados']['atividade']['bloco'] if 'bloco' in self.getData()['dados']['atividade'] else '-'
 
     def getLot(self):
         return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
