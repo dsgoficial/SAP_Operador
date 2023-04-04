@@ -341,8 +341,8 @@ class SapActivityHttp:
         return self.getData()['dados']['usuario_id']
 
     def getLayerFilter(self, layerSchema, layerName):
-        if layerName == u"aux_moldura_a":
-            return u""""mi" = '{}'""".format(self.getWorkUnitName())
+        #if layerName == u"aux_moldura_a":
+        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
         return """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
                 self.getWorkUnitGeometry(),
                 'id',
