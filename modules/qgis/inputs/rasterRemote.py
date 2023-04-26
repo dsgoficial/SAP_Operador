@@ -19,6 +19,6 @@ class RasterRemote(InputRaster):
         self.showErrorMessageBox(''.join(
             [
                 '<p>erro: falha ao carregar raster "{0}" remotamente</p>'.format(d['caminho'])
-                for d in unloadedFiles
+                for d in fileData
             ]
         ))
