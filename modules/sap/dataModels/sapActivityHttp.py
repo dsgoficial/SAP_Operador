@@ -381,9 +381,11 @@ class SapActivityHttp:
         for shortcut in self.getData()['dados']['atividade']['atalhos']:
             if shortcut['idioma'] != 'português':
                 continue
+            if not shortcut['atalho']:
+                continue
             descriptionHtml += '<b>{0}:</b> {1}<br>'.format(
                 shortcut['ferramenta'], 
-                shortcut['atalho'] if shortcut['atalho'] else ''
+                shortcut['atalho']
             )
         return '<div>{0}</div>'.format(descriptionHtml)
         return self.getData()['dados']['atividade']['atalhos']
