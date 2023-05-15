@@ -107,6 +107,7 @@ class Login(QtWidgets.QDialog, ILogin):
 
     @QtCore.pyqtSlot(bool)
     def on_submitBtn_clicked(self):
+        self.submitBtn.setEnabled(False)
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             if self.isCurrentRemoteMode():
@@ -115,6 +116,7 @@ class Login(QtWidgets.QDialog, ILogin):
             self.loginLocal()
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+            self.submitBtn.setEnabled(True)
 
     def loginRemote(self):
         try:

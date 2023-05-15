@@ -91,6 +91,10 @@ class SapHttp(ISapApi):
         )
 
     def checkError(self, response):
+        if response.status_code == 504:
+            raise Exception('Tempo excedido!')
+        if response.status_code == 500:
+            raise Exception('Token expirado, faça o login novamente!')
         if not response.ok:
             raise Exception(response.json()['message'])
 

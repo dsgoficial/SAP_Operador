@@ -101,12 +101,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.prodToolsSettings.checkPluginUpdates()
         if self.productionTools is None:
             return
+        self.removeDock()
         self.sapActivity = self.sap.getActivity()
         if self.sapActivity is None:
-            self.removeDock()
             return
         self.loadShortcuts()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        self.qgis.addDockWidget(self.productionTools, side='left')  
 
     def loadShortcuts(self):
         shortcuts = self.sapActivity.getShortcuts()

@@ -11,11 +11,14 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.setLayout(self.layout)
         self.endActivityButton = QtWidgets.QPushButton('Finalizar', self)
         self.endActivityButton.setEnabled(False)
-        self.endActivityButton.clicked.connect(
-            lambda: self.getController().showEndActivityDialog()
-        )
+        self.endActivityButton.clicked.connect(self.finish)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
         self.reportErrorButton.clicked.connect(self.reportError)
+
+    def finish(self, b):
+        self.endActivityButton.setEnabled(False)
+        self.getController().showEndActivityDialog()
+        self.endActivityButton.setEnabled(True)
 
     def reportError(self):
         try:

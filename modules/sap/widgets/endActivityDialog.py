@@ -34,13 +34,15 @@ class EndActivityDialog(SapDialog):
     @QtCore.pyqtSlot(bool)
     def on_endBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        self.endBtn.setEnabled(False)
         try:
             self.getController().endActivity(withoutCorrection=False)
+            QtWidgets.QApplication.restoreOverrideCursor()
+            self.endBtn.setEnabled(True)
             self.accept()
         except Exception as e:
-            self.showErrorMessageBox('Erro', str(e))
-        finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+            self.showErrorMessageBox('Erro', str(e))
 
     def clear(self):
         self.nameLe.setText('')
