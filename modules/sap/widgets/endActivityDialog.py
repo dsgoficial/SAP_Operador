@@ -10,6 +10,7 @@ class EndActivityDialog(SapDialog):
         self.controller = controller
         self.endBtn.setEnabled(False)
         self.nameLe.textEdited.connect(self.updateEndButton)
+        self.withoutCorrection = False
 
     def setController(self, controller):
         self.controller = controller
@@ -36,7 +37,7 @@ class EndActivityDialog(SapDialog):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.endBtn.setEnabled(False)
         try:
-            self.getController().endActivity(withoutCorrection=False)
+            self.getController().endActivity(withoutCorrection=self.withoutCorrection)
             QtWidgets.QApplication.restoreOverrideCursor()
             self.endBtn.setEnabled(True)
             self.accept()
@@ -49,5 +50,8 @@ class EndActivityDialog(SapDialog):
         
     def closeEvent(self, e):
         self.clear()
+
+    def setWithoutCorrection(self, withoutCorrection):
+        self.withoutCorrection = withoutCorrection
 
     

@@ -42,6 +42,9 @@ class SapActivityHttp:
     def getTypeProductionData(self):
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
 
+    def getStepTypeId(self):
+        return self.getData()['dados']['atividade']['tipo_etapa_id']
+
     def getMenus(self):
         formatedMenus = []
         for data in self.getData()['dados']['atividade']['menus']:
@@ -128,9 +131,17 @@ class SapActivityHttp:
         layers = self.getData()['dados']['atividade']['camadas'][:]
         for layer in layers:
             layer.update({
-                'filter': self.getLayerFilter(layer["schema"], layer["nome"])
+                'filter': self.getLayerFilter(layer)
             }) 
         return layers
+
+    def getNoteLayers(self):
+        layers = self.getData()['dados']['atividade']['camadas'][:]            
+        return [
+            layer
+            for layer in layers
+            if 'camada_apontamento' in layer and layer['camada_apontamento']
+        ]
 
     def getLayersQml(self, styleName):
         layersQml = []
@@ -340,15 +351,24 @@ class SapActivityHttp:
     def getUserId(self):
         return self.getData()['dados']['usuario_id']
 
-    def getLayerFilter(self, layerSchema, layerName):
+    def getLayerFilter(self, layer):
+        layerSchema = layer["schema"]
+        layerName = layer["nome"]
+        
         #if layerName == u"aux_moldura_a":
         #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
-        return """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+        filterDefault = """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
                 self.getWorkUnitGeometry(),
                 'id',
                 layerSchema,
                 layerName,
             )
+        
+        if 'camada_apontamento' in layer and layer['camada_apontamento']:
+            subphaseId = self.getSubphaseId()
+            attributeName =  layer["atributo_filtro_subfase"]
+            filterDefault += """ AND ( "{0}" = '{1}' )""".format(attributeName, subphaseId)
+        return filterDefault
 
     def getFrameQuery(self):
         return "?query=SELECT geom_from_wkt('{0}') as geometry".format(

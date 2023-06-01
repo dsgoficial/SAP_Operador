@@ -132,8 +132,9 @@ class RemoteSapCtrl(SapCtrl):
         )
         return reportErrorDialog.exec_() == QtWidgets.QDialog.Accepted	
 
-    def showEndActivityDialog(self):
+    def showEndActivityDialog(self, withoutCorrection):
         endActivityDialog = self.guiFactory.createEndActivityDialog(self)
+        endActivityDialog.setWithoutCorrection(withoutCorrection)
         return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
         
     def reportError(self, errorId, errorDescription):

@@ -94,6 +94,40 @@ class QgisApi(IQgisApi):
                 return True
         return False
 
+    def checkModifiedLayersByStepId(self, stepId, noteLayers):
+        if stepId == 3:
+            for noteLayer in noteLayers:
+                layer = self.getLayerFromTable(
+                    noteLayer['schema'],
+                    noteLayer['nome']
+                )
+                if not layer:
+                    raise Exception("Carregue as camadas de apontamento!")
+                for feature in layer.getFeatures():
+                    if (
+                        feature[noteLayer['atributo_situacao_correcao']] == 1
+                        or
+                        (
+                            feature[noteLayer['atributo_situacao_correcao']] != 1
+                            and
+                            feature[noteLayer['atributo_justificativa_apontamento']] != None
+                        )
+                    ):
+                        continue
+                    return False
+        elif stepId == 2:
+            for noteLayer in noteLayers:
+                layer = self.getLayerFromTable(
+                    noteLayer['nome'],
+                    noteLayer['schema']
+                )
+                if not layer:
+                    raise Exception("Carregue as camadas de apontamento!")
+                if len(list(layer.getFeatures())) == 0:
+                    continue
+                return False
+        return True
+
     def runProcessingModel(self, parametersData):
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
@@ -113,6 +147,17 @@ class QgisApi(IQgisApi):
                 ):
                 continue
             return layer.dataProvider().uri().uri()
+
+    def getLayerFromTable(self, layerSchema, layerName):
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        for layer in loadedLayers:
+            if not(
+                    layer.dataProvider().uri().schema() == layerSchema
+                    and
+                    layer.dataProvider().uri().table() == layerName
+                ):
+                continue
+            return layer
 
     def addMenuBar(self, name):
         menu = QMenu(iface.mainWindow())
@@ -244,6 +289,14 @@ class QgisApi(IQgisApi):
         if not(layerId in loadedLayers):
             return
         return loadedLayers[layerId].dataProvider().uri().uri()
+
+    def getLayerFromIds(self, layerIds):
+        loadedLayers = core.QgsProject.instance().mapLayers()
+        return [
+            loadedLayers[layerId]
+            for layerId in layerIds
+            if layerId in loadedLayers
+        ]
             
     def setSettings(self, settings):
         for qgisVariable in settings:
@@ -393,6 +446,21 @@ class QgisApi(IQgisApi):
             editFormConfig = layer.editFormConfig()
             for fieldIdx in layer.primaryKeyAttributes():
                 editFormConfig.setReadOnly(fieldIdx, option)
+            layer.setEditFormConfig(editFormConfig)
+
+    def setFieldsReadOnly(self, layerIds, fields, option):
+        layers = core.QgsProject.instance().mapLayers()
+        for layerId in layers:
+            if not(layerId in layerIds):
+                continue
+            layer = layers[layerId]
+            editFormConfig = layer.editFormConfig()
+            for fieldName in fields:
+                fieldIdx = layer.fields().indexOf(fieldName)
+                if fieldIdx < 0:
+                    continue
+                editFormConfig.setReadOnly(fieldIdx, option)
+            layer.setEditFormConfig(editFormConfig)
 
     def getMainWindow(self):
         return iface.mainWindow()
@@ -498,17 +566,19 @@ class QgisApi(IQgisApi):
     def removeMessageBar(self, messageBar):
         iface.messageBar().popWidget(messageBar)
 
-    """ def loadDefaultFieldValue(self, loadedLayerIds):
-        for layerId in loadedLayerIds:
-            layer = core.QgsProject.instance().mapLayers()[layerId]
-            idx = layer.fields().indexOf('data_modificacao')
-            if idx < 0:
+    def loadDefaultFieldValue(self, layerIds, fields):
+        layers = core.QgsProject.instance().mapLayers()
+        for layerId in layers:
+            if not(layerId in layerIds):
                 continue
-            valueDefinition = layer.defaultValueDefinition(idx)
-            valueDefinition.setApplyOnUpdate(True)
-            valueDefinition.setExpression('now()')
-            layer.setDefaultValueDefinition(idx, valueDefinition) """
+            layer = layers[layerId]
 
+            for field in fields:
+                fieldIdx = layer.fields().indexOf(field['name'])
+                valueDefinition = layer.defaultValueDefinition(fieldIdx)
+                valueDefinition.setApplyOnUpdate(True)
+                valueDefinition.setExpression('{}'.format(field['value']))
+                layer.setDefaultValueDefinition(fieldIdx, valueDefinition)
     
     def zoomToFeature(self, layerId, layerSchema, layerName):
         loadedLayers = core.QgsProject.instance().mapLayers().values()

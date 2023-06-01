@@ -184,8 +184,27 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Salve todas suas alterações antes de finalizar!'
             )
             return
+
+        stepTypeId = self.sapActivity.getStepTypeId()
+        noteLayers = self.sapActivity.getNoteLayers()
+        try:
+            checkStep = self.qgis.checkModifiedLayersByStepId(
+                stepTypeId,
+                noteLayers
+            )
+        except Exception as e:
+            self.showErrorMessageBox( self.productionTools, 'Erro', str(e) )
+            return
+        if stepTypeId == 3 and checkStep:
+            self.showInfoMessageBox(
+                self.productionTools,
+                'Aviso',
+                'Existem apontamentos não resolvidos!'
+            )
+            return
         self.qgis.cleanProject()
-        result = self.sap.showEndActivityDialog()
+        withoutCorrection = stepTypeId == 2 and checkStep
+        result = self.sap.showEndActivityDialog(withoutCorrection)
         if not result:
             return
         self.reload()
@@ -302,6 +321,38 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.loadLayerActions(loadedLayerIds)
 
         self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
+        
+        if self.sapActivity.getStepTypeId() == 3:
+            mapLayerIdNote = {}  
+            noteLayers = self.sapActivity.getNoteLayers()
+            for layerNote in noteLayers:
+                layerId = next(filter(lambda layerId: layerNote['nome'] in layerId, loadedLayerIds) , None)
+                mapLayerIdNote[layerId] = layerNote
+            noteLayerIds = mapLayerIdNote.keys()
+            loadedNotelayers = self.qgis.getLayerFromIds(noteLayerIds)
+            for layer in loadedNotelayers:
+                note = mapLayerIdNote[layer.id()]
+                self.qgis.setFieldsReadOnly( 
+                    [layer.id()], 
+                    [
+                        n
+                        for n in layer.fields().names()
+                        if not(n == note['atributo_justificativa_apontamento'] or n == note['atributo_situacao_correcao'])
+                    ], 
+                    True 
+                )
+
+        if self.sapActivity.getStepTypeId() == 2:
+            self.qgis.loadDefaultFieldValue(
+                loadedLayerIds,
+                [
+                    {
+                        'name': 'subfase_id',
+                        'value': self.sapActivity.getSubphaseId()
+                    }
+                ]
+            )
+            self.qgis.setFieldsReadOnly( loadedLayerIds, ['subfase_id'], True )
         
         self.prodToolsSettings.initSaveTimer()
 

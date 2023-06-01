@@ -162,8 +162,17 @@ class QgisCtrl(IQgisCtrl):
     def removeActionToolBar(self, action):
         self.apiQGis.removeActionToolBar(action)
 
-    def loadDefaultFieldValue(self, loadedLayerIds):
-        self.apiQGis.loadDefaultFieldValue(loadedLayerIds)
+    def loadDefaultFieldValue(self, loadedLayerIds, fields):
+        self.apiQGis.loadDefaultFieldValue(loadedLayerIds, fields)
+
+    def checkModifiedLayersByStepId(self, stepId, noteLayers):
+        return self.apiQGis.checkModifiedLayersByStepId(stepId, noteLayers)
+
+    def getLayerFromIds(self, layerIds):
+        return self.apiQGis.getLayerFromIds(layerIds)
+
+    def setFieldsReadOnly(self, layerIds, fields, option):
+        self.apiQGis.setFieldsReadOnly(layerIds, fields, option)
 
     def zoomToFeature(self, layerId, layerSchema, layerName):
         self.apiQGis.zoomToFeature(layerId, layerSchema, layerName)
