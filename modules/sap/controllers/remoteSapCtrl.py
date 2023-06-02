@@ -57,6 +57,14 @@ class RemoteSapCtrl(SapCtrl):
         )
         return response['success']
 
+    def reAuthUser(self):
+        user = self.qgis.getProjectVariable('productiontools:user')
+        password = self.qgis.getProjectVariable('productiontools:password')
+        server = self.qgis.getSettingsVariable('productiontools:server')
+        if not(user and password and server):
+            return
+        self.authUser(user, password, server)
+
     def initActivity(self):
         response = self.sapApi.initActivity()
         if not( response['success'] and 'dados' in response and response['dados'] ):
