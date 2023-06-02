@@ -129,6 +129,7 @@ class QgisApi(IQgisApi):
         return True
 
     def runProcessingModel(self, parametersData):
+        #definir parametro
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
