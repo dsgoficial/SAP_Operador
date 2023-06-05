@@ -134,7 +134,7 @@ class QgisApi(IQgisApi):
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
         model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
-        processing.runAndLoadResults(model, parameters=parametersData['parametros'])
+        processing.runAndLoadResults(model, {})
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
 
     def getLayerUriFromTable(self, layerSchema, layerName):
