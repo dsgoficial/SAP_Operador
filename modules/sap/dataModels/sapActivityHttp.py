@@ -314,7 +314,8 @@ class SapActivityHttp:
                 'ordem' : item['ordem'],
                 'description' : item['descricao'],
                 'routineType' : 'qgisModel',
-                'model_xml' : item['model_xml']
+                'model_xml' : item['model_xml'],
+                'parametros' : item['parametros']
             }
             for item in self.getData()['dados']['atividade']['models_qgis'] 
         ]

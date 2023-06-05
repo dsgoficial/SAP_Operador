@@ -21,6 +21,12 @@ class QgisCtrl(IQgisCtrl):
     def getMainWindow(self):
         return self.apiQGis.getMainWindow()
 
+    def setActiveLayerByName(self, layerName):
+        layer = self.apiQGis.getLayerFromName(layerName)
+        if not layer:
+            return
+        iface.setActiveLayer(layer)
+
     def setProjectVariable(self, key, value, encrypt=True):
         self.apiQGis.setProjectVariable(key, value, encrypt)
 

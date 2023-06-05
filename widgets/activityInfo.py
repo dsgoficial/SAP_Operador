@@ -1,5 +1,6 @@
 from Ferramentas_Producao.widgets.widget import Widget
 from Ferramentas_Producao.interfaces.IActivityInfoWidget import IActivityInfoWidget
+from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -14,6 +15,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton.clicked.connect(self.finish)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
         self.reportErrorButton.clicked.connect(self.reportError)
+        self.qgis = QgisCtrl()
 
     def finish(self, b):
         self.endActivityButton.setEnabled(False)
@@ -58,9 +60,18 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             return
         self.layout.addWidget( QtWidgets.QLabel("<b>{0}</b>".format(title), self) )
         for item in requirements:
-            cbx = QtWidgets.QCheckBox(item['descricao'], self)
-            cbx.stateChanged.connect( self.updateEndActivityButton )
+            description = item['descricao']
+            cbx = QtWidgets.QCheckBox(description, self)
+            cbx.setCheckState(self.getRequirementState(description))
+            cbx.stateChanged.connect( lambda state: self.updateEndActivityButton(state, description) )
             self.layout.addWidget(cbx)
+
+    def getRequirementState(self, description):
+        activityName = self.qgis.getProjectVariable('productiontools:activityName')
+        state = self.qgis.getProjectVariable('productiontools:checklist:{}:{}'.format(activityName, description))
+        if not state:
+            return QtCore.Qt.CheckState.Unchecked
+        return int(state)
 
     def setButtons(self):
         layout = QtWidgets.QHBoxLayout()
@@ -76,11 +87,18 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         layout.addWidget(self.reportErrorButton)
         self.layout.addLayout(layout)
 
-    def updateEndActivityButton(self):
+    
+
+    def updateEndActivityButton(self, state, description):
+        self.setRequirementState(description, state)
         if self.allRequirementsChecked():
             self.endActivityButton.setEnabled(True)
         else:
             self.endActivityButton.setEnabled(False)
+
+    def setRequirementState(self, description, state):
+        activityName = self.qgis.getProjectVariable('productiontools:activityName')
+        self.qgis.setProjectVariable('productiontools:checklist:{}:{}'.format(activityName, description), str(state))
 
     def allRequirementsChecked(self):
         for idx in range(self.layout.count()):

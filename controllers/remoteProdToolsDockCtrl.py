@@ -425,14 +425,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'fme': self.runFMESAP,
             'qgisModel': self.runQgisModel
         }
-        html = rountineFunctions[routineData['routineType']](routineData)
-        self.showHtmlMessageDialog(
-            self.qgis.getMainWindow(),
-            'Aviso',
-            html
-        )
-        #self.qgis.setSettingsVariable('productiontools:user', user)
-        #self.qgis.getSettingsVariable('productiontools:user')
+        rountineFunctions[routineData['routineType']](routineData)
 
     def runFMESAP(self, routineData):
         runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
@@ -451,17 +444,33 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         html += "<p>[status de execução] : {0}</p>".format(output['result']['dados']['status'])
         for flags in output['result']['dados']['sumario']:
             html += """<p>[rotina flags] : {} - {}</p>""".format(flags['classes'], flags['feicoes'])
-        return html
+        self.showHtmlMessageDialog(
+            self.qgis.getMainWindow(),
+            'Aviso',
+            html
+        )
 
     def runRuleStatistics(self, routineData):
         ruleStatistics = self.processingFactoryDsgTools.createProcessing('RuleStatistics', self)
-        return ruleStatistics.run({
+        result = ruleStatistics.run({
             'rules': routineData['ruleStatistics'],
             'layers': self.sapActivity.getLayers()
         })
+        self.htmlMessageDlg = self.messageFactory.createMessage('RuleMessageDialog')
+        self.htmlMessageDlg.show(
+            self.qgis.getMainWindow(),
+            'Aviso',
+            result,
+            self.qgis
+        )
 
     def runQgisModel(self, routineData):
-        return self.qgis.runProcessingModel(routineData)
+        html = self.qgis.runProcessingModel(routineData)
+        self.showHtmlMessageDialog(
+            self.qgis.getMainWindow(),
+            'Aviso',
+            html
+        )
 
     def showActivityDataSummary(self):
         dialog = self.guiFactory.makeActivitySummaryDialog(
@@ -470,6 +479,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.sapActivity.getConditionalStyleNames()
         )
         dialog.exec_()
+
+    def showHtmlMessageDialog(self, parent, title, message):
+        self.htmlMessageDlg = self.messageFactory.createMessage('HtmlMessageDialog')
+        self.htmlMessageDlg.show(parent, title, message)
 
     def showHtmlMessageDialog(self, parent, title, message):
         self.htmlMessageDlg = self.messageFactory.createMessage('HtmlMessageDialog')

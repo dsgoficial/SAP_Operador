@@ -18,6 +18,7 @@ from configparser import ConfigParser
 import subprocess
 import platform
 import shutil
+import json
 
 class QgisApi(IQgisApi):
 
@@ -129,12 +130,11 @@ class QgisApi(IQgisApi):
         return True
 
     def runProcessingModel(self, parametersData):
-        #definir parametro
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
         model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
-        processing.runAndLoadResults(model, {})
+        processing.runAndLoadResults(model, parameters=parametersData['parametros'])
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
 
     def getLayerUriFromTable(self, layerSchema, layerName):
@@ -155,6 +155,15 @@ class QgisApi(IQgisApi):
             if not(
                     layer.dataProvider().uri().schema() == layerSchema
                     and
+                    layer.dataProvider().uri().table() == layerName
+                ):
+                continue
+            return layer
+
+    def getLayerFromName(self, layerName):
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        for layer in loadedLayers:
+            if not(
                     layer.dataProvider().uri().table() == layerName
                 ):
                 continue
