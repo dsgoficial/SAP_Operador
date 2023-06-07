@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>521</width>
-    <height>46</height>
+    <width>648</width>
+    <height>48</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,6 +34,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="DSGToolsQAToolboxBtn">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Carregar Workflow</string>
        </property>
@@ -60,7 +63,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Configurar Grid de Revisão</string>
+        <string>Carregar Grid de Trabalho</string>
        </property>
       </widget>
      </item>
