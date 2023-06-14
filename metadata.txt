@@ -10,7 +10,7 @@
 name=Ferramentas de Produção
 qgisMinimumVersion=3.10
 description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
-version=3.11.0
+version=3.11.1
 author=Brazilian Army Geographic Service
 
 # Tags are comma separated with spaces allowed

@@ -18,9 +18,9 @@ class SapActivityHttp:
         notes = []
         activityData = self.getData()['dados']['atividade']
         for key in activityData:
-            if 'observacao' in key and activityData[key]:
+            if 'observacao' in key and activityData[key] and activityData[key] != 'None':
                 notes.append(activityData[key])
-        return notes
+        return notes if notes else ['Não Há']
 
     def getRequirements(self):
         activityData = self.getData()['dados']['atividade']
