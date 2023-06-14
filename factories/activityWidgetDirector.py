@@ -8,6 +8,7 @@ class ActivityWidgetDirector:
         builder.addObservation('Projeto:', controller.getProject())
         builder.addObservation('Lote:', controller.getLot())
         builder.addObservation('Bloco:', controller.getBlock())
+        builder.addObservation('Tipo Produto:', controller.getProductType())
         builder.addObservation('Escala:', controller.getScale())
         builder.addObservation('EPSG:', controller.getActivityEPSG())
         builder.setNotes( "Observações:", controller.getActivityNotes() )

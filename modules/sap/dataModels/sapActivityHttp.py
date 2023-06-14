@@ -388,6 +388,9 @@ class SapActivityHttp:
     def getBlock(self):
         return self.getData()['dados']['atividade']['bloco'] if 'bloco' in self.getData()['dados']['atividade'] else '-'
 
+    def getProductType(self):
+        return self.getData()['dados']['atividade']['tipo_produto'] if 'tipo_produto' in self.getData()['dados']['atividade'] else '-'
+
     def getLot(self):
         return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
 

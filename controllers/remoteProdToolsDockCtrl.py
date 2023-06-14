@@ -167,6 +167,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getBlock(self):
         return self.sapActivity.getBlock()
 
+    def getProductType(self):
+        return self.sapActivity.getProductType()
+
     def getScale(self):
         return self.sapActivity.getScale()
 
