@@ -29,6 +29,9 @@ class RemoteSapCtrl(SapCtrl):
             data['senha'] = self.qgis.getProjectVariable('productiontools:password')
         self.activityDataModel.setData( data ) 
 
+    def setupActivityDataModelExternally(self, data):
+        self.activityDataModel.setData( data ) 
+
     def getActivityDataModel(self):
         return self.activityDataModel
 

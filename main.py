@@ -93,7 +93,7 @@ class Main:
         if self.remoteProdToolsDockCtrl:
             self.remoteProdToolsDockCtrl.closedDock()
         remoteSapCtrl = RemoteSapCtrl( self.qgisCtrl )
-        remoteSapCtrl.setupActivityDataModel( activityData )
+        remoteSapCtrl.setupActivityDataModelExternally( activityData )
         productionTools = self.remoteProdToolsDockCtrl.loadDockWidget( 
             remoteSapCtrl.getActivityDataModel()
         )
