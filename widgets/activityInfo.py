@@ -129,7 +129,6 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         if not checklist:
             return QtCore.Qt.CheckState.Unchecked
         checklist = json.loads(checklist)
-        print(description, checklist)
         state = int(checklist[activityName][description]) if activityName in checklist and description in checklist[activityName] else QtCore.Qt.CheckState.Unchecked
         return state
 
