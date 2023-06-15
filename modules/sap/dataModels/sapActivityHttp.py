@@ -26,7 +26,17 @@ class SapActivityHttp:
         activityData = self.getData()['dados']['atividade']
         if 'requisitos' in activityData and activityData['requisitos']:
             return activityData['requisitos']
-        return []
+        return [
+            {
+                'descricao': 'teste1'
+            },
+            {
+                'descricao': 'teste2'
+            },
+            {
+                'descricao': 'teste3'
+            }
+        ]
 
     def getDescription(self):
         if not self.getData():

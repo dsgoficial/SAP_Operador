@@ -1,7 +1,7 @@
 from Ferramentas_Producao.widgets.widget import Widget
 from Ferramentas_Producao.interfaces.IActivityInfoWidget import IActivityInfoWidget
 from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
-
+import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 class ActivityInfo(Widget, IActivityInfoWidget):
@@ -63,15 +63,8 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             description = item['descricao']
             cbx = QtWidgets.QCheckBox(description, self)
             cbx.setCheckState(self.getRequirementState(description))
-            cbx.stateChanged.connect( lambda state: self.updateEndActivityButton(state, description) )
+            cbx.stateChanged.connect( lambda state, description=description: self.updateEndActivityButton(state, description) )
             self.layout.addWidget(cbx)
-
-    def getRequirementState(self, description):
-        activityName = self.qgis.getProjectVariable('productiontools:activityName')
-        state = self.qgis.getProjectVariable('productiontools:checklist:{}:{}'.format(activityName, description))
-        if not state:
-            return QtCore.Qt.CheckState.Unchecked
-        return int(state)
 
     def setButtons(self):
         layout = QtWidgets.QHBoxLayout()
@@ -98,7 +91,47 @@ class ActivityInfo(Widget, IActivityInfoWidget):
 
     def setRequirementState(self, description, state):
         activityName = self.qgis.getProjectVariable('productiontools:activityName')
-        self.qgis.setProjectVariable('productiontools:checklist:{}:{}'.format(activityName, description), str(state))
+        checklist = self.qgis.getSettingsVariable('productiontools:checklist')
+        if not checklist:
+            self.qgis.setSettingsVariable(
+                'productiontools:checklist', 
+                json.dumps(
+                    {
+                        activityName: {
+                            description: state
+                        }
+                    }
+                )
+            )
+            return
+        checklist = json.loads(checklist)
+        if not( activityName in checklist):
+            self.qgis.setSettingsVariable(
+                'productiontools:checklist', 
+                json.dumps(
+                    {
+                        activityName: {
+                            description: state
+                        }
+                    }
+                )
+            )
+            return
+        checklist[activityName][description] = state
+        self.qgis.setSettingsVariable(
+            'productiontools:checklist', 
+            json.dumps(checklist)
+        )
+
+    def getRequirementState(self, description):
+        activityName = self.qgis.getProjectVariable('productiontools:activityName')
+        checklist = self.qgis.getSettingsVariable('productiontools:checklist')
+        if not checklist:
+            return QtCore.Qt.CheckState.Unchecked
+        checklist = json.loads(checklist)
+        print(description, checklist)
+        state = int(checklist[activityName][description]) if activityName in checklist and description in checklist[activityName] else QtCore.Qt.CheckState.Unchecked
+        return state
 
     def allRequirementsChecked(self):
         for idx in range(self.layout.count()):
