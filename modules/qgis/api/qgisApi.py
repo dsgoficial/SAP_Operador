@@ -134,7 +134,7 @@ class QgisApi(IQgisApi):
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
         model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
-        parameters = parametersData['parametros'] if parametersData['parametros'] else {}
+        parameters = json.loads(parametersData['parametros']) if parametersData['parametros'] else {}
         processing.runAndLoadResults(model, parameters)
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
 

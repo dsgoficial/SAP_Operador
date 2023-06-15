@@ -20,4 +20,4 @@ class HtmlMessageDialog(QtWidgets.QDialog, IMessage):
     def show(self, parent, title, html):
         self.setWindowTitle(title)
         self.textEdit.setHtml(html)
-        super().show()
+        super().exec_()

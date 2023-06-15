@@ -469,6 +469,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def runQgisModel(self, routineData):
         html = self.qgis.runProcessingModel(routineData)
+        QtWidgets.QApplication.restoreOverrideCursor()
         self.showHtmlMessageDialog(
             self.qgis.getMainWindow(),
             'Aviso',
