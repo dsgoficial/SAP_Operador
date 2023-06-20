@@ -242,7 +242,8 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             'qgis/digitizing/line_width' : '3',
             'qgis/digitizing/line_color_alpha' : '63',
             'qgis/digitizing/fill_color_alpha' : '40',
-            u'qgis/default_selection_color_alpha': u'63'
+            u'qgis/default_selection_color_alpha': u'63',
+            "/qgis/legendsymbolMaximumSize": '5.0'
         }
 
     
