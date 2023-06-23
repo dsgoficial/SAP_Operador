@@ -107,7 +107,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             False: 'false'
         }
         self.qgis.setSettings({
-            'qgis/digitizing/marker_only_for_selected': values[self.showMarkers]
+            'digitizing/marker-only-for-selected': values[self.showMarkers]
         })
         self.qgis.canvasRefresh()
         self.showMarkers = not self.showMarkers
