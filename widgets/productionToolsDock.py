@@ -108,13 +108,15 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
         self.pomodoroArea.layout().addWidget(pomodoro)
 
     def addLineageLabel(self, lineage):
-        text = "Etapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
+        text = "Fase: {6}\nSubfase: {7}\nEtapa : {0}\nSituação: {5}\nData inicio : {1}\nData fim : {2}\nNome : {3} {4}".format(
             lineage['etapa'] if lineage['etapa'] else '-', 
             lineage['data_inicio'] if lineage['data_inicio'] else '-', 
             lineage['data_fim'] if lineage['data_fim'] else '-', 
             lineage['posto_grad'] if lineage['posto_grad'] else '', 
             lineage['nome_guerra'] if lineage['nome_guerra'] else '-', 
             lineage['situacao'] if lineage['situacao'] else '-', 
+            lineage['fase'] if lineage['fase'] else '-', 
+            lineage['subfase'] if lineage['subfase'] else '-', 
         )
         label = QtWidgets.QLabel(text)
         label.setStyleSheet('QLabel { background-color: white }')

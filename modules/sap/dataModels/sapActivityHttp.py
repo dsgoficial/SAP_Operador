@@ -339,12 +339,14 @@ class SapActivityHttp:
             return []
         return [
             {
+                'fase': d['fase'] if 'fase' in d else '',
+                'subfase': d['subfase'] if 'subfase' in d else '',
                 'etapa': d['etapa'] if 'etapa' in d else '',
+                'situacao': d['situacao'] if 'situacao' in d else '',
                 'data_inicio': d['data_inicio'] if 'data_inicio' in d else '',
                 'data_fim': d['data_fim'] if 'data_fim' in d else '',
                 'posto_grad': d['posto_grad'] if 'posto_grad' in d else '',
                 'nome_guerra': d['nome_guerra'] if 'nome_guerra' in d else '',
-                'situacao': d['situacao'] if 'situacao' in d else '',
             }
             for d in self.getData()['dados']['atividade']['linhagem']
         ]
