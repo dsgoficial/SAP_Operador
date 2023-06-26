@@ -11,6 +11,9 @@ import os
 import json
 import sip
 
+from Ferramentas_Producao.widgets.pomodoro import Pomodoro
+
+
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     iconRootPath = os.path.join(
@@ -90,7 +93,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sap.authUser(username, password, server)
 
     def getPomodoroWidget(self):
-        return None #self.pomodoro.getWidget() if self.pomodoro else None
+        return Pomodoro()
         
     def unload(self):
         self.removeDock()
