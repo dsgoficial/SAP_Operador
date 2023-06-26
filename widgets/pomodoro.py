@@ -16,12 +16,9 @@ class Pomodoro(QtWidgets.QWidget):
         self.qgis = qgis
         self.pomodoro = 0
         self.paused = False
-        """ self.timeOnSeconds = 25 * 60
+        self.timeOnSeconds = 25 * 60
         self.pause1OnSeconds = 5 * 60
-        self.pause2OnSeconds = 15 * 60 """
-        self.timeOnSeconds = 30
-        self.pause1OnSeconds = 10
-        self.pause2OnSeconds = 15
+        self.pause2OnSeconds = 15 * 60
         self.currentTime = self.timeOnSeconds
         self.setCronText(self.getFormatedTime())
         self.cronTimer = Timer()
