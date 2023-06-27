@@ -10,6 +10,7 @@ from .controllers.prodToolsSettingsCtrl import ProdToolsSettingsCtrl
 
 from .modules.sap.controllers.remoteSapCtrl import RemoteSapCtrl
 from .modules.sap.controllers.localSapCtrl import LocalSapCtrl
+from .modules.qgis.scripts.toggle import toggle
 from .modules.pluginUpdater.controllers.updaterCtrl import UpdaterCtrl
 
 from .modules.qgis.qgisCtrl import QgisCtrl
@@ -56,6 +57,8 @@ class Main:
             remoteProdToolsDockCtrl=self.remoteProdToolsDockCtrl,
             localProdToolsDockCtrl=self.localProdToolsDockCtrl
         )
+        self.toggle_buffer_pressed = False
+        self.toggle_vertices_pressed = False
     
     def getPluginIconPath(self):
         return os.path.join(
@@ -65,11 +68,40 @@ class Main:
             'icons',
             'production.png'
         )
+    
+    def getToggleBufferIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.join(
+                os.path.dirname(__file__)
+            )),
+            'icons',
+            'buffer_toggle.svg'
+        )
+    def getToggleVerticesIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.join(
+                os.path.dirname(__file__)
+            )),
+            'icons',
+            'vertices_toggle.svg'
+        )
 
     def initGui(self):
         self.qgisCtrl.load()
         self.prodToolsSettingsCtrl.load()
         self.remoteProdToolsDockCtrl.loadChangeStyleWidget()
+        self.toggle_buffer = self.qgisCtrl.createAction(
+            "Desligar Buffer",
+            self.getToggleBufferIconPath(),
+            self.toggleBuffer
+        )
+        self.qgisCtrl.addActionToolBar(self.toggle_buffer)
+        self.toggle_vertices = self.qgisCtrl.createAction(
+            "Desligar Vértices",
+            self.getToggleVerticesIconPath(),
+            self.toggleVertices
+        )
+        self.qgisCtrl.addActionToolBar(self.toggle_vertices)
         self.action = self.qgisCtrl.createAction(
             Config.NAME,
             self.getPluginIconPath(),
@@ -88,6 +120,15 @@ class Main:
         
     def startPlugin(self, b):
         self.loginCtrl.showView()
+    
+    def toggleBuffer(self):
+        toggle("Buffer", self.toggle_buffer_pressed)
+        self.toggle_buffer_pressed = not self.toggle_buffer_pressed 
+
+    def toggleVertices(self):
+        toggle("Vértices", self.toggle_vertices_pressed)
+        self.toggle_vertices_pressed = not self.toggle_vertices_pressed 
+
 
     def startPluginExternally(self, activityData):
         if self.remoteProdToolsDockCtrl:
