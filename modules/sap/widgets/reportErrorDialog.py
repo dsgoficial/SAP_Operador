@@ -12,7 +12,7 @@ class ReportErrorDialog(SapDialog):
         super(ReportErrorDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        self.buttonBox.accepted.connect(
+        self.buttonBox.clicked.connect(
             self.reportError
         )
 
@@ -48,4 +48,5 @@ class ReportErrorDialog(SapDialog):
             self.errorsTypesCb.itemData(self.errorsTypesCb.currentIndex()),
             self.descrTe.toPlainText()
         )
+        self.accept()
             
