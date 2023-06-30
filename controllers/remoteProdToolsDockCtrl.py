@@ -222,11 +222,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.reload()
 
     def showReportErrorDialog(self):
+        self.sap.showReportErrorDialog(
+            self.reportErrorCallback
+        )
+    
+    def reportErrorCallback(self):
         self.qgis.cleanProject()
-        result = self.sap.showReportErrorDialog()
-        if not result:
-            return
-        #self.reload()
+        self.reload()
         
     def getActivityDatabase(self):
         return self.databaseFactory.createPostgres(

@@ -18,6 +18,11 @@ class SelectError(QgsMapToolIdentify, MapTool):
         self.setCursor(Qt.CrossCursor)
         self.rubberBand = None
         self.snapCursorRubberBand = None
+        self.transform = core.QgsCoordinateTransform(
+            iface.mapCanvas().mapSettings().destinationCrs(), 
+            core.QgsCoordinateReferenceSystem("EPSG:4326"),
+            core.QgsProject.instance()
+        )
         self.initVariable()
 
     def initVariable(self):
@@ -40,7 +45,7 @@ class SelectError(QgsMapToolIdentify, MapTool):
         for itheta in range(nPoints+1):
             theta = itheta*(2.0*math.pi/nPoints)
             point = core.QgsPointXY(x+r*math.cos(theta), y+r*math.sin(theta))
-            self.rubberBand.addPoint(point)
+            self.rubberBand.addPoint(self.transform.transform(point))
             self.points.append(point)
         self.rubberBand.closePoints()
 
@@ -94,5 +99,7 @@ class SelectError(QgsMapToolIdentify, MapTool):
             self.showCircle(self.startPoint, self.endPoint)
 
     def execute(self):
-        errorPolygon = QgsGeometry.fromPolygonXY([self.points]).asWkt()
+        errorPolygon = 'SRID=4326;{}'.format(
+            QgsGeometry.fromPolygonXY([self.points]).asWkt()
+        )
         self.selected.emit(errorPolygon)

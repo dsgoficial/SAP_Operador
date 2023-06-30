@@ -137,7 +137,7 @@ class RemoteSapCtrl(SapCtrl):
             return []
         return response['dados']
     
-    def showReportErrorDialog(self):
+    def showReportErrorDialog(self, callback):
         if self.reportErrorDialog:
             self.reportErrorDialog.close()
         self.reportErrorDialog = self.guiFactory.createReportErrorDialog(
@@ -147,6 +147,7 @@ class RemoteSapCtrl(SapCtrl):
         self.reportErrorDialog.loadErrorsTypes(
             self.getErrorsTypes()
         )
+        self.reportErrorDialog.reported.connect(callback)
         return self.reportErrorDialog.show()
 
     def showEndActivityDialog(self, withoutCorrection):

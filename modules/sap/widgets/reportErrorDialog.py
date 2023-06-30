@@ -5,6 +5,8 @@ from Ferramentas_Producao.modules.sap.widgets.sapDialog import SapDialog
 
 class ReportErrorDialog(SapDialog):
 
+    reported = QtCore.pyqtSignal()
+
     def __init__(
             self,
             controller,
@@ -55,6 +57,7 @@ class ReportErrorDialog(SapDialog):
             self.wkt
         )
         self.accept()
+        self.reported.emit()
 
     def markError(self):
         tool = self.qgis.activeTool('SelectError')
