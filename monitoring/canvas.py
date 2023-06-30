@@ -67,6 +67,7 @@ class Canvas(QtCore.QObject):
         dumpData = self.qgis.getSettingsVariable('productiontools:monitoring:canvas')
         if not dumpData:
             return
+        dumpData = json.loads(dumpData)
         date = self.getCurrentDate()
         if not(date in dumpData):
             return
