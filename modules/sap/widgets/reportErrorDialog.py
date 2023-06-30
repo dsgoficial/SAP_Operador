@@ -51,7 +51,8 @@ class ReportErrorDialog(SapDialog):
             return
         self.getController().reportError(
             self.errorsTypesCb.itemData(self.errorsTypesCb.currentIndex()),
-            self.descrTe.toPlainText()
+            self.descrTe.toPlainText(),
+            self.wkt
         )
         self.accept()
 

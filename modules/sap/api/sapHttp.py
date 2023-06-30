@@ -149,13 +149,14 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    def reportError(self, activityId, errorId, errorDescription):
+    def reportError(self, activityId, errorId, errorDescription, wkt):
         response = self.httpPostJson(
             url="{0}/distribuicao/problema_atividade".format(self.getServer()),
             postData={
                 'atividade_id' : activityId,
                 'tipo_problema_id' : errorId,
-                'descricao' : errorDescription
+                'descricao' : errorDescription,
+                'polygon_ewkt': wkt
             }
         )
         return response.json()['message']

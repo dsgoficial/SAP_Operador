@@ -154,8 +154,8 @@ class RemoteSapCtrl(SapCtrl):
         endActivityDialog.setWithoutCorrection(withoutCorrection)
         return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
         
-    def reportError(self, errorId, errorDescription):
-        return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription)
+    def reportError(self, errorId, errorDescription, wkt):
+        return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription, wkt)
 
     def hasActivityRecord(self):
         return (
