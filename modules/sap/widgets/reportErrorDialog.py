@@ -46,6 +46,12 @@ class ReportErrorDialog(SapDialog):
             )
             
     def reportError(self):
+        if not self.isValidInput():
+            self.showErrorMessageBox(
+                'Aviso',
+                'Preencha todos os campos!'
+            )
+            return
         if not self.showQuestionMessageBox(
                 'Aviso',
                 '<p>Reportando um problema sua atividade atual será pausada, e você receberá uma nova atividade.</p>'
@@ -58,6 +64,9 @@ class ReportErrorDialog(SapDialog):
         )
         self.accept()
         self.reported.emit()
+
+    def isValidInput(self):
+        return self.descrTe.toPlainText() and self.wkt
 
     def markError(self):
         tool = self.qgis.activeTool('SelectError')
