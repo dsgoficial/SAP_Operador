@@ -53,8 +53,7 @@ class Pomodoro(QtWidgets.QWidget):
         self.setCronText(self.getFormatedTime())
 
     def saveState(self):
-        now = datetime.now()
-        date = now.strftime("%d-%m-%Y")
+        date = self.getCurrentDate()
         self.qgis.setSettingsVariable(
             'productiontools:pomodoro', 
             json.dumps({
@@ -62,11 +61,17 @@ class Pomodoro(QtWidgets.QWidget):
             })
         )
 
+    def getCurrentDate(self):
+        now = datetime.now()
+        return now.strftime("%d-%m-%Y")
+
     def restoreState(self):
         dumpData = self.qgis.getSettingsVariable('productiontools:pomodoro')
         if not dumpData:
             return
-        data = json.loads(dumpData)
+        date = self.getCurrentDate()
+        if not(date in dumpData):
+            return
         self.pomodoro = list(data.values())[0]
 
     def getFormatedTime(self):
@@ -91,6 +96,16 @@ class Pomodoro(QtWidgets.QWidget):
             '''
             <html><head/><body><p align="center"><span style=" font-size:12pt; font-weight:600;">{}</span></p></body></html>
             '''.format(value)
+        )
+
+    def setWorkStatusText(self, minutesActive, minutesNoActive):
+        self.monitoringLb.setText(
+            '''
+            <html><head/><body>
+            <p align="center"><span style=" font-size:12pt; font-weight:600;">Tempo ativo (minutos): {}</span></p>
+            <p align="center"><span style=" font-size:12pt; font-weight:600;">Tempo ocioso (minutos): {}</span></p>
+            </body></html>
+            '''.format(minutesActive, minutesNoActive)
         )
 
     @QtCore.pyqtSlot(bool)

@@ -130,7 +130,7 @@ class QgisCtrl(IQgisCtrl):
         return self.apiQGis.runMapFunctions(functionList)
 
     def activeTool(self, toolName, unsetTool=False):
-        self.apiQGis.activeTool(toolName, unsetTool)
+        return self.apiQGis.activeTool(toolName, unsetTool)
 
     def loadLayerActions(self, layerIds):
         self.apiQGis.loadLayerActions(layerIds)

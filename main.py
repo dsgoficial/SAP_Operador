@@ -41,7 +41,6 @@ class Main:
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
             fme=FmeApiSingleton.getInstance(),
-            pomodoro=None, #Pomodoro( iface ),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
         )
@@ -90,6 +89,12 @@ class Main:
         self.qgisCtrl.load()
         self.prodToolsSettingsCtrl.load()
         self.remoteProdToolsDockCtrl.loadChangeStyleWidget()
+        self.action = self.qgisCtrl.createAction(
+            Config.NAME,
+            self.getPluginIconPath(),
+            self.startPlugin   
+        )
+        self.qgisCtrl.addActionToolBar(self.action)
         self.toggle_buffer = self.qgisCtrl.createAction(
             "Desligar Buffer",
             self.getToggleBufferIconPath(),
@@ -102,12 +107,6 @@ class Main:
             self.toggleVertices
         )
         self.qgisCtrl.addActionToolBar(self.toggle_vertices)
-        self.action = self.qgisCtrl.createAction(
-            Config.NAME,
-            self.getPluginIconPath(),
-            self.startPlugin   
-        )
-        self.qgisCtrl.addActionToolBar(self.action)
         self.qgisCtrl.loadProcessingProvider(self.getPluginIconPath())
         
         
@@ -120,7 +119,7 @@ class Main:
         
     def startPlugin(self, b):
         self.loginCtrl.showView()
-    
+         
     def toggleBuffer(self):
         toggle("Buffer", self.toggle_buffer_pressed)
         self.toggle_buffer_pressed = not self.toggle_buffer_pressed 

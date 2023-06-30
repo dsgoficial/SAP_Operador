@@ -16,6 +16,7 @@ class RemoteSapCtrl(SapCtrl):
         ):
         super(RemoteSapCtrl, self).__init__()
         self.qgis = qgis
+        self.reportErrorDialog = None
         self.messageFactory = messageFactory
         self.dataModelFactory = dataModelFactory
         self.sapApi = sapApi
@@ -137,11 +138,16 @@ class RemoteSapCtrl(SapCtrl):
         return response['dados']
     
     def showReportErrorDialog(self):
-        reportErrorDialog = self.guiFactory.createReportErrorDialog(self)
-        reportErrorDialog.loadErrorsTypes(
+        if self.reportErrorDialog:
+            self.reportErrorDialog.close()
+        self.reportErrorDialog = self.guiFactory.createReportErrorDialog(
+            self,
+            self.qgis
+        )
+        self.reportErrorDialog.loadErrorsTypes(
             self.getErrorsTypes()
         )
-        return reportErrorDialog.exec_() == QtWidgets.QDialog.Accepted	
+        return self.reportErrorDialog.show()
 
     def showEndActivityDialog(self, withoutCorrection):
         endActivityDialog = self.guiFactory.createEndActivityDialog(self)

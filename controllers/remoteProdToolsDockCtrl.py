@@ -12,6 +12,7 @@ import json
 import sip
 
 from Ferramentas_Producao.widgets.pomodoro import Pomodoro
+from Ferramentas_Producao.monitoring.canvas import Canvas
 
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
@@ -29,21 +30,24 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             databaseFactory,
             processingFactoryDsgTools,
             fme,
-            pomodoro,
             prodToolsSettings,
             toolFactoryDsgTools,
+            pomodoro=Pomodoro(),
             guiFactory=GUIFactory(),
-            spatialVerificationFactory=SpatialVerificationFactory()
+            spatialVerificationFactory=SpatialVerificationFactory(),
+            canvasMonitoring=Canvas()
         ):
         super(RemoteProdToolsDockCtrl, self).__init__()
         self.sap = sap
         self.qgis = qgis
         self.fme = fme
+        self.pomodoro = pomodoro
+        self.canvasMonitoring = canvasMonitoring
+        self.canvasMonitoring.changeStatus.connect(self.pomodoro.setWorkStatusText)
         self.databaseFactory = databaseFactory
         self.processingFactoryDsgTools = processingFactoryDsgTools
         self.guiFactory = guiFactory
         self.spatialVerificationFactory = spatialVerificationFactory
-        #self.pomodoro = pomodoro
         self.prodToolsSettings = prodToolsSettings
         self.toolFactoryDsgTools = toolFactoryDsgTools
         self.sapActivity = None
@@ -52,6 +56,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.nextStyleAction = None
         self.prevStyleAction = None
         self.qgis.on('ReadProject', self.readProjectCallback)
+        self.qgis.on('NewProject', self.createProjectCallback)
         self.loadedLayerIds = []
         self.acquisitionMenu = None
         self.validateUserOperations = self.spatialVerificationFactory.createVerification( 
@@ -93,11 +98,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.sap.authUser(username, password, server)
 
     def getPomodoroWidget(self):
-        return Pomodoro()
+        return self.pomodoro
         
     def unload(self):
         self.removeDock()
         self.qgis.off('ReadProject', self.readProjectCallback)
+        self.qgis.off('NewProject', self.createProjectCallback)
         #self.pomodoro.unload()
 
     def reload(self):
@@ -220,7 +226,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         result = self.sap.showReportErrorDialog()
         if not result:
             return
-        self.reload()
+        #self.reload()
         
     def getActivityDatabase(self):
         return self.databaseFactory.createPostgres(
@@ -365,6 +371,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
+        self.canvasMonitoring.start()
 
     def frameLoaded(self, frameQuery):
         layers = self.qgis.getLoadedVectorLayers()
@@ -509,6 +516,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.productionTools.close() if self.productionTools else ''
         if self.sap.isValidActivity():
             self.prodToolsSettings.initSaveTimer()
+            self.canvasMonitoring.start()
             return
         self.qgis.cleanProject()
         self.showInfoMessageBox(
@@ -520,6 +528,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             </p>
             '''
         )
+
+    def createProjectCallback(self):
+        self.canvasMonitoring.stop()
 
     def zoomToFeature(self, layerId, layerSchema, layerName):
         self.qgis.zoomToFeature(layerId, layerSchema, layerName)  

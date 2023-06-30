@@ -176,14 +176,7 @@ class SapActivityHttp:
         return styles
 
     def getLayerALiases(self):
-        return [
-            {
-                'camadaNome': item['nome'],
-                'camadaApelido': item['alias'] if 'alias' in item else '',
-                'atributosApelido': item['atributos'] if 'atributos' in item else []
-            }
-            for item in self.getData()['dados']['atividade']['camadas']
-        ]
+        return self.getData()['dados']['atividade']['alias']
 
     def getLayerActions(self):
         return [

@@ -345,7 +345,8 @@ class QgisApi(IQgisApi):
             'SaveAllEdits': iface.actionSaveAllEdits().triggered,
             'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
             'MessageLog': core.QgsApplication.messageLog().messageReceived,
-            'LayersAdded': core.QgsProject.instance().layersAdded
+            'LayersAdded': core.QgsProject.instance().layersAdded,
+            'NewProject': iface.newProjectCreated,
         }
 
     def on(self, event, callback):
@@ -388,6 +389,7 @@ class QgisApi(IQgisApi):
             iface.mapCanvas().unsetMapTool(tool)
         else:
             iface.mapCanvas().setMapTool(tool)
+        return tool
 
     def getVisibleRasters(self):
         root = core.QgsProject.instance().layerTreeRoot()

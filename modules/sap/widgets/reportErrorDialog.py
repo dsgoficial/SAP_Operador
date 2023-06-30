@@ -7,14 +7,19 @@ class ReportErrorDialog(SapDialog):
 
     def __init__(
             self,
-            controller
+            controller,
+            qgis
         ):
         super(ReportErrorDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.controller = controller
-        self.buttonBox.clicked.connect(
-            self.reportError
-        )
+        self.qgis = qgis
+        self.wkt = None
+        self.okBtn.clicked.connect(self.reportError)
+        self.cancelBtn.clicked.connect(self.reject)
+        self.makerBtn.clicked.connect(self.markError)
+        self.okBtn.setEnabled(False)
 
     def setController(self, controller):
         self.controller = controller
@@ -49,4 +54,13 @@ class ReportErrorDialog(SapDialog):
             self.descrTe.toPlainText()
         )
         self.accept()
-            
+
+    def markError(self):
+        tool = self.qgis.activeTool('SelectError')
+        tool.selected.connect(self.setErrorWkt)
+
+    def setErrorWkt(self, wkt):
+        self.wkt = wkt
+        self.okBtn.setEnabled(True)
+        self.makerBtn.setStyleSheet('QPushButton { background-color: green }')
+        self.qgis.activeTool('SelectError', True)
