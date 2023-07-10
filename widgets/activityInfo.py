@@ -3,6 +3,9 @@ from Ferramentas_Producao.interfaces.IActivityInfoWidget import IActivityInfoWid
 from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
 import json
 from PyQt5 import QtWidgets, QtGui, QtCore
+import textwrap
+
+wrapper = textwrap.TextWrapper(width=40)
 
 class ActivityInfo(Widget, IActivityInfoWidget):
 
@@ -36,7 +39,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def addObservation(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                "<b>{0}</b> {1}".format(title, description), 
+                "<b>{0}</b> <pre><span>{1}</span></pre>".format(title, '\n'.join(wrapper.wrap(text=description))), 
                 self
             )
         )
@@ -44,7 +47,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setDescription(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                '<span style="font-size: 15px;">{0}</span>'.format(description), 
+                '<span style="font-size: 15px;"><pre><span>{0}</span></pre></span>'.format('\n'.join(wrapper.wrap(text=description))), 
                 self
             )
         )
@@ -52,7 +55,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setNotes(self, title, notes):            
         self.layout.addWidget(QtWidgets.QLabel("<b>{0}</b>".format(title), self))
         for note in notes:
-            self.layout.addWidget(QtWidgets.QLabel(note, self))
+            self.layout.addWidget(QtWidgets.QLabel('<pre><span>{0}</span></pre>'.format('\n'.join(wrapper.wrap(text=note))), self))
     
     def setRequirements(self, title, requirements):
         if not requirements:
@@ -61,7 +64,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.layout.addWidget( QtWidgets.QLabel("<b>{0}</b>".format(title), self) )
         for item in requirements:
             description = item['descricao']
-            cbx = QtWidgets.QCheckBox(description, self)
+            cbx = QtWidgets.QCheckBox('\n'.join(wrapper.wrap(text=description)), self)
             cbx.setCheckState(self.getRequirementState(description))
             cbx.stateChanged.connect( lambda state, description=description: self.updateEndActivityButton(state, description) )
             self.layout.addWidget(cbx)
