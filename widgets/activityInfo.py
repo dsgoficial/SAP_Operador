@@ -39,7 +39,9 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def addObservation(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                "<b>{0}</b> <pre><span>{1}</span></pre>".format(title, '\n'.join(wrapper.wrap(text=description))), 
+                "<b>{0}</b> <span>{1}</span>".format(title, '<br/>'.join(
+                    wrapper.wrap(text=description)
+                )), 
                 self
             )
         )
@@ -47,7 +49,9 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setDescription(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                '<span style="font-size: 15px;"><pre><span>{0}</span></pre></span>'.format('\n'.join(wrapper.wrap(text=description))), 
+                '<span style="font-size: 15px;"><span>{0}</span></span>'.format(
+                    '<br/>'.join(wrapper.wrap(text=description)
+                )), 
                 self
             )
         )
@@ -55,7 +59,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setNotes(self, title, notes):            
         self.layout.addWidget(QtWidgets.QLabel("<b>{0}</b>".format(title), self))
         for note in notes:
-            self.layout.addWidget(QtWidgets.QLabel('<pre><span>{0}</span></pre>'.format('\n'.join(wrapper.wrap(text=note))), self))
+            self.layout.addWidget(QtWidgets.QLabel('<span>{0}</span>'.format('<br/>'.join(wrapper.wrap(text=note))), self))
     
     def setRequirements(self, title, requirements):
         if not requirements:
