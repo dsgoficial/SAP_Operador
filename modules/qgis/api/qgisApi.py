@@ -96,7 +96,7 @@ class QgisApi(IQgisApi):
         return False
 
     def checkModifiedLayersByStepId(self, stepId, noteLayers):
-        if stepId == 3:
+        if stepId == 3: #correcao
             for noteLayer in noteLayers:
                 layer = self.getLayerFromTable(
                     noteLayer['schema'],
@@ -116,7 +116,7 @@ class QgisApi(IQgisApi):
                     ):
                         continue
                     return False
-        elif stepId == 2:
+        elif stepId == 2: #revisao
             for noteLayer in noteLayers:
                 layer = self.getLayerFromTable(
                     noteLayer['nome'],

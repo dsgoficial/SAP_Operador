@@ -11,6 +11,10 @@ class EndActivityDialog(SapDialog):
         self.endBtn.setEnabled(False)
         self.nameLe.textEdited.connect(self.updateEndButton)
         self.withoutCorrection = False
+        self.activityDataModel = self.controller.getActivityDataModel()
+        stepTypeId = self.activityDataModel.getStepTypeId()
+        self.revisionW.setVisible(True )#if stepTypeId == 2 else False)
+        self.resize(502, 141)
 
     def setController(self, controller):
         self.controller = controller
@@ -32,12 +36,24 @@ class EndActivityDialog(SapDialog):
         else:
             self.endBtn.setEnabled(False)
 
+    def getData(self):
+        data = {
+            'atividade_id' : self.activityDataModel.getId(),
+            'sem_correcao' : self.withoutCorrection,
+        }
+        if self.changeFlowCb.currentIndex() != 0:
+            data['alterar_fluxo'] = self.changeFlowCb.currentText()
+        obs = self.obsTe.toPlainText()
+        if obs:
+            data['observacao_proxima_atividade'] = obs
+        return data
+
     @QtCore.pyqtSlot(bool)
     def on_endBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.endBtn.setEnabled(False)
         try:
-            self.getController().endActivity(withoutCorrection=self.withoutCorrection)
+            self.getController().endActivity(self.getData())
             QtWidgets.QApplication.restoreOverrideCursor()
             self.endBtn.setEnabled(True)
             self.accept()

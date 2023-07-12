@@ -139,13 +139,10 @@ class SapHttp(ISapApi):
             return response.json()
         return {}
 
-    def endActivity(self, activityId, withoutCorrection):
+    def endActivity(self, data):
         response = self.httpPostJson(
             url="{0}/distribuicao/finaliza".format(self.getServer()),
-            postData={
-                'atividade_id' : activityId,
-                'sem_correcao' : withoutCorrection,
-            }
+            postData=data
         )
         return response.json()['message']
 

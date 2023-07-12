@@ -125,11 +125,8 @@ class RemoteSapCtrl(SapCtrl):
         #response['senha'] = self.qgis.getProjectVariable('productiontools:password')
         return response
 
-    def endActivity(self, withoutCorrection):
-        return self.sapApi.endActivity(
-            self.activityDataModel.getId(), 
-            withoutCorrection
-        )
+    def endActivity(self, data):
+        return self.sapApi.endActivity(data)
 
     def getErrorsTypes(self):
         response = self.sapApi.getErrorsTypes()
