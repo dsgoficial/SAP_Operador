@@ -130,6 +130,7 @@ class QgisApi(IQgisApi):
         return True
 
     def runProcessingModel(self, parametersData):
+        self.setActiveGroup("SAIDA_MODEL")
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
@@ -137,6 +138,20 @@ class QgisApi(IQgisApi):
         parameters = json.loads(parametersData['parametros']) if parametersData['parametros'] else {}
         processing.runAndLoadResults(model, parameters)
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
+
+    def setActiveGroup(self, groupName, pos=0):
+        iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        group = rootNode.findGroup(groupName)
+        if group is None:
+            group = rootNode.insertGroup(pos, groupName)
+        view = iface.layerTreeView()
+        m = view.model()
+        listIndexes = m.match(m.index(0, 0), QtCore.Qt.DisplayRole, groupName, QtCore.Qt.MatchFixedString)
+        if listIndexes:
+            i = listIndexes[0]
+            view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.ClearAndSelect)
+        iface.mapCanvas().freeze(False)
 
     def getLayerUriFromTable(self, layerSchema, layerName):
         layersUri = []
