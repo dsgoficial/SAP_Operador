@@ -170,11 +170,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'iconPath':os.path.join(iconRootPath, 'on_off.png'),
                 'callback': self.onOffLayers
             },
-            {
-                'name': 'Mostrar/Esconder marcadores para feições selecionadas',
-                'iconPath':os.path.join(iconRootPath, 'vertex.png'),
-                'callback': self.showMarkersOnlySelectedFeatures
-            },
+            # {
+            #     'name': 'Mostrar/Esconder marcadores para feições selecionadas',
+            #     'iconPath':os.path.join(iconRootPath, 'vertex.png'),
+            #     'callback': self.showMarkersOnlySelectedFeatures
+            # },
             {
                 'name': 'Suavizador de linhas',
                 'iconPath':os.path.join(iconRootPath, 'smoothLayer.png'),

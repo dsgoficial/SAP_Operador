@@ -214,19 +214,18 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Existem apontamentos não resolvidos!'
             )
             return
-        self.qgis.cleanProject()
         withoutCorrection = stepTypeId == 2 and checkStep
         result = self.sap.showEndActivityDialog(withoutCorrection)
         if not result:
             return
-        self.reload()
+        self.resetProject()
 
     def showReportErrorDialog(self):
         self.sap.showReportErrorDialog(
-            self.reportErrorCallback
+            self.resetProject
         )
     
-    def reportErrorCallback(self):
+    def resetProject(self):
         self.qgis.cleanProject()
         self.reload()
         

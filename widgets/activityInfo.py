@@ -69,7 +69,9 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         for item in requirements:
             description = item['descricao']
             cbx = QtWidgets.QCheckBox('\n'.join(wrapper.wrap(text=description)), self)
-            cbx.setCheckState(self.getRequirementState(description))
+            savedState = self.getRequirementState(description)
+            cbx.setCheckState(savedState)
+            self.updateEndActivityButton(savedState, description)
             cbx.stateChanged.connect( lambda state, description=description: self.updateEndActivityButton(state, description) )
             self.layout.addWidget(cbx)
 

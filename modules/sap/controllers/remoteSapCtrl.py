@@ -183,3 +183,6 @@ class RemoteSapCtrl(SapCtrl):
             return True   
         self.setupActivityDataModel(response)
         return self.qgis.getProjectVariable('productiontools:activityName') == self.activityDataModel.getDescription()
+
+    def incorrectEnding(self, description):
+        return self.sapApi.incorrectEnding(description)
