@@ -15,7 +15,7 @@ from Ferramentas_Producao.modules.dsgTools.processingLaunchers.ruleStatistics im
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.setRemoveDuplicateNodePropertyOnLayers import SetRemoveDuplicateNodePropertyOnLayers
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignFormatRulesToLayers import AssignFormatRulesToLayers
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.createReviewGrid import CreateReviewGrid
-
+from Ferramentas_Producao.modules.dsgTools.processingLaunchers.loadThemes import LoadThemes
 
 class ProcessingQgisFactory(IProcessingFactory):
 
@@ -40,6 +40,7 @@ class ProcessingQgisFactory(IProcessingFactory):
             'SetRemoveDuplicateNodePropertyOnLayers': SetRemoveDuplicateNodePropertyOnLayers,
             'AssignFormatRulesToLayers': AssignFormatRulesToLayers,
             'CreateReviewGrid': CreateReviewGrid,
+            'LoadThemes': LoadThemes
         }
         return processingNames[processingName](controller)
             

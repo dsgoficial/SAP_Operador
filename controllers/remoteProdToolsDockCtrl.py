@@ -375,9 +375,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.canvasMonitoring.start()
 
         self.loadReviewTool()
-        self.qgis.loadThemes(
-            self.sapActivity.getThemes()
-        )
+        
+        loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
+        loadThemes.run({'themes': self.sapActivity.getThemes()})
 
     def frameLoaded(self, frameQuery):
         layers = self.qgis.getLoadedVectorLayers()
