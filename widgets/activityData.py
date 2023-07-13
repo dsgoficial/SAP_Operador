@@ -9,6 +9,7 @@ class ActivityData(Widget, IActivityDataWidget):
     def __init__(self, controller=None):
         super(ActivityData, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
+        self.loadReviewToolBtn.setVisible(False)
 
     def getUiPath(self):
         return os.path.join(

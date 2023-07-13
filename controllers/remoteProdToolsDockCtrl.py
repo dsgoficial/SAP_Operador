@@ -374,6 +374,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.start()
         self.canvasMonitoring.start()
 
+        self.loadReviewTool()
+
     def frameLoaded(self, frameQuery):
         layers = self.qgis.getLoadedVectorLayers()
         for l in layers:
