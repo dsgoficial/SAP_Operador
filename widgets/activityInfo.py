@@ -1,6 +1,6 @@
 from Ferramentas_Producao.widgets.widget import Widget
 from Ferramentas_Producao.interfaces.IActivityInfoWidget import IActivityInfoWidget
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 import textwrap
@@ -18,7 +18,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton.clicked.connect(self.finish)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
         self.reportErrorButton.clicked.connect(self.reportError)
-        self.qgis = QgisCtrl()
+        self.qgis = QgisApi()
 
     def finish(self, b):
         self.endActivityButton.setEnabled(False)

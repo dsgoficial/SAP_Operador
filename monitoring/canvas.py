@@ -1,7 +1,7 @@
 from qgis.PyQt import QtCore
 from qgis.utils import iface
 from Ferramentas_Producao.timers.timer import Timer
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 from datetime import datetime
 import json
 
@@ -11,7 +11,7 @@ class Canvas(QtCore.QObject):
 
     def __init__(
             self,
-            qgis=QgisCtrl()
+            qgis=QgisApi()
         ):
         super(Canvas, self).__init__()
         self.qgis = qgis

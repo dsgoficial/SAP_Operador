@@ -14,6 +14,9 @@ class SapActivityHttp:
     def getScale(self):
         return self.getData()['dados']['atividade']['denominador_escala']
 
+    def getThemes(self):
+        return self.getData()['dados']['atividade']['temas']
+
     def getNotes(self):
         notes = []
         activityData = self.getData()['dados']['atividade']

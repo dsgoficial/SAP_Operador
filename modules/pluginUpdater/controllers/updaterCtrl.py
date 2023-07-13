@@ -1,6 +1,6 @@
 from modules.pluginUpdater.factories.updaterFactory import UpdaterFactory
 from modules.pluginUpdater.factories.guiFactory import GuiFactory
-from modules.qgis.qgisCtrl import QgisCtrl
+from modules.qgis.qgisApi import QgisApi
 import json
 import os
 import subprocess
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, uic, QtWidgets
 class UpdaterCtrl:
     
     def __init__(self, 
-            qgis=QgisCtrl(),
+            qgis=QgisApi(),
             updaterFactory=UpdaterFactory(),
             guiFactory=GuiFactory(),
             time=QtCore.QTimer()

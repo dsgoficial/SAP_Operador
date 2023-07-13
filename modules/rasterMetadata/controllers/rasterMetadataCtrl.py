@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 from Ferramentas_Producao.modules.rasterMetadata.factories.widgetFactory import WidgetFactory
 from Ferramentas_Producao.modules.rasterMetadata.models.rasterMetadata import RasterMetadata
 from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
@@ -9,7 +9,7 @@ class RasterMetadataCtrl:
             self,
             RasterMetadata=RasterMetadata,
             widgetFactory=WidgetFactory(),
-            qgis=QgisCtrl(),
+            qgis=QgisApi(),
             messageFactory=UtilsFactory().createMessageFactory()
         ):
         self.widgetFactory = widgetFactory

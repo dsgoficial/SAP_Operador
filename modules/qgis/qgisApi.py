@@ -219,7 +219,7 @@ class QgisApi(IQgisApi):
             return
         return keys[shortcutKeyName]
 
-    def createAction(self, name, iconPath, callback, shortcutKeyName, register=False):
+    def createAction(self, name, iconPath, callback, shortcutKeyName='', register=False):
         a = QAction(
             QIcon(iconPath),
             name,
@@ -693,5 +693,28 @@ class QgisApi(IQgisApi):
     def closeQgis(self):
         core.QgsApplication.taskManager().cancelAll()
         iface.actionExit().trigger()
+
+    def setActiveLayerByName(self, layerName):
+        layer = self.apiQGis.getLayerFromName(layerName)
+        if not layer:
+            return
+        iface.setActiveLayer(layer)
+
+    def loadThemes(self, themes):
+        for theme in themes:
+            themeLayers = [ '{}.{}'.format(l['schema'], l['camada']) for l in theme['camadas'] ]
+            root = core.QgsProject().instance().layerTreeRoot().clone()
+            for rLayer in root.findLayers():
+                rLayer.setItemVisibilityChecked(False)
+                rLayerName = '{}.{}'.format(
+                    rLayer.layer().dataProvider().uri().schema(),
+                    rLayer.layer().dataProvider().uri().table()
+                )
+                if not(rLayerName in themeLayers):
+                    continue
+                rLayer.setItemVisibilityChecked(True)
+            model = core.QgsLayerTreeModel(root)
+            themeCollection = core.QgsProject.instance().mapThemeCollection()
+            themeCollection.insert(theme['nome'], core.QgsMapThemeCollection.createThemeFromCurrentState(root, model))
 
 

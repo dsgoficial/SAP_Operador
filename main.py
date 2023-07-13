@@ -13,7 +13,7 @@ from .modules.sap.controllers.localSapCtrl import LocalSapCtrl
 from .modules.qgis.scripts.toggle import toggle
 from .modules.pluginUpdater.controllers.updaterCtrl import UpdaterCtrl
 
-from .modules.qgis.qgisCtrl import QgisCtrl
+from .modules.qgis.qgisApi import QgisApi
 from .modules.fme.factories.fmeApiSingleton import FmeApiSingleton
 from .modules.utils.factories.utilsFactory import UtilsFactory
 from .modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
@@ -28,7 +28,7 @@ class Main:
     def __init__(self, iface):    
         super(Main, self).__init__()
         self.plugin_dir = os.path.dirname(__file__)
-        self.qgisCtrl = QgisCtrl()
+        self.qgisCtrl = QgisApi()
         self.externalInstance = None
         self.updaterCtrl = UpdaterCtrl( self.qgisCtrl )
         self.prodToolsSettingsCtrl = ProdToolsSettingsCtrl( 

@@ -1,7 +1,7 @@
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 from Ferramentas_Producao.timers.timer import Timer
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 from datetime import datetime
 import json
 
@@ -9,7 +9,7 @@ class Pomodoro(QtWidgets.QWidget):
 
     def __init__(
             self,
-            qgis=QgisCtrl()
+            qgis=QgisApi()
         ):
         super(Pomodoro, self).__init__()
         uic.loadUi(self.getUiPath(), self)
