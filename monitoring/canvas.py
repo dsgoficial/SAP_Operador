@@ -50,7 +50,7 @@ class Canvas(QtCore.QObject):
     def saveState(self):
         date = self.getCurrentDate()
         self.qgis.setSettingsVariable(
-            'productiontools:monitoring:canvas', 
+            'productiontools:monitoring:canvas:v2', 
             json.dumps({
                 date: [
                     self.minutesActive,
@@ -64,7 +64,7 @@ class Canvas(QtCore.QObject):
         return now.strftime("%d-%m-%Y")
 
     def restoreState(self):
-        dumpData = self.qgis.getSettingsVariable('productiontools:monitoring:canvas')
+        dumpData = self.qgis.getSettingsVariable('productiontools:monitoring:canvas:v2')
         if not dumpData:
             return
         dumpData = json.loads(dumpData)
