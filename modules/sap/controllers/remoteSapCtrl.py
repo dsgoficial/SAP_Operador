@@ -174,10 +174,6 @@ class RemoteSapCtrl(SapCtrl):
         )
 
     def isValidActivity(self):
-        if not(self.hasActivityRecord()):
-            return True
-        if not self.hasValidAuthentication():
-            return True
         response = self.getCurrentActivity()
         if not response:
             return True   
