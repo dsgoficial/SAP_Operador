@@ -520,7 +520,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.sap.reAuthUser()
         self.prodToolsSettings.checkPluginUpdates()
         self.productionTools.close() if self.productionTools else ''
-         if not(self.sap.hasActivityRecord() and self.sap.hasValidAuthentication()):
+        if not(self.sap.hasActivityRecord() and self.sap.hasValidAuthentication()):
             return
         if self.sap.isValidActivity():
             self.prodToolsSettings.initSaveTimer()
