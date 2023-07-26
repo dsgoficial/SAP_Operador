@@ -10,7 +10,7 @@ class CustomFeatureTool:
         try:
             from DsgTools.Modules.acquisitionMenu.controllers.acquisitionMenuCtrl import AcquisitionMenuCtrl
             return AcquisitionMenuCtrl()
-        except ImportError:
+        except Exception as e:
             raise Exception("O DSGTools não está ativado. Ative o DSGTools e tente novamente.")
 
     def run(self, menuConfigs):
