@@ -695,7 +695,7 @@ class QgisApi(IQgisApi):
         iface.actionExit().trigger()
 
     def setActiveLayerByName(self, layerName):
-        layer = self.apiQGis.getLayerFromName(layerName)
+        layer = self.getLayerFromName(layerName)
         if not layer:
             return
         iface.setActiveLayer(layer)
