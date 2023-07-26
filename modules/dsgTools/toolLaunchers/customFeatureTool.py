@@ -7,13 +7,13 @@ class CustomFeatureTool:
         self.controller = controller
 
     def getTool(self):
-        return plugins['DsgTools'].getAcquisitionMenu()
+        try:
+            from DsgTools.Modules.acquisitionMenu.controllers.acquisitionMenuCtrl import AcquisitionMenuCtrl
+            return AcquisitionMenuCtrl()
+        except ImportError:
+            raise Exception("O DSGTools não está ativado. Ative o DSGTools e tente novamente.")
 
     def run(self, menuConfigs):
         acquisitionMenu = self.getTool()
         acquisitionMenu.createMenuDock( menuConfigs )
         return acquisitionMenu
-
-        
-
-        
