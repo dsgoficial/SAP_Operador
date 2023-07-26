@@ -1,4 +1,5 @@
 
+from collections import OrderedDict
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
 from Ferramentas_Producao.factories.spatialVerificationFactory import SpatialVerificationFactory
@@ -378,7 +379,45 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         
         loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
         loadThemes.run({'themes': self.sapActivity.getThemes()})
+        self.sortLayersOnMolduraGroup()
 
+    def sortLayersOnMolduraGroup(self):
+        utils.iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        oldGroup = rootNode.findGroup('MOLDURA_E_INSUMOS')
+        newGroup = rootNode.addGroup('MOLDURA_E_INSUMOS')
+        auxDict = OrderedDict(
+            {
+                core.QgsWkbTypes.PointGeometry: [],
+                core.QgsWkbTypes.LineGeometry: [],
+                core.QgsWkbTypes.PolygonGeometry: [],
+            }
+        )
+        rasterList = []
+        for layerTreeView in oldGroup.children():
+            lyr = layerTreeView.layer()
+            if isinstance(lyr, core.QgsRasterLayer):
+                rasterList.append(layerTreeView)
+                continue
+            if lyr.name() in ("aux_grid_revisao_a", "moldura"):
+                idx = 0 if "aux_grid_revisao_a" else -1
+                myClone = layerTreeView.clone()
+                newGroup.insertChildNode(idx, myClone)
+                oldGroup.removeChildNode(layerTreeView)
+                continue
+            auxDict[lyr.geometryType()].append(layerTreeView)
+        for geomType, layerTreeViewList in auxDict.items():
+            for layerTreeView in sorted(layerTreeViewList, key=lambda x: x.layer().name(), reverse=False):
+                myClone = layerTreeView.clone()
+                newGroup.insertChildNode(-1, myClone)
+                oldGroup.removeChildNode(layerTreeView)
+        for rasterNode in sorted(rasterList, key=lambda x: x.layer().name().lower(), reverse=False):
+            myClone = rasterNode.clone()
+            newGroup.insertChildNode(-1, myClone)
+            oldGroup.removeChildNode(rasterNode)
+        rootNode.removeChildNode(oldGroup)
+        utils.iface.mapCanvas().freeze(False)
+    
     def frameLoaded(self, frameQuery):
         layers = self.qgis.getLoadedVectorLayers()
         for l in layers:
@@ -602,12 +641,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
 
-    def moveLayerToGroup(self, loadedLayerId):
+    def moveLayerToGroup(self, loadedLayerId, positionToInsert=0):
         utils.iface.mapCanvas().freeze(True)
         rootNode = core.QgsProject.instance().layerTreeRoot()
         group = rootNode.findGroup('MOLDURA_E_INSUMOS')
         lyrNode = rootNode.findLayer(loadedLayerId)
         myClone = lyrNode.clone()
-        group.insertChildNode(0, myClone)
+        group.insertChildNode(positionToInsert, myClone)
         rootNode.removeChildNode(lyrNode)
         utils.iface.mapCanvas().freeze(False)
