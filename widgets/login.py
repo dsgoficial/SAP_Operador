@@ -19,6 +19,9 @@ class Login(QtWidgets.QDialog, ILogin):
         self.controller = controller
         self.messageFactory = messageFactory
         self.currentFrame = None
+        self.loadLoginFrame(
+            self.getCurrentLoginMode()
+        )
 
     def setController(self, controller):
         self.controller = controller
@@ -150,16 +153,25 @@ class Login(QtWidgets.QDialog, ILogin):
 
     def loginLocal(self):
         #try:
-        frame = self.getCurrentLoginFrame()
-        dbsetting = frame.databasesCb.itemData(frame.databasesCb.currentIndex())
-        self.getController().localAuthUser(
-            dbsetting['username'],
-            dbsetting['password'],
-            dbsetting['host'],
-            dbsetting['port'],
-            dbsetting['database']
-        )
-        self.getController().loadLocalDockWidget()
-        self.accept()
-        #except Exception as e:
+            frame = self.getCurrentLoginFrame()
+            dbsetting = frame.databasesCb.itemData(frame.databasesCb.currentIndex())
+            success = self.getController().localAuthUser(
+                dbsetting['username'],
+                dbsetting['password'],
+                dbsetting['host'],
+                dbsetting['port'],
+                dbsetting['database']
+            )
+            if success:
+                self.getController().loadLocalDockWidget(
+                    dbsetting['username'],
+                    dbsetting['password'],
+                    dbsetting['host'],
+                    dbsetting['port'],
+                    dbsetting['database']       
+                )
+                self.accept()
+            else:
+                self.reject()
+        # except Exception as e:
         #    self.showErrorMessageBox('Erro', str(e))

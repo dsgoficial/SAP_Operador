@@ -49,7 +49,9 @@ class Main:
             qgis=self.qgisCtrl,
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
-            prodToolsSettings=self.prodToolsSettingsCtrl
+            fme=FmeApiSingleton.getInstance(),
+            prodToolsSettings=self.prodToolsSettingsCtrl,
+            toolFactoryDsgTools=ToolFactory()
         )
         self.loginCtrl = LoginCtrl(
             qgis=self.qgisCtrl,

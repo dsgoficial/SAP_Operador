@@ -13,7 +13,6 @@ class LoginCtrl:
         self.loginView = LoginSingleton.getInstance(controller=self)
 
     def showView(self):
-        self.loginView.loadLoginFrame(0)
         self.loginView.exec_()
 
     def getRemoteSettings(self):
@@ -38,5 +37,5 @@ class LoginCtrl:
     def localAuthUser(self, dbusername, dbpassword, dbhost, dbport, dbname):
         return self.localProdToolsDockCtrl.authUser(dbusername, dbpassword, dbhost, dbport, dbname)
 
-    def loadLocalDockWidget(self):
-        self.localProdToolsDockCtrl.loadDockWidget()
+    def loadLocalDockWidget(self, dbusername, dbpassword, dbhost, dbport, dbname):
+        self.localProdToolsDockCtrl.loadDockWidget(dbusername, dbpassword, dbhost, dbport, dbname)
