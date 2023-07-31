@@ -66,7 +66,7 @@ class UpdaterCtrl:
         if not updates:
             return
         self.openMessageDialog()
-        self.time.start(1000*20)
+        self.time.start(1000*10)
 
     def validSettings(self):
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'settings.json'), 'r') as f:
@@ -91,3 +91,4 @@ class UpdaterCtrl:
         except Exception as e:
             print(str(e))
             return False
+        return False

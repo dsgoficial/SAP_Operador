@@ -3,6 +3,7 @@ import subprocess
 import platform
 import shutil
 import json
+from configparser import ConfigParser
 
 class WindowsUpdater:
     
@@ -34,18 +35,12 @@ class WindowsUpdater:
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
             )
         for pluginName, pluginPath in localPlugins.items():
-            localHash = self.getLocalFileData(
-                os.path.join(
-                    pluginPath,
-                    'hash.txt'
-                )
-            )
+            localVersion = self.getLocalPluginVersion(pluginPath)
             if not(pluginName in remotePlugins):
                 continue
-            remoteHash = self.getRemoteFileData(
-                os.path.join(remotePlugins[pluginName], 'hash.txt')
-            )
-            if localHash.strip() == remoteHash.strip():
+            remoteVersion = self.getRemotePluginVersion(remotePlugins[pluginName])
+            print(pluginName, localVersion.strip(), remoteVersion.strip())
+            if localVersion.strip() == remoteVersion.strip():
                 continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
@@ -75,8 +70,38 @@ class WindowsUpdater:
     def getLocalFileData(self, filePath):
         return self.getFileData(filePath)
 
+    def getLocalPluginVersion(self, pluginPath):
+        pluginVersion = ''
+        try:
+            metadataPath = os.path.join(
+                pluginPath,
+                'metadata.txt'
+            )
+            with open(metadataPath) as mf:
+                cp = ConfigParser()
+                cp.readfp(mf)
+                pluginVersion = cp.get('general', 'version')
+        except:
+            pass
+        return pluginVersion
+
     def getRemoteFileData(self, filePath):
         return self.getFileData(filePath)
+
+    def getRemotePluginVersion(self, pluginPath):
+        pluginVersion = ''
+        try:
+            metadataPath = os.path.join(
+                pluginPath,
+                'metadata.txt'
+            )
+            with open(metadataPath) as mf:
+                cp = ConfigParser()
+                cp.readfp(mf)
+                pluginVersion = cp.get('general', 'version')
+        except:
+            pass
+        return pluginVersion
 
     def getFileData(self, filePath):
         p = subprocess.Popen(
