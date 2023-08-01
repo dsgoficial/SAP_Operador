@@ -74,6 +74,6 @@ class UpdaterCtrl:
 
     def getRemotePluginPath(self):
         res = self.sap.getRemotePluginsPath()
-        if 'dados' in res and 'path' in res['dados'] and res['dados']['path']
+        if 'dados' in res and 'path' in res['dados'] and res['dados']['path']:
             return res['dados']['path']
         return None
