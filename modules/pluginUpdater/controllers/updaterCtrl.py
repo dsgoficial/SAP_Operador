@@ -11,11 +11,13 @@ from PyQt5 import QtCore, uic, QtWidgets
 class UpdaterCtrl:
     
     def __init__(self, 
+            sap,
             qgis=QgisApi(),
             updaterFactory=UpdaterFactory(),
             guiFactory=GuiFactory(),
             time=QtCore.QTimer()
         ):
+        self.sap = sap
         self.qgis = qgis
         self.updaterFactory = updaterFactory
         self.guiFactory = guiFactory
@@ -60,34 +62,18 @@ class UpdaterCtrl:
         self.qgis.closeQgis()
 
     def checkUpdates(self):
-        if not self.validSettings():
+        remotePluginPath = self.getRemotePluginPath()
+        if not remotePluginPath:
             return
+        self.updater.setRepositoryPluginsPath(remotePluginPath)
         updates = self.updater.checkUpdates()
         if not updates:
             return
         self.openMessageDialog()
-        self.time.start(1000*20)
+        self.time.start(1000*10)
 
-    def validSettings(self):
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'settings.json'), 'r') as f:
-            data = json.loads(f.read())
-        try:
-            if platform.system().lower() == 'windows':
-                if (
-                data['windows']['repository']
-                ):
-                    return True
-            if platform.system().lower() == 'linux':
-                if (
-                    data['linux']['repository']
-                    and 
-                    data['linux']['login']
-                    and 
-                    data['linux']['password']
-                    and 
-                    data['linux']['domain']
-                ):
-                    return True
-        except Exception as e:
-            print(str(e))
-            return False
+    def getRemotePluginPath(self):
+        res = self.sap.getRemotePluginsPath()
+        if 'dados' in res and 'path' in res['dados'] and res['dados']['path']
+            return res['dados']['path']
+        return None

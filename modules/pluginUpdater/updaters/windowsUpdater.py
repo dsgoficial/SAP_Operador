@@ -3,6 +3,7 @@ import subprocess
 import platform
 import shutil
 import json
+from configparser import ConfigParser
 
 class WindowsUpdater:
     
@@ -12,6 +13,7 @@ class WindowsUpdater:
         ):
         self.qgis = qgis
         self.updates = []
+        self.repository = None
 
     def update(self):
         for origPath, destPath in self.getUpdates():
@@ -34,18 +36,12 @@ class WindowsUpdater:
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
             )
         for pluginName, pluginPath in localPlugins.items():
-            localHash = self.getLocalFileData(
-                os.path.join(
-                    pluginPath,
-                    'hash.txt'
-                )
-            )
+            localVersion = self.getLocalPluginVersion(pluginPath)
             if not(pluginName in remotePlugins):
                 continue
-            remoteHash = self.getRemoteFileData(
-                os.path.join(remotePlugins[pluginName], 'hash.txt')
-            )
-            if localHash.strip() == remoteHash.strip():
+            remoteVersion = self.getRemotePluginVersion(remotePlugins[pluginName])
+            print(pluginName, localVersion.strip(), remoteVersion.strip())
+            if localVersion.strip() == remoteVersion.strip():
                 continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
@@ -53,11 +49,11 @@ class WindowsUpdater:
         self.setUpdates(updates)
         return updates
 
+    def setRepositoryPluginsPath(self, repoPath):
+        self.repository = repoPath
+
     def getRepositoryPluginsPath(self):
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'settings.json'), 'r') as f:
-            data = json.loads(f.read())
-            repository = data['windows']['repository']
-        return repository
+        return self.repository
 
     def getRemotePlugins(self):
         repositoryPluginsPath = self.getRepositoryPluginsPath()
@@ -75,8 +71,38 @@ class WindowsUpdater:
     def getLocalFileData(self, filePath):
         return self.getFileData(filePath)
 
+    def getLocalPluginVersion(self, pluginPath):
+        pluginVersion = ''
+        try:
+            metadataPath = os.path.join(
+                pluginPath,
+                'metadata.txt'
+            )
+            with open(metadataPath) as mf:
+                cp = ConfigParser()
+                cp.readfp(mf)
+                pluginVersion = cp.get('general', 'version')
+        except:
+            pass
+        return pluginVersion
+
     def getRemoteFileData(self, filePath):
         return self.getFileData(filePath)
+
+    def getRemotePluginVersion(self, pluginPath):
+        pluginVersion = ''
+        try:
+            metadataPath = os.path.join(
+                pluginPath,
+                'metadata.txt'
+            )
+            with open(metadataPath) as mf:
+                cp = ConfigParser()
+                cp.readfp(mf)
+                pluginVersion = cp.get('general', 'version')
+        except:
+            pass
+        return pluginVersion
 
     def getFileData(self, filePath):
         p = subprocess.Popen(

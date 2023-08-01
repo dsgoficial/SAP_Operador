@@ -174,3 +174,11 @@ class SapHttp(ISapApi):
             }
         )
         return response.json()['message']
+
+    def getRemotePluginsPath(self):
+        response = self.httpGet(
+            url="{0}/distribuicao/plugin_path".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}

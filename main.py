@@ -30,13 +30,15 @@ class Main:
         self.plugin_dir = os.path.dirname(__file__)
         self.qgisCtrl = QgisApi()
         self.externalInstance = None
-        self.updaterCtrl = UpdaterCtrl( self.qgisCtrl )
+        
+        remoteSap = RemoteSapCtrl( self.qgisCtrl )
+        self.updaterCtrl = UpdaterCtrl( remoteSap, self.qgisCtrl )
         self.prodToolsSettingsCtrl = ProdToolsSettingsCtrl( 
             self.qgisCtrl,
             self.updaterCtrl 
         )
         self.remoteProdToolsDockCtrl = RemoteProdToolsDockCtrl(
-            sap=RemoteSapCtrl( self.qgisCtrl ),
+            sap=remoteSap,
             qgis=self.qgisCtrl,
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),

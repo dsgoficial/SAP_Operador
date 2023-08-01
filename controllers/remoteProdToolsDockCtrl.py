@@ -93,6 +93,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.productionTools.close() if self.productionTools else ''
         
     def authUser(self, username, password, server):
+        self.sap.setServer(server)
+        self.prodToolsSettings.checkPluginUpdates()
         self.qgis.setProjectVariable('productiontools:user', username)
         self.qgis.setProjectVariable('productiontools:password', password)
         self.qgis.setSettingsVariable('productiontools:server', server)
@@ -144,7 +146,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
         self.qgis.addDockWidget(self.productionTools, side='left')
-        self.prodToolsSettings.checkPluginUpdates()  
+        #self.prodToolsSettings.checkPluginUpdates()  
         return self.productionTools  
 
     def removeDock(self):
@@ -556,11 +558,19 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         messageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
-        self.sap.reAuthUser()
-        self.prodToolsSettings.checkPluginUpdates()
         self.productionTools.close() if self.productionTools else ''
-        if not(self.sap.hasActivityRecord() and self.sap.hasValidAuthentication()):
+        
+        user = self.qgis.getProjectVariable('productiontools:user')
+        password = self.qgis.getProjectVariable('productiontools:password')
+        server = self.qgis.getSettingsVariable('productiontools:server')
+        if not(user and password and server):
             return
+
+        self.sap.setServer(server)
+        self.prodToolsSettings.checkPluginUpdates()
+        self.sap.authUser()
+        
+       
         if self.sap.isValidActivity():
             self.prodToolsSettings.initSaveTimer()
             self.canvasMonitoring.start()

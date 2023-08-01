@@ -52,7 +52,6 @@ class RemoteSapCtrl(SapCtrl):
         infoMessageBox.show(parent, title, message)    
         
     def authUser(self, user, password, server):
-        self.sapApi.setServer(server)
         response = self.sapApi.loginUser(
             user, 
             password,
@@ -60,6 +59,9 @@ class RemoteSapCtrl(SapCtrl):
             self.qgis.getPluginsVersions()
         )
         return response['success']
+
+    def setServer(self, server):
+        self.sapApi.setServer(server)
 
     def reAuthUser(self):
         user = self.qgis.getProjectVariable('productiontools:user')
@@ -182,3 +184,6 @@ class RemoteSapCtrl(SapCtrl):
 
     def incorrectEnding(self, description):
         return self.sapApi.incorrectEnding(description)
+
+    def getRemotePluginsPath(self):
+        return self.sapApi.getRemotePluginsPath()
