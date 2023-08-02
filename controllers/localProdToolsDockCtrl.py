@@ -126,7 +126,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         #self.pomodoro.unload()
 
     def reload(self):
-        self.prodToolsSettings.checkPluginUpdates()
+        #self.prodToolsSettings.checkPluginUpdates()
         if self.productionTools is None:
             return
         self.removeDock()
