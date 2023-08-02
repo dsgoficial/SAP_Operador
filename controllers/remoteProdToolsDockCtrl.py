@@ -94,11 +94,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         
     def authUser(self, username, password, server):
         self.sap.setServer(server)
-        self.prodToolsSettings.checkPluginUpdates()
+        #self.prodToolsSettings.checkPluginUpdates()
         self.qgis.setProjectVariable('productiontools:user', username)
         self.qgis.setProjectVariable('productiontools:password', password)
         self.qgis.setSettingsVariable('productiontools:server', server)
         return self.sap.authUser(username, password, server)
+
+    def checkPluginUpdates(self, server):
+        self.sap.setServer(server)
+        return self.prodToolsSettings.checkPluginUpdates()
 
     def getPomodoroWidget(self):
         return self.pomodoro
@@ -567,7 +571,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
 
         self.sap.setServer(server)
-        self.prodToolsSettings.checkPluginUpdates()
+        if self.prodToolsSettings.checkPluginUpdates():
+            return
         self.sap.authUser()
         
        

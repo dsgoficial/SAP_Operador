@@ -156,7 +156,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             )
 
     def checkPluginUpdates(self):
-        self.pluginUpdater.checkUpdates()
+        return self.pluginUpdater.checkUpdates()
     
     def getMenuBarActionSettings(self):
         iconRootPath = os.path.join(

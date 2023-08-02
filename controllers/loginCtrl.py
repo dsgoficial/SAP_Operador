@@ -29,6 +29,9 @@ class LoginCtrl:
         self.qgis.setProjectVariable('productiontools:user', username)
         self.qgis.setProjectVariable('productiontools:password', password)
         self.qgis.setSettingsVariable('productiontools:server', server)
+        if self.remoteProdToolsDockCtrl.checkPluginUpdates(server):
+            self.loginView.close()
+            return
         return self.remoteProdToolsDockCtrl.authUser(username, password, server)
 
     def loadRemoteDockWidget(self):
