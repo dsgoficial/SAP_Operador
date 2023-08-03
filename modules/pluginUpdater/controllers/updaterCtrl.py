@@ -64,16 +64,20 @@ class UpdaterCtrl:
         self.qgis.closeQgis()
 
     def checkUpdates(self):
-        remotePluginPath = self.getRemotePluginPath()
-        if not remotePluginPath:
+        try:
+            remotePluginPath = self.getRemotePluginPath()
+            if not remotePluginPath:
+                return False
+            self.updater.setRepositoryPluginsPath(remotePluginPath)
+            updates = self.updater.checkUpdates()
+            if not updates:
+                return False
+            self.openMessageDialog()
+            self.time.start(1000*10)
+            return True
+        except Exception as e:
+            print(str(e))
             return False
-        self.updater.setRepositoryPluginsPath(remotePluginPath)
-        updates = self.updater.checkUpdates()
-        if not updates:
-            return False
-        self.openMessageDialog()
-        self.time.start(1000*10)
-        return True
 
     def getRemotePluginPath(self):
         res = self.sap.getRemotePluginsPath()
