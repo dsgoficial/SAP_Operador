@@ -56,12 +56,15 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
                 )
                 parentItem.addChild(childItem)
                 continue
-            color = self.getRuleColor(rule)
+            color = self.getRuleColor(rule.split(':')[1].strip())
             for layerName in result[rule]:
                 childItem   = QtWidgets.QTreeWidgetItem(self.treeWidget)
                 layerButton = QtWidgets.QPushButton(layerName)
+                font = layerButton.font()
+                font.setPointSize(13)
+                layerButton.setFont(font)
                 layerButton.clicked.connect(lambda b, name=layerName: qgis.setActiveLayerByName(name))
-                layerButton.setStyleSheet('QPushButton { color: '+color+';}')
+                layerButton.setStyleSheet('QPushButton { color: '+color+'; background-color: #000000;}')
                 self.treeWidget.setItemWidget(
                     childItem,
                     1, 
@@ -76,6 +79,6 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
         colors = {
             'Atributo incomum': 'yellow',
             'Atributo incorreto': 'red',
-            'Preencher Atributo': 'orange'
+            'Preencher atributo': 'orange'
         }
         return 'red' if not(rule in colors) else colors[rule]
