@@ -573,7 +573,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.sap.setServer(server)
         if self.prodToolsSettings.checkPluginUpdates():
             return
-        self.sap.authUser()
+        self.sap.authUser(user, password, server)
         
        
         if self.sap.isValidActivity():
