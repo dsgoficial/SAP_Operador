@@ -25,6 +25,10 @@ class WindowsUpdater:
     def getUpdates(self):
         return self.updates
 
+    def versiontuple(self, version):
+        v = version.strip()
+        return tuple(map(int, (v.split("."))))
+
     def checkUpdates(self):
         remotePlugins = dict(self.getRemotePlugins())
         localPlugins = dict(self.qgis.getPluginPaths())
@@ -40,8 +44,10 @@ class WindowsUpdater:
             if not(pluginName in remotePlugins):
                 continue
             remoteVersion = self.getRemotePluginVersion(remotePlugins[pluginName])
-            print(pluginName, localVersion.strip(), remoteVersion.strip())
-            if localVersion.strip() == remoteVersion.strip():
+            localVersion = self.versiontuple(localVersion)
+            remoteVersion = self.versiontuple(remoteVersion)
+            print(pluginName, localVersion, remoteVersion, remoteVersion <= localVersion)
+            if remoteVersion <= localVersion:
                 continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))

@@ -665,6 +665,7 @@ class QgisApi(IQgisApi):
         return [
             (name, os.path.join(repositoryPluginsPath, name))
             for name in result[0].decode('u16').split('\r\n')
+            if name != ''
         ]
 
     def getLinuxPluginPaths(self):
@@ -678,6 +679,7 @@ class QgisApi(IQgisApi):
         return [
             (name, os.path.join(repositoryPluginsPath, name))
             for name in result[0].decode('u8').split('\n')
+            if name != ''
         ]
 
     def createMenuBar(self, menuName):
