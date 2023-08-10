@@ -8,7 +8,7 @@ class ProductionToolsDirector:
         ):
         self.activityWidgetFactory = activityWidgetFactory
 
-    def constructRemoteProductionToolsDock(self, builder, controller):
+    def constructRemoteProductionToolsDock(self, builder, controller, sap):
         builder.setController(controller)
         widgets = [
             {
@@ -17,7 +17,7 @@ class ProductionToolsDirector:
             },
             {
                 'name': 'Dados:',
-                'widget': self.activityWidgetFactory.makeActivityDataWidget(controller=controller)
+                'widget': self.activityWidgetFactory.makeActivityDataWidget(controller=controller, sap=sap)
             },
             {
                 'name': 'Insumos:',

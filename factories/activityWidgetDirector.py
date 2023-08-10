@@ -15,7 +15,7 @@ class ActivityWidgetDirector:
         builder.setRequirements( "Requisitos:", controller.getActivityRequirements() )
         builder.setButtons()
 
-    def constructActivityDataWidget(self, builder, controller):
+    def constructActivityDataWidget(self, builder, controller, sap):
         builder.enabledMenuButton( len( controller.getSapMenus() ) > 0 )
         builder.setController(controller)
 

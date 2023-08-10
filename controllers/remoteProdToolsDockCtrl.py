@@ -122,7 +122,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if self.sapActivity is None:
             return
         self.loadShortcuts()
-        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap, self.productionTools)
         self.qgis.addDockWidget(self.productionTools, side='left')  
 
     def loadShortcuts(self):
@@ -148,7 +148,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.loadShortcuts()
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
-        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
+        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap)
         self.qgis.addDockWidget(self.productionTools, side='left')
         #self.prodToolsSettings.checkPluginUpdates()  
         return self.productionTools  
@@ -246,7 +246,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
 
     def getActivityLayerNames(self):
-        return [item["nome"] for item in self.sapActivity.getLayers()]
+        return [
+            item["nome"] for item in self.sapActivity.getLayers()
+            if not('camada_incomum' in item and item['camada_incomum'])
+        ]
 
     def getActivityInputs(self):
         return self.sapActivity.getInputs()
@@ -260,6 +263,143 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'dbName' : self.sapActivity.getDatabaseName(), 
             'dbHost' : self.sapActivity.getDatabaseServer(), 
             'layerNames' : self.getActivityLayerNames(), 
+            'dbPassword' : self.sapActivity.getDatabasePassword(), 
+            'dbPort' : self.sapActivity.getDatabasePort(), 
+            'dbUser' : self.sapActivity.getDatabaseUserName() 
+        })
+        loadedLayerIds = result['OUTPUT']
+
+        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
+        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
+
+        groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
+        groupLayers.run({'layerIds': loadedLayerIds})
+
+        defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
+        if defaultStyle:
+            self.qgis.loadMapLayerStyles(
+                loadedLayerIds,
+                self.sapActivity.getLayerStyles(),
+                defaultStyle
+            )
+            self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+
+        """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
+        matchAndApplyQmlStylesToLayers.run({
+            'layersQml': self.sapActivity.getLayersQml(styleName),
+            'layerIds': loadedLayerIds
+        }) """
+
+        assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
+        database = self.getActivityDatabase()
+        assignValueMapToLayers.run({
+            'valueMaps': {
+                    layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
+                    for layer in self.sapActivity.getLayers()
+            },
+            'layerIds': loadedLayerIds
+        }) 
+
+        assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
+        assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
+
+        assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
+        assignAliasesToLayers.run({
+            'aliases': self.sapActivity.getLayerALiases(),
+            'layerIds': loadedLayerIds
+        })
+
+        assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
+        assignActionsToLayers.run({
+            'actions': self.sapActivity.getLayerActions(),
+            'layerIds': loadedLayerIds
+        })
+        rules = self.sapActivity.getRules()
+        if rules != []:
+            assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
+            assignFormatRulesToLayers.run({
+                'rules': rules,
+                'layerIds': loadedLayerIds
+            })
+
+        """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
+        assignConditionalStyleToLayers.run({
+            'conditionals': self.sapActivity.getLayerConditionalStyle(),
+            'layerIds': loadedLayerIds
+        }) """
+
+        setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
+        setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
+
+        frameQuery = self.sapActivity.getFrameQuery()
+        if not self.frameLoaded( frameQuery ):
+            self.qgis.loadInputData({
+                'query': self.sapActivity.getFrameQuery(),
+                'epsg': self.sapActivity.getEPSG(),
+                'nome': 'moldura',
+                'tipo_insumo_id': 100,
+                'qml': self.sapActivity.getFrameQml()
+            })
+
+        self.qgis.loadLayerActions(loadedLayerIds)
+
+        self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
+        
+        if self.sapActivity.getStepTypeId() == 3:
+            mapLayerIdNote = {}  
+            noteLayers = self.sapActivity.getNoteLayers()
+            for layerNote in noteLayers:
+                layerId = next(filter(lambda layerId: layerNote['nome'] in layerId, loadedLayerIds) , None)
+                mapLayerIdNote[layerId] = layerNote
+            noteLayerIds = mapLayerIdNote.keys()
+            loadedNotelayers = self.qgis.getLayerFromIds(noteLayerIds)
+            for layer in loadedNotelayers:
+                note = mapLayerIdNote[layer.id()]
+                self.qgis.setFieldsReadOnly( 
+                    [layer.id()], 
+                    [
+                        n
+                        for n in layer.fields().names()
+                        if not(n == note['atributo_justificativa_apontamento'] or n == note['atributo_situacao_correcao'])
+                    ], 
+                    True 
+                )
+
+        if self.sapActivity.getStepTypeId() == 2:
+            self.qgis.loadDefaultFieldValue(
+                loadedLayerIds,
+                [
+                    {
+                        'name': 'subfase_id',
+                        'value': self.sapActivity.getSubphaseId()
+                    }
+                ]
+            )
+            self.qgis.setFieldsReadOnly( loadedLayerIds, ['subfase_id'], True )
+        
+        self.prodToolsSettings.initSaveTimer()
+
+        self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
+        self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
+        self.validateUserOperations.start()
+        self.canvasMonitoring.start()
+
+        self.loadReviewTool()
+        
+        loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
+        loadThemes.run({'themes': self.sapActivity.getThemes()})
+        self.sortLayersOnMolduraGroup()
+
+    def loadActivityLayersByNames(self, names):
+        layerNames = [ l for l in self.getActivityLayerNames() if l in names]
+        scale = self.sapActivity.getScale()
+        self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
+        self.qgis.setProjectVariable('productiontools_scale', int(scale.split(':')[-1]), encrypt=False)
+        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+        result = loadLayersFromPostgis.run({ 
+            'dbName' : self.sapActivity.getDatabaseName(), 
+            'dbHost' : self.sapActivity.getDatabaseServer(), 
+            'layerNames' : layerNames, 
             'dbPassword' : self.sapActivity.getDatabasePassword(), 
             'dbPort' : self.sapActivity.getDatabasePort(), 
             'dbUser' : self.sapActivity.getDatabaseUserName() 
