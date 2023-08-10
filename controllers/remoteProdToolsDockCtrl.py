@@ -592,6 +592,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
 
     def createProjectCallback(self):
+        self.productionTools.close() if self.productionTools else ''
         self.canvasMonitoring.stop()
 
     def zoomToFeature(self, layerId, layerSchema, layerName):

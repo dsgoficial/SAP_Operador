@@ -36,6 +36,8 @@ class WindowsUpdater:
         qgisPluginsPath = self.qgis.getQgisPluginsDirPath()
         notDownloaded = list(set(remotePlugins.keys()) - set(localPlugins.keys()))
         for pluginName in notDownloaded:
+            if not pluginName:
+                continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
             )
