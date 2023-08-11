@@ -149,8 +149,10 @@ class RemoteSapCtrl(SapCtrl):
         self.reportErrorDialog.reported.connect(callback)
         return self.reportErrorDialog.show()
 
-    def showEndActivityDialog(self, withoutCorrection):
-        endActivityDialog = self.guiFactory.createEndActivityDialog(self)
+    #mostrar nova parte apenas quando etapaId 2 e 5
+    def showEndActivityDialog(self, withoutCorrection, stepTypeId):
+        activeObs = stepTypeId in [2,5]
+        endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
         return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
         

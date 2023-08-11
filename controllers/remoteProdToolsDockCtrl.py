@@ -222,7 +222,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             )
             return
         withoutCorrection = stepTypeId == 2 and checkStep
-        result = self.sap.showEndActivityDialog(withoutCorrection)
+        result = self.sap.showEndActivityDialog(withoutCorrection, stepTypeId)
         if not result:
             return
         self.resetProject()

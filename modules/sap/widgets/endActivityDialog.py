@@ -4,7 +4,7 @@ from Ferramentas_Producao.modules.sap.widgets.sapDialog import SapDialog
 
 class EndActivityDialog(SapDialog):
 
-    def __init__(self, controller=None):
+    def __init__(self, controller=None, activeObs=False):
         super(EndActivityDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
@@ -13,7 +13,7 @@ class EndActivityDialog(SapDialog):
         self.withoutCorrection = False
         self.activityDataModel = self.controller.getActivityDataModel()
         stepTypeId = self.activityDataModel.getStepTypeId()
-        self.revisionW.setVisible(True )#if stepTypeId == 2 else False)
+        self.revisionW.setVisible(activeObs)
         self.resize(502, 141)
 
     def setController(self, controller):
