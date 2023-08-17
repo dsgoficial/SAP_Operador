@@ -189,3 +189,6 @@ class RemoteSapCtrl(SapCtrl):
 
     def getRemotePluginsPath(self):
         return self.sapApi.getRemotePluginsPath()
+
+    def saveLayerTrack(self, data):
+        return self.sapApi.saveLayerTrack(data)

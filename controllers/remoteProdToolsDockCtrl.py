@@ -14,6 +14,7 @@ import sip
 
 from Ferramentas_Producao.widgets.pomodoro import Pomodoro
 from Ferramentas_Producao.monitoring.canvas import Canvas
+from Ferramentas_Producao.monitoring.layer import Layer as LayerMonitoring
 
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
@@ -64,6 +65,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'ValidateUserOperations', 
             self.qgis 
         )
+        self.layersMonitoring = []
 
     def loadChangeStyleWidget(self):
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -389,6 +391,20 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
         loadThemes.run({'themes': self.sapActivity.getThemes()})
         self.sortLayersOnMolduraGroup()
+
+        if self.sapActivity.getMonitoringType() == 1:
+            if self.layersMonitoring and loadedLayerIds:
+                [l.disconnect_all_signals() for l in self.layersMonitoring]
+                self.layersMonitoring = []
+            for layerId in loadedLayerIds:
+                layer = core.QgsProject.instance().mapLayer(layerId)
+                self.layersMonitoring.append(
+                    LayerMonitoring(
+                        layer,
+                        self.sapActivity.getId(),
+                        self.sap
+                    )
+                )
 
     def loadActivityLayersByNames(self, names):
         layerNames = [ l for l in self.getActivityLayerNames() if l in names]

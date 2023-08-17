@@ -14,6 +14,10 @@ class SapActivityHttp:
     def getScale(self):
         return self.getData()['dados']['atividade']['denominador_escala']
 
+    def getMonitoringType(self):
+        activity = self.getData()['dados']['atividade']
+        return activity['monitoramento'] if 'monitoramento' in activity else None
+
     def getThemes(self):
         return self.getData()['dados']['atividade']['temas']
 

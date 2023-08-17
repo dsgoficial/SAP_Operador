@@ -182,3 +182,10 @@ class SapHttp(ISapApi):
         if response:
             return response.json()
         return {}
+
+    def saveLayerTrack(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/feicao".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
