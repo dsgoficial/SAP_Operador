@@ -265,7 +265,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 self.sapActivity.getLayerStyles(),
                 defaultStyle
             )
-            self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+            #self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
         """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
