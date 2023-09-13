@@ -119,8 +119,8 @@ class QgisApi(IQgisApi):
         elif stepId == 2:
             for noteLayer in noteLayers:
                 layer = self.getLayerFromTable(
-                    noteLayer['nome'],
-                    noteLayer['schema']
+                    noteLayer['schema'],
+                    noteLayer['nome']
                 )
                 if not layer:
                     raise Exception("Carregue as camadas de apontamento!")
