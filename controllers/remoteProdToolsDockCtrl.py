@@ -759,19 +759,23 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        result = loadLayersFromPostgis.run({ 
-            'dbName' : self.sapActivity.getDatabaseName(), 
-            'dbHost' : self.sapActivity.getDatabaseServer(), 
-            'layerNames' : ['aux_grid_revisao_a'], 
-            'dbPassword' : self.sapActivity.getDatabasePassword(), 
-            'dbPort' : self.sapActivity.getDatabasePort(), 
-            'dbUser' : self.sapActivity.getDatabaseUserName() 
-        })
-        loadedLayerIds = result['OUTPUT']
-        if loadedLayerIds == []:
-            return
-        gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        candidateLayerList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
+        if candidateLayerList == []:
+            loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+            result = loadLayersFromPostgis.run({ 
+                'dbName' : self.sapActivity.getDatabaseName(), 
+                'dbHost' : self.sapActivity.getDatabaseServer(), 
+                'layerNames' : ['aux_grid_revisao_a'], 
+                'dbPassword' : self.sapActivity.getDatabasePassword(), 
+                'dbPort' : self.sapActivity.getDatabasePort(), 
+                'dbUser' : self.sapActivity.getDatabaseUserName() 
+            })
+            loadedLayerIds = result['OUTPUT']
+            if loadedLayerIds == []:
+                return
+            gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        else:
+            gridLayer = candidateLayerList[0]
         assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
         assingFilterToLayers.run({
             'layers': [
