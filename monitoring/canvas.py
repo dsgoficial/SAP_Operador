@@ -11,10 +11,10 @@ class Canvas(QtCore.QObject):
 
     def __init__(
             self,
-            qgis=QgisApi()
+            qgis=None
         ):
         super(Canvas, self).__init__()
-        self.qgis = qgis
+        self.qgis = QgisApi() if qgis is None else qgis
         self.hasChangedCanvas = False
         self.minutesActive = 0
         self.minutesNoActive = 0

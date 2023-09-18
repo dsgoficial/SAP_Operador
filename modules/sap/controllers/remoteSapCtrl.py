@@ -9,18 +9,18 @@ class RemoteSapCtrl(SapCtrl):
     
     def __init__(self, 
             qgis,
-            messageFactory=UtilsFactory().createMessageFactory(),
-            sapApi=SapApiHttpSingleton.getInstance(),
-            dataModelFactory=DataModelFactory(),
-            guiFactory=GUIFactory()
+            messageFactory=None,
+            sapApi=None,
+            dataModelFactory=None,
+            guiFactory=None,
         ):
         super(RemoteSapCtrl, self).__init__()
         self.qgis = qgis
         self.reportErrorDialog = None
-        self.messageFactory = messageFactory
-        self.dataModelFactory = dataModelFactory
-        self.sapApi = sapApi
-        self.guiFactory = guiFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
+        self.dataModelFactory = DataModelFactory() if dataModelFactory is None else dataModelFactory
+        self.sapApi = SapApiHttpSingleton.getInstance() if sapApi is None else sapApi
+        self.guiFactory = GUIFactory() if guiFactory is None else guiFactory
         self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
 
     def setupActivityDataModel(self, data):

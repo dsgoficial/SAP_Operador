@@ -23,17 +23,17 @@ import json
 class QgisApi(IQgisApi):
 
     def __init__(self,
-            inputDataFactory=InputDataFactory(),
-            processingProviderFactory=ProcessingProviderFactory(),
-            layerActionsFactory=LayerActionsFactory(),
-            mapFunctionsFactory=MapFunctionsFactory(),
-            mapToolsFactory=MapToolsFactory()
+            inputDataFactory=None,
+            processingProviderFactory=None,
+            layerActionsFactory=None,
+            mapFunctionsFactory=None,
+            mapToolsFactory=None,
         ):
-        self.inputDataFactory = inputDataFactory
-        self.processingProviderFactory = processingProviderFactory
-        self.mapFunctionsFactory = mapFunctionsFactory
-        self.mapToolsFactory = mapToolsFactory
-        self.layerActionsFactory = layerActionsFactory
+        self.inputDataFactory = InputDataFactory() if inputDataFactory is None else inputDataFactory
+        self.processingProviderFactory = ProcessingProviderFactory() if processingProviderFactory is None else processingProviderFactory
+        self.mapFunctionsFactory = MapFunctionsFactory() if mapFunctionsFactory is None else mapFunctionsFactory
+        self.mapToolsFactory = MapToolsFactory() if mapToolsFactory is None else mapToolsFactory
+        self.layerActionsFactory = LayerActionsFactory() if layerActionsFactory is None else layerActionsFactory
         self.customToolBar = None
     
     def load(self):

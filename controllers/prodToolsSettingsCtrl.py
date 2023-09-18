@@ -11,16 +11,16 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
             self,
             qgis,
             pluginUpdater,
-            timerFactory=TimerFactory(),
-            combinationViewer=CombinationViewerCtrl(),
-            rasterMetadata=RasterMetadataCtrl()
+            timerFactory=None,
+            combinationViewer=None,
+            rasterMetadata=None,
         ):
         super(ProdToolsSettingsCtrl, self).__init__()
         self.qgis = qgis
         self.pluginUpdater = pluginUpdater
-        self.timerFactory = timerFactory
-        self.combinationViewer = combinationViewer
-        self.rasterMetadata = rasterMetadata
+        self.timerFactory = TimerFactory() if timerFactory is None else timerFactory
+        self.combinationViewer = CombinationViewerCtrl() if combinationViewer is None else combinationViewer
+        self.rasterMetadata = RasterMetadataCtrl() if rasterMetadata is None else rasterMetadata
         self.saveTimer = None
         self.showMarkers = True
         self.menuBarActions = []

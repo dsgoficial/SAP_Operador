@@ -33,22 +33,22 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             fme,
             prodToolsSettings,
             toolFactoryDsgTools,
-            pomodoro=Pomodoro(),
-            guiFactory=GUIFactory(),
-            spatialVerificationFactory=SpatialVerificationFactory(),
-            canvasMonitoring=Canvas()
+            pomodoro=None,
+            guiFactory=None,
+            spatialVerificationFactory=None,
+            canvasMonitoring=None,
         ):
         super(RemoteProdToolsDockCtrl, self).__init__()
         self.sap = sap
         self.qgis = qgis
         self.fme = fme
-        self.pomodoro = pomodoro
-        self.canvasMonitoring = canvasMonitoring
+        self.pomodoro = Pomodoro() if pomodoro is None else pomodoro
+        self.canvasMonitoring = Canvas() if canvasMonitoring is None else canvasMonitoring
         self.canvasMonitoring.changeStatus.connect(self.pomodoro.setWorkStatusText)
         self.databaseFactory = databaseFactory
         self.processingFactoryDsgTools = processingFactoryDsgTools
-        self.guiFactory = guiFactory
-        self.spatialVerificationFactory = spatialVerificationFactory
+        self.guiFactory = GUIFactory() if guiFactory is None else guiFactory
+        self.spatialVerificationFactory = SpatialVerificationFactory() if spatialVerificationFactory is None else spatialVerificationFactory
         self.prodToolsSettings = prodToolsSettings
         self.toolFactoryDsgTools = toolFactoryDsgTools
         self.sapActivity = None

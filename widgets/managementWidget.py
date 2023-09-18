@@ -8,12 +8,12 @@ class ManagementWidget(QtWidgets.QWidget):
     def __init__(self, 
             controller, 
             parent=None,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(ManagementWidget, self).__init__(parent=parent)
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
         self.tableWidget.horizontalHeader().sortIndicatorOrder()
         self.tableWidget.setSortingEnabled(True)
 

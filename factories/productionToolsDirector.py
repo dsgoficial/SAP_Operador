@@ -4,9 +4,9 @@ from Ferramentas_Producao.widgets.localController import LocalController
 class ProductionToolsDirector:
 
     def __init__(self, 
-            activityWidgetFactory=ActivityWidgetFactory()  
+            activityWidgetFactory=None,
         ):
-        self.activityWidgetFactory = activityWidgetFactory
+        self.activityWidgetFactory = ActivityWidgetFactory() if activityWidgetFactory is None else activityWidgetFactory
 
     def constructRemoteProductionToolsDock(self, builder, controller, sap):
         builder.setController(controller)

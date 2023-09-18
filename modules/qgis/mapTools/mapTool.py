@@ -6,12 +6,12 @@ from qgis import gui, core
 class MapTool:
     
     def __init__(self,
-            mapFunctionsFactory=MapFunctionsFactory(),
-            messageFactory=UtilsFactory().createMessageFactory()
+            mapFunctionsFactory=None,
+            messageFactory=None,
         ):
         super(MapTool, self).__init__()
-        self.mapFunctionsFactory = mapFunctionsFactory
-        self.messageFactory = messageFactory
+        self.mapFunctionsFactory = MapFunctionsFactory() if mapFunctionsFactory is None else mapFunctionsFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
 
     def removeAllSelection(self):
         for a in iface.attributesToolBar().actions(): 

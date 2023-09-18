@@ -5,10 +5,10 @@ from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFacto
 class SapDialog(QtWidgets.QDialog):
     
     def __init__(self,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(SapDialog, self).__init__()
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
     
     def showErrorMessageBox(self, title, message):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
