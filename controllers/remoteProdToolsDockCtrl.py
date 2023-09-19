@@ -201,7 +201,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         except Exception as e:
             self.showErrorMessageBox( self.productionTools, 'Erro', str(e) )
             return
-        if stepTypeId == 3 and checkStep:
+        if stepTypeId == 3 and not checkStep:
             self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',
