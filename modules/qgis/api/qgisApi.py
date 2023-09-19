@@ -111,7 +111,7 @@ class QgisApi(IQgisApi):
                         (
                             feature[noteLayer['atributo_situacao_correcao']] != 1
                             and
-                            feature[noteLayer['atributo_justificativa_apontamento']] != None
+                            feature[noteLayer['atributo_justificativa_apontamento']] != core.NULL
                         )
                     ):
                         continue
