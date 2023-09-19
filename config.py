@@ -2,4 +2,4 @@
 class Config:
 
     NAME = 'Ferramentas de Produção'
-    VERSION = '3.24.1-dev'
+    VERSION = '3.25.0-dev'

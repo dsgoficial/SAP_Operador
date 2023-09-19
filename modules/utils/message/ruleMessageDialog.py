@@ -3,6 +3,7 @@ import os
 from PyQt5 import QtWidgets, uic, QtCore
 from Ferramentas_Producao.modules.utils.interfaces.IMessage  import IMessage
 from .errorMessageBox import ErrorMessageBox
+from qgis.utils import iface
 
 class RuleMessageDialog(QtWidgets.QDialog, IMessage):
 
@@ -63,7 +64,7 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
                 font = layerButton.font()
                 font.setPointSize(13)
                 layerButton.setFont(font)
-                layerButton.clicked.connect(lambda b, name=layerName: qgis.setActiveLayerByName(name))
+                layerButton.clicked.connect(lambda b, name=layerName, qgis=qgis: self.handleLayerButton(qgis, name))
                 layerButton.setStyleSheet('QPushButton { color: '+color+'; background-color: #000000;}')
                 self.treeWidget.setItemWidget(
                     childItem,
@@ -74,6 +75,9 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
         self.treeWidget.header().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         super().show()
 
+    def handleLayerButton(self, qgis, name):
+        qgis.setActiveLayerByName(name)
+        iface.actionOpenTable().trigger()
 
     def getRuleColor(self, rule):
         colors = {
