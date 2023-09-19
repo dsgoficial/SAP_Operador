@@ -10,14 +10,14 @@ class Login(QtWidgets.QDialog, ILogin):
     def __init__(
             self, 
             controller,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(Login, self).__init__()
         uic.loadUi(self.getLoginDialogUiPath(), self)
         self.setWindowTitle(Config.NAME)
         self.version_text.setText("<b>versão: {}</b>".format(Config.VERSION))
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
         self.currentFrame = None
         self.loadLoginFrame(
             self.getCurrentLoginMode()

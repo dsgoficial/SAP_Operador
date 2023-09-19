@@ -12,20 +12,20 @@ class UpdaterCtrl:
     
     def __init__(self, 
             sap,
-            qgis=QgisApi(),
-            updaterFactory=UpdaterFactory(),
-            guiFactory=GuiFactory(),
-            time=QtCore.QTimer()
+            qgis=None,
+            updaterFactory=None,
+            guiFactory=None,
+            time=None,
         ):
         self.sap = sap
-        self.qgis = qgis
-        self.updaterFactory = updaterFactory
-        self.guiFactory = guiFactory
+        self.qgis = QgisApi() if qgis is None else qgis
+        self.updaterFactory = UpdaterFactory() if updaterFactory is None else updaterFactory
+        self.guiFactory = GuiFactory() if guiFactory is None else guiFactory
         self.menuBar = None
         self.messageDialog = None
         self.updater = self.getUpdater()
         self.qgis.on('ReadProject', self.checkUpdates)
-        self.time = time
+        self.time = QtCore.QTimer() if time is None else time
         self.time.timeout.connect(self.update)
 
     def getUpdater(self):

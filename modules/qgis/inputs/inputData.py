@@ -4,10 +4,11 @@ from qgis import utils
 class InputData:
 
     def __init__(self,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
-        self.errorMessageBox = messageFactory.createMessage('ErrorMessageBox')
-        self.infoMessageBox = messageFactory.createMessage('InfoMessageBox')
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
+        self.errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
+        self.infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
 
     def showErrorMessageBox(self, html):
         self.errorMessageBox.show(

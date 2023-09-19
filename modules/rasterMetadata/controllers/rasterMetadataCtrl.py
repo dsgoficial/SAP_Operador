@@ -7,17 +7,17 @@ class RasterMetadataCtrl:
     
     def __init__(
             self,
-            RasterMetadata=RasterMetadata,
-            widgetFactory=WidgetFactory(),
-            qgis=QgisApi(),
-            messageFactory=UtilsFactory().createMessageFactory()
+            rasterMetadata=None,
+            widgetFactory=None,
+            qgis=None,
+            messageFactory=None,
         ):
-        self.widgetFactory = widgetFactory
-        self.qgis = qgis
-        self.rasterMetadata = RasterMetadata(self)
+        self.widgetFactory = WidgetFactory() if widgetFactory is None else widgetFactory
+        self.qgis = QgisApi() if qgis is None else qgis
+        self.rasterMetadata = RasterMetadata(self) if rasterMetadata is None else rasterMetadata
         self.dlg = None
         self.enabled = False
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
     
     def showErrorMessageBox(self, message):
         messageDlg = self.messageFactory.createMessage('ErrorMessageBox')

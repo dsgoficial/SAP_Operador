@@ -7,7 +7,7 @@ class RoutinesDialog(QtWidgets.QDialog):
     def __init__(self, 
             controller, 
             parent=None,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(RoutinesDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
@@ -16,7 +16,7 @@ class RoutinesDialog(QtWidgets.QDialog):
         self.tableWidget.setColumnHidden(0, True)
         self.currentRoutineData = {}
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
     
     def getController(self, controller):
         self.controller = controller

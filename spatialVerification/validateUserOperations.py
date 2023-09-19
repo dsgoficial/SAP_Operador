@@ -8,11 +8,11 @@ class ValidateUserOperations(QtCore.QObject):
     def __init__(
             self, 
             qgis,
-            spatialOperationFactory=SpatialOperationFactory()
+            spatialOperationFactory=None,
         ):
         super(ValidateUserOperations, self).__init__()
         self.qgis = qgis
-        self.spatialOperationFactory = spatialOperationFactory
+        self.spatialOperationFactory = SpatialOperationFactory() if spatialOperationFactory is None else spatialOperationFactory
         self.trackList = []
         self.addFeatures = None
         self.changedGeometry = None

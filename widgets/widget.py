@@ -6,11 +6,11 @@ class Widget(QtWidgets.QWidget, IWidget):
 
     def __init__(self, 
             controller,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(Widget, self).__init__()
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
 
     def setController(self, controller):
         self.controller = controller

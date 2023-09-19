@@ -33,22 +33,22 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             fme,
             prodToolsSettings,
             toolFactoryDsgTools,
-            pomodoro=Pomodoro(),
-            guiFactory=GUIFactory(),
-            spatialVerificationFactory=SpatialVerificationFactory(),
-            canvasMonitoring=Canvas()
+            pomodoro=None,
+            guiFactory=None,
+            spatialVerificationFactory=None,
+            canvasMonitoring=None,
         ):
         super(RemoteProdToolsDockCtrl, self).__init__()
         self.sap = sap
         self.qgis = qgis
         self.fme = fme
-        self.pomodoro = pomodoro
-        self.canvasMonitoring = canvasMonitoring
+        self.pomodoro = Pomodoro() if pomodoro is None else pomodoro
+        self.canvasMonitoring = Canvas() if canvasMonitoring is None else canvasMonitoring
         self.canvasMonitoring.changeStatus.connect(self.pomodoro.setWorkStatusText)
         self.databaseFactory = databaseFactory
         self.processingFactoryDsgTools = processingFactoryDsgTools
-        self.guiFactory = guiFactory
-        self.spatialVerificationFactory = spatialVerificationFactory
+        self.guiFactory = GUIFactory() if guiFactory is None else guiFactory
+        self.spatialVerificationFactory = SpatialVerificationFactory() if spatialVerificationFactory is None else spatialVerificationFactory
         self.prodToolsSettings = prodToolsSettings
         self.toolFactoryDsgTools = toolFactoryDsgTools
         self.sapActivity = None
@@ -759,19 +759,23 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        result = loadLayersFromPostgis.run({ 
-            'dbName' : self.sapActivity.getDatabaseName(), 
-            'dbHost' : self.sapActivity.getDatabaseServer(), 
-            'layerNames' : ['aux_grid_revisao_a'], 
-            'dbPassword' : self.sapActivity.getDatabasePassword(), 
-            'dbPort' : self.sapActivity.getDatabasePort(), 
-            'dbUser' : self.sapActivity.getDatabaseUserName() 
-        })
-        loadedLayerIds = result['OUTPUT']
-        if loadedLayerIds == []:
-            return
-        gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        candidateLayerList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
+        if candidateLayerList == []:
+            loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+            result = loadLayersFromPostgis.run({ 
+                'dbName' : self.sapActivity.getDatabaseName(), 
+                'dbHost' : self.sapActivity.getDatabaseServer(), 
+                'layerNames' : ['aux_grid_revisao_a'], 
+                'dbPassword' : self.sapActivity.getDatabasePassword(), 
+                'dbPort' : self.sapActivity.getDatabasePort(), 
+                'dbUser' : self.sapActivity.getDatabaseUserName() 
+            })
+            loadedLayerIds = result['OUTPUT']
+            if loadedLayerIds == []:
+                return
+            gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        else:
+            gridLayer = candidateLayerList[0]
         assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
         assingFilterToLayers.run({
             'layers': [

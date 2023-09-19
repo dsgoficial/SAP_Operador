@@ -9,11 +9,11 @@ class Pomodoro(QtWidgets.QWidget):
 
     def __init__(
             self,
-            qgis=QgisApi()
+            qgis=None,
         ):
         super(Pomodoro, self).__init__()
         uic.loadUi(self.getUiPath(), self)
-        self.qgis = qgis
+        self.qgis = QgisApi() if qgis is None else qgis
         self.pomodoro = 0
         self.paused = False
         self.timeOnSeconds = 25 * 60
@@ -72,7 +72,7 @@ class Pomodoro(QtWidgets.QWidget):
         date = self.getCurrentDate()
         if not(date in dumpData):
             return
-        self.pomodoro = list(data.values())[0]
+        self.pomodoro = list(dumpData.values())[0]
 
     def getFormatedTime(self):
         return '{}:{}'.format(int(self.currentTime/60), str(round((float("{:.2f}".format(self.currentTime/60)) % 1) * 60)).zfill(2) )

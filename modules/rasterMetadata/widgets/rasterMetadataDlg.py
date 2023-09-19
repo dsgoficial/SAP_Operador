@@ -7,12 +7,12 @@ class RasterMetadataDlg(QtWidgets.QDialog):
     def __init__(self, 
             controller=None, 
             parent=None,
-            message=UtilsFactory().createMessageFactory()
+            message=None,
         ):
         super(RasterMetadataDlg, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        self.message = message
+        self.message = UtilsFactory().createMessageFactory() if message is None else message
         self.setup()
 
     def getUiPath(self):
