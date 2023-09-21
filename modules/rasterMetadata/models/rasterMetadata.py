@@ -1,13 +1,13 @@
 import json
 import os
-from qgis.core import QgsGeometry
+from qgis.core import QgsGeometry, QgsCoordinateTransform, QgsProject
 
 class RasterMetadata:
 
     def __init__(self, controller=None):
         self.layers = []
         self.controller = controller
-        self.addedFeatures = []
+        self.addedFeaturesList = []
 
     def setController(self, controller):
         self.controller = controller
@@ -71,11 +71,11 @@ class RasterMetadata:
         return json.dumps(self.getConfig(), indent=4)
     
     def storeFeatureId(self, featId):
-        self.addedFeatures.append(featId)
+        self.addedFeaturesList.append(featId)
 
     def loadMetadata(self):
-        while self.addedFeatures:
-            featureId = self.addedFeatures.pop()
+        while self.addedFeaturesList != []:
+            featureId = self.addedFeaturesList.pop()
             try:
                 if featureId >= 0:
                     return
@@ -96,8 +96,15 @@ class RasterMetadata:
                 raster = rasters[0]
                 if not(raster.name() in config['metadata']):
                     return
+                layerCrs = layer.crs()
+                rasterCrs = raster.crs()
                 rasterExtent = raster.extent()
                 rasterExtentGeom = QgsGeometry.fromRect(rasterExtent)
+                if rasterCrs != layerCrs:
+                    coordinateTransformer = QgsCoordinateTransform(
+                        rasterCrs, layerCrs, QgsProject.instance()
+                    )
+                    rasterExtentGeom.transform(coordinateTransformer)
                 geom = feature.geometry()
                 if not geom.intersects(rasterExtentGeom):
                     raise Exception('O raster ativo não intersecta a feição adquirida!')

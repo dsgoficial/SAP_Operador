@@ -37,8 +37,8 @@ class RasterMetadataCtrl:
             self.rasterMetadata.connectLayersSignal()
         else:
             self.disconnectQgisSignals()
-            self.rasterMetadata.setLayers([])
             self.rasterMetadata.disconnectLayersSignal()
+            self.rasterMetadata.setLayers([])
 
     def isEnabled(self):
         return self.enabled
