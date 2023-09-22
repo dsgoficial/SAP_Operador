@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import os
 from qgis.core import QgsGeometry, QgsCoordinateTransform, QgsProject
@@ -90,24 +91,21 @@ class RasterMetadata:
                 feature = layer.getFeature(featureId)
                 if not feature.isValid():
                     return
-                rasters = self.getController().getVisibleRasters()
-                if len(rasters) != 1:
-                    raise Exception('Para carregar o metadados da image deve haver um, e apenas um, "RasterLayer" visível!')
-                raster = rasters[0]
-                if not(raster.name() in config['metadata']):
-                    return
-                layerCrs = layer.crs()
-                rasterCrs = raster.crs()
-                rasterExtent = raster.extent()
-                rasterExtentGeom = QgsGeometry.fromRect(rasterExtent)
-                if rasterCrs != layerCrs:
-                    coordinateTransformer = QgsCoordinateTransform(
-                        rasterCrs, layerCrs, QgsProject.instance()
-                    )
-                    rasterExtentGeom.transform(coordinateTransformer)
                 geom = feature.geometry()
-                if not geom.intersects(rasterExtentGeom):
-                    raise Exception('O raster ativo não intersecta a feição adquirida!')
+                rasters = self.getController().getVisibleRasters()
+                validRasters = [r for r in rasters if r.name() in config['metadata']]
+                if len(validRasters) == 0:
+                    raise Exception('Deve haver pelo menos uma imagem visível para que se possa carregar os metadados!')
+                activeRasterDict = defaultdict(list)
+                for raster in validRasters:
+                    if not self.checkIfImageIntersectsFeatureGeom(layer, geom, raster):
+                        continue
+                    attrKey = ','.join([attr['valor'] for attr in config['metadata'][raster.name()]])
+                    activeRasterDict[attrKey].append(raster)
+                if len(activeRasterDict.keys()) > 1:
+                    raise Exception('Há mais de uma imagem ativa que intersecta a feição adquirida!')
+                activeKey = list(activeRasterDict)[0]
+                raster = activeRasterDict[activeKey][0]
                 for attribute in config['metadata'][raster.name()]:
                     fieldIdx = feature.fields().indexOf(attribute['nome'])
                     if fieldIdx < 0:
@@ -119,7 +117,16 @@ class RasterMetadata:
                 self.getController().canvasRefresh() 
             except Exception as e:
                 self.getController().showErrorMessageBox(str(e))
-          
-         
 
-    
+    @staticmethod
+    def checkIfImageIntersectsFeatureGeom(layer, geom, raster):
+        layerCrs = layer.crs()
+        rasterCrs = raster.crs()
+        rasterExtent = raster.extent()
+        rasterExtentGeom = QgsGeometry.fromRect(rasterExtent)
+        if rasterCrs != layerCrs:
+            coordinateTransformer = QgsCoordinateTransform(
+                        rasterCrs, layerCrs, QgsProject.instance()
+                    )
+            rasterExtentGeom.transform(coordinateTransformer)
+        return geom.intersects(rasterExtentGeom)
