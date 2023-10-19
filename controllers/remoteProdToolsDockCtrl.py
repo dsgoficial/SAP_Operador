@@ -151,6 +151,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap)
         self.qgis.addDockWidget(self.productionTools, side='left')
         #self.prodToolsSettings.checkPluginUpdates()  
+
+        genericSelectionToolParameters = self.processingFactoryDsgTools.createProcessing('GenericSelectionToolParameters', self)
+        genericSelectionToolParameters.run({})
+        
         return self.productionTools  
 
     def removeDock(self):
