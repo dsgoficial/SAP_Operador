@@ -4,8 +4,11 @@ from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
 from Ferramentas_Producao.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
 from Ferramentas_Producao.modules.rasterMetadata.controllers.rasterMetadataCtrl import RasterMetadataCtrl
 import os
+from PyQt5.QtCore import QThread, pyqtSignal
 
 class ProdToolsSettingsCtrl(ProdToolsCtrl):
+
+    reclassifyMode = pyqtSignal()
     
     def __init__(
             self,
@@ -214,7 +217,12 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Habilitar NMEA',
                 'iconPath':os.path.join(iconRootPath, 'nmea.png'),
                 'callback': self.qgis.enableNMEA
-            }
+            },
+             {
+                'name': 'Reclassify Mode',
+                'iconPath': '',
+                'callback': self.reclassifyMode.emit
+            },
         ]
 
         

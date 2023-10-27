@@ -1,6 +1,7 @@
 from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from PyQt5 import QtCore
 
-class ProdToolsCtrl:
+class ProdToolsCtrl(QtCore.QObject):
 
     def __init__(
             self,

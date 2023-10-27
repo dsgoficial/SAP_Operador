@@ -64,6 +64,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'ValidateUserOperations', 
             self.qgis 
         )
+        self.prodToolsSettings.reclassifyMode.connect(self.handleReclassifyMode)
 
     def loadChangeStyleWidget(self):
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -752,6 +753,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.acquisitionMenu = customFeatureTool.run( self.getSapMenus() )
         except Exception as e:
             self.showErrorMessageBox( None, 'Erro', str(e) )
+
+    def handleReclassifyMode(self):
+        if not (self.acquisitionMenu and self.acquisitionMenu.menuDock):
+            return
+        self.acquisitionMenu.menuDock.reclassifyCkb.setChecked( not self.acquisitionMenu.menuDock.reclassifyCkb.isChecked() )
     
     def loadReviewTool(self):
         frameQuery = self.sapActivity.getFrameQuery()
