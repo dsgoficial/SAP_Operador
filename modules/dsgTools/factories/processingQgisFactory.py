@@ -16,6 +16,7 @@ from Ferramentas_Producao.modules.dsgTools.processingLaunchers.setRemoveDuplicat
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.assignFormatRulesToLayers import AssignFormatRulesToLayers
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.createReviewGrid import CreateReviewGrid
 from Ferramentas_Producao.modules.dsgTools.processingLaunchers.loadThemes import LoadThemes
+from Ferramentas_Producao.modules.dsgTools.processingLaunchers.genericSelectionToolParameters import GenericSelectionToolParameters
 
 class ProcessingQgisFactory(IProcessingFactory):
 
@@ -40,7 +41,8 @@ class ProcessingQgisFactory(IProcessingFactory):
             'SetRemoveDuplicateNodePropertyOnLayers': SetRemoveDuplicateNodePropertyOnLayers,
             'AssignFormatRulesToLayers': AssignFormatRulesToLayers,
             'CreateReviewGrid': CreateReviewGrid,
-            'LoadThemes': LoadThemes
+            'LoadThemes': LoadThemes,
+            'GenericSelectionToolParameters': GenericSelectionToolParameters
         }
         return processingNames[processingName](controller)
             

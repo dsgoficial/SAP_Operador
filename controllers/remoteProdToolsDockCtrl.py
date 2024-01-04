@@ -64,6 +64,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'ValidateUserOperations', 
             self.qgis 
         )
+        self.prodToolsSettings.reclassifyMode.connect(self.handleReclassifyMode)
 
     def loadChangeStyleWidget(self):
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -151,6 +152,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap)
         self.qgis.addDockWidget(self.productionTools, side='left')
         #self.prodToolsSettings.checkPluginUpdates()  
+
+        genericSelectionToolParameters = self.processingFactoryDsgTools.createProcessing('GenericSelectionToolParameters', self)
+        genericSelectionToolParameters.run({})
+        
         return self.productionTools  
 
     def removeDock(self):
@@ -545,8 +550,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             if isinstance(lyr, core.QgsRasterLayer):
                 rasterList.append(layerTreeView)
                 continue
-            if lyr.name() in ("aux_grid_revisao_a", "moldura"):
-                idx = 0 if "aux_grid_revisao_a" else -1
+            if lyr.name() in ("moldura"):
+                idx = -1
                 myClone = layerTreeView.clone()
                 newGroup.insertChildNode(idx, myClone)
                 oldGroup.removeChildNode(layerTreeView)
@@ -748,6 +753,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.acquisitionMenu = customFeatureTool.run( self.getSapMenus() )
         except Exception as e:
             self.showErrorMessageBox( None, 'Erro', str(e) )
+
+    def handleReclassifyMode(self):
+        if not (self.acquisitionMenu and self.acquisitionMenu.menuDock):
+            return
+        self.acquisitionMenu.menuDock.reclassifyCkb.setChecked( not self.acquisitionMenu.menuDock.reclassifyCkb.isChecked() )
     
     def loadReviewTool(self):
         frameQuery = self.sapActivity.getFrameQuery()
@@ -776,6 +786,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
         else:
             gridLayer = candidateLayerList[0]
+        self.moveLayerToGroup(gridLayer)
+
         assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
         assingFilterToLayers.run({
             'layers': [
@@ -786,7 +798,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 }
             ]
         })
-        self.moveLayerToGroup(loadedLayerIds[0])
+        
         reviewToolBar = self.toolFactoryDsgTools.getTool('ReviewToolBar', self)
         if gridLayer.featureCount() != 0:
             reviewToolBar.run(gridLayer)
@@ -801,12 +813,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
 
-    def moveLayerToGroup(self, loadedLayerId, positionToInsert=0):
-        utils.iface.mapCanvas().freeze(True)
-        rootNode = core.QgsProject.instance().layerTreeRoot()
-        group = rootNode.findGroup('MOLDURA_E_INSUMOS')
-        lyrNode = rootNode.findLayer(loadedLayerId)
-        myClone = lyrNode.clone()
+    def moveLayerToGroup(self, layer, positionToInsert=0):
+        root = core.QgsProject.instance().layerTreeRoot()
+        mylayer = root.findLayer(layer.id())
+        myClone = mylayer.clone()
+        parent = mylayer.parent()
+
+        group = root.findGroup(self.sapActivity.getDatabaseName())
         group.insertChildNode(positionToInsert, myClone)
-        rootNode.removeChildNode(lyrNode)
-        utils.iface.mapCanvas().freeze(False)
+
+        parent.removeChildNode(mylayer)
+
