@@ -5,12 +5,17 @@ class ActivityWidgetDirector:
     def constructActivityInfoWidget(self, builder, controller):
         builder.setController(controller)
         builder.setDescription( "Descrição:", controller.getActivityDescription())
-        builder.setEPSG('EPSG:', controller.getActivityEPSG())
+        builder.addObservation('Projeto:', controller.getProject())
+        builder.addObservation('Lote:', controller.getLot())
+        builder.addObservation('Bloco:', controller.getBlock())
+        builder.addObservation('Tipo Produto:', controller.getProductType())
+        builder.addObservation('Escala:', controller.getScale())
+        builder.addObservation('EPSG:', controller.getActivityEPSG())
         builder.setNotes( "Observações:", controller.getActivityNotes() )
         builder.setRequirements( "Requisitos:", controller.getActivityRequirements() )
         builder.setButtons()
 
-    def constructActivityDataWidget(self, builder, controller):
+    def constructActivityDataWidget(self, builder, controller, sap):
         builder.enabledMenuButton( len( controller.getSapMenus() ) > 0 )
         builder.enableWorkflowButton(len(controller.getDSGToolsQAWorkflows()) > 0)
         builder.setController(controller)

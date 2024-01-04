@@ -18,11 +18,13 @@ class ActivityWidgetFactory(IActivityWidgetFactory):
         director.constructActivityInfoWidget( builder, controller )
         return builder.getResult()
 
-    def makeActivityDataWidget(self, controller):
+    def makeActivityDataWidget(self, controller, sap):
         director = ActivityWidgetDirector()
         builder = ActivityDataWidgetBuilder()
-        director.constructActivityDataWidget( builder, controller )
-        return builder.getResult()
+        director.constructActivityDataWidget( builder, controller, sap )
+        result = builder.getResult()
+        result.setSap(sap)
+        return result
 
     def makeActivityInputsWidget(self, controller):
         director = ActivityWidgetDirector()

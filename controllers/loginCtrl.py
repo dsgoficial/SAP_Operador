@@ -13,7 +13,6 @@ class LoginCtrl:
         self.loginView = LoginSingleton.getInstance(controller=self)
 
     def showView(self):
-        self.loginView.loadLoginFrame(0)
         self.loginView.exec_()
 
     def getRemoteSettings(self):
@@ -30,6 +29,9 @@ class LoginCtrl:
         self.qgis.setProjectVariable('productiontools:user', username)
         self.qgis.setProjectVariable('productiontools:password', password)
         self.qgis.setSettingsVariable('productiontools:server', server)
+        if self.remoteProdToolsDockCtrl.checkPluginUpdates(server):
+            self.loginView.close()
+            return
         return self.remoteProdToolsDockCtrl.authUser(username, password, server)
 
     def loadRemoteDockWidget(self):
@@ -38,5 +40,5 @@ class LoginCtrl:
     def localAuthUser(self, dbusername, dbpassword, dbhost, dbport, dbname):
         return self.localProdToolsDockCtrl.authUser(dbusername, dbpassword, dbhost, dbport, dbname)
 
-    def loadLocalDockWidget(self):
-        self.localProdToolsDockCtrl.loadDockWidget()
+    def loadLocalDockWidget(self, dbusername, dbpassword, dbhost, dbport, dbname):
+        self.localProdToolsDockCtrl.loadDockWidget(dbusername, dbpassword, dbhost, dbport, dbname)

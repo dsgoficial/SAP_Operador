@@ -18,21 +18,22 @@ from configparser import ConfigParser
 import subprocess
 import platform
 import shutil
+import json
 
 class QgisApi(IQgisApi):
 
     def __init__(self,
-            inputDataFactory=InputDataFactory(),
-            processingProviderFactory=ProcessingProviderFactory(),
-            layerActionsFactory=LayerActionsFactory(),
-            mapFunctionsFactory=MapFunctionsFactory(),
-            mapToolsFactory=MapToolsFactory()
+            inputDataFactory=None,
+            processingProviderFactory=None,
+            layerActionsFactory=None,
+            mapFunctionsFactory=None,
+            mapToolsFactory=None,
         ):
-        self.inputDataFactory = inputDataFactory
-        self.processingProviderFactory = processingProviderFactory
-        self.mapFunctionsFactory = mapFunctionsFactory
-        self.mapToolsFactory = mapToolsFactory
-        self.layerActionsFactory = layerActionsFactory
+        self.inputDataFactory = InputDataFactory() if inputDataFactory is None else inputDataFactory
+        self.processingProviderFactory = ProcessingProviderFactory() if processingProviderFactory is None else processingProviderFactory
+        self.mapFunctionsFactory = MapFunctionsFactory() if mapFunctionsFactory is None else mapFunctionsFactory
+        self.mapToolsFactory = MapToolsFactory() if mapToolsFactory is None else mapToolsFactory
+        self.layerActionsFactory = LayerActionsFactory() if layerActionsFactory is None else layerActionsFactory
         self.customToolBar = None
     
     def load(self):
@@ -55,7 +56,14 @@ class QgisApi(IQgisApi):
     def removeActionToolBar(self, action):
         self.customToolBar.removeAction(action)
     
-    def setProjectVariable(self, key, value):
+    def setProjectVariable(self, key, value, encrypt=True):
+        if not encrypt:
+            core.QgsExpressionContextUtils.setProjectVariable(
+                core.QgsProject().instance(), 
+                key,
+                value
+            )
+            return
         chiper_text = base64.b64encode(value.encode('utf-8'))
         core.QgsExpressionContextUtils.setProjectVariable(
             core.QgsProject().instance(), 
@@ -87,13 +95,63 @@ class QgisApi(IQgisApi):
                 return True
         return False
 
+    def checkModifiedLayersByStepId(self, stepId, noteLayers):
+        if stepId == 3: #correcao
+            for noteLayer in noteLayers:
+                layer = self.getLayerFromTable(
+                    noteLayer['schema'],
+                    noteLayer['nome']
+                )
+                if not layer:
+                    raise Exception("Carregue as camadas de apontamento!")
+                for feature in layer.getFeatures():
+                    if (
+                        feature[noteLayer['atributo_situacao_correcao']] == 1
+                        or
+                        (
+                            feature[noteLayer['atributo_situacao_correcao']] != 1
+                            and
+                            feature[noteLayer['atributo_justificativa_apontamento']] != None
+                        )
+                    ):
+                        continue
+                    return False
+        elif stepId == 2: #revisao
+            for noteLayer in noteLayers:
+                layer = self.getLayerFromTable(
+                    noteLayer['schema'],
+                    noteLayer['nome']
+                )
+                if not layer:
+                    raise Exception("Carregue as camadas de apontamento!")
+                if len(list(layer.getFeatures())) == 0:
+                    continue
+                return False
+        return True
+
     def runProcessingModel(self, parametersData):
+        self.setActiveGroup("SAIDA_MODEL")
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
         model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
-        processing.runAndLoadResults(model, {})
+        parameters = json.loads(parametersData['parametros']) if parametersData['parametros'] else {}
+        processing.runAndLoadResults(model, parameters)
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
+
+    def setActiveGroup(self, groupName, pos=0):
+        iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        group = rootNode.findGroup(groupName)
+        if group is None:
+            group = rootNode.insertGroup(pos, groupName)
+        view = iface.layerTreeView()
+        m = view.model()
+        listIndexes = m.match(m.index(0, 0), QtCore.Qt.DisplayRole, groupName, QtCore.Qt.MatchFixedString)
+        if listIndexes:
+            i = listIndexes[0]
+            view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.ClearAndSelect)
+        iface.mapCanvas().freeze(False)
 
     def getLayerUriFromTable(self, layerSchema, layerName):
         layersUri = []
@@ -106,6 +164,26 @@ class QgisApi(IQgisApi):
                 ):
                 continue
             return layer.dataProvider().uri().uri()
+
+    def getLayerFromTable(self, layerSchema, layerName):
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        for layer in loadedLayers:
+            if not(
+                    layer.dataProvider().uri().schema() == layerSchema
+                    and
+                    layer.dataProvider().uri().table() == layerName
+                ):
+                continue
+            return layer
+
+    def getLayerFromName(self, layerName):
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        for layer in loadedLayers:
+            if not(
+                    layer.dataProvider().uri().table() == layerName
+                ):
+                continue
+            return layer
 
     def addMenuBar(self, name):
         menu = QMenu(iface.mainWindow())
@@ -141,7 +219,7 @@ class QgisApi(IQgisApi):
             return
         return keys[shortcutKeyName]
 
-    def createAction(self, name, iconPath, callback, shortcutKeyName, register=False):
+    def createAction(self, name, iconPath, callback, shortcutKeyName='', register=False):
         a = QAction(
             QIcon(iconPath),
             name,
@@ -237,6 +315,14 @@ class QgisApi(IQgisApi):
         if not(layerId in loadedLayers):
             return
         return loadedLayers[layerId].dataProvider().uri().uri()
+
+    def getLayerFromIds(self, layerIds):
+        loadedLayers = core.QgsProject.instance().mapLayers()
+        return [
+            loadedLayers[layerId]
+            for layerId in layerIds
+            if layerId in loadedLayers
+        ]
             
     def setSettings(self, settings):
         for qgisVariable in settings:
@@ -274,7 +360,8 @@ class QgisApi(IQgisApi):
             'SaveAllEdits': iface.actionSaveAllEdits().triggered,
             'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
             'MessageLog': core.QgsApplication.messageLog().messageReceived,
-            'LayersAdded': core.QgsProject.instance().layersAdded
+            'LayersAdded': core.QgsProject.instance().layersAdded,
+            'NewProject': iface.newProjectCreated,
         }
 
     def on(self, event, callback):
@@ -317,6 +404,7 @@ class QgisApi(IQgisApi):
             iface.mapCanvas().unsetMapTool(tool)
         else:
             iface.mapCanvas().setMapTool(tool)
+        return tool
 
     def getVisibleRasters(self):
         root = core.QgsProject.instance().layerTreeRoot()
@@ -386,6 +474,21 @@ class QgisApi(IQgisApi):
             editFormConfig = layer.editFormConfig()
             for fieldIdx in layer.primaryKeyAttributes():
                 editFormConfig.setReadOnly(fieldIdx, option)
+            layer.setEditFormConfig(editFormConfig)
+
+    def setFieldsReadOnly(self, layerIds, fields, option):
+        layers = core.QgsProject.instance().mapLayers()
+        for layerId in layers:
+            if not(layerId in layerIds):
+                continue
+            layer = layers[layerId]
+            editFormConfig = layer.editFormConfig()
+            for fieldName in fields:
+                fieldIdx = layer.fields().indexOf(fieldName)
+                if fieldIdx < 0:
+                    continue
+                editFormConfig.setReadOnly(fieldIdx, option)
+            layer.setEditFormConfig(editFormConfig)
 
     def getMainWindow(self):
         return iface.mainWindow()
@@ -491,17 +594,19 @@ class QgisApi(IQgisApi):
     def removeMessageBar(self, messageBar):
         iface.messageBar().popWidget(messageBar)
 
-    """ def loadDefaultFieldValue(self, loadedLayerIds):
-        for layerId in loadedLayerIds:
-            layer = core.QgsProject.instance().mapLayers()[layerId]
-            idx = layer.fields().indexOf('data_modificacao')
-            if idx < 0:
+    def loadDefaultFieldValue(self, layerIds, fields):
+        layers = core.QgsProject.instance().mapLayers()
+        for layerId in layers:
+            if not(layerId in layerIds):
                 continue
-            valueDefinition = layer.defaultValueDefinition(idx)
-            valueDefinition.setApplyOnUpdate(True)
-            valueDefinition.setExpression('now()')
-            layer.setDefaultValueDefinition(idx, valueDefinition) """
+            layer = layers[layerId]
 
+            for field in fields:
+                fieldIdx = layer.fields().indexOf(field['name'])
+                valueDefinition = layer.defaultValueDefinition(fieldIdx)
+                valueDefinition.setApplyOnUpdate(True)
+                valueDefinition.setExpression('{}'.format(field['value']))
+                layer.setDefaultValueDefinition(fieldIdx, valueDefinition)
     
     def zoomToFeature(self, layerId, layerSchema, layerName):
         loadedLayers = core.QgsProject.instance().mapLayers().values()
@@ -560,6 +665,7 @@ class QgisApi(IQgisApi):
         return [
             (name, os.path.join(repositoryPluginsPath, name))
             for name in result[0].decode('u16').split('\r\n')
+            if name != ''
         ]
 
     def getLinuxPluginPaths(self):
@@ -573,6 +679,7 @@ class QgisApi(IQgisApi):
         return [
             (name, os.path.join(repositoryPluginsPath, name))
             for name in result[0].decode('u8').split('\n')
+            if name != ''
         ]
 
     def createMenuBar(self, menuName):
@@ -588,5 +695,28 @@ class QgisApi(IQgisApi):
     def closeQgis(self):
         core.QgsApplication.taskManager().cancelAll()
         iface.actionExit().trigger()
+
+    def setActiveLayerByName(self, layerName):
+        layer = self.getLayerFromName(layerName)
+        if not layer:
+            return
+        iface.setActiveLayer(layer)
+
+    def loadThemes(self, themes):
+        for theme in themes:
+            themeLayers = [ '{}.{}'.format(l['schema'], l['camada']) for l in theme['camadas'] ]
+            root = core.QgsProject().instance().layerTreeRoot().clone()
+            for rLayer in root.findLayers():
+                rLayer.setItemVisibilityChecked(False)
+                rLayerName = '{}.{}'.format(
+                    rLayer.layer().dataProvider().uri().schema(),
+                    rLayer.layer().dataProvider().uri().table()
+                )
+                if not(rLayerName in themeLayers):
+                    continue
+                rLayer.setItemVisibilityChecked(True)
+            model = core.QgsLayerTreeModel(root)
+            themeCollection = core.QgsProject.instance().mapThemeCollection()
+            themeCollection.insert(theme['nome'], core.QgsMapThemeCollection.createThemeFromCurrentState(root, model))
 
 

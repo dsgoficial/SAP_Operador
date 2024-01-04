@@ -1,11 +1,14 @@
+from collections import defaultdict
 import json
 import os
+from qgis.core import QgsGeometry, QgsCoordinateTransform, QgsProject
 
 class RasterMetadata:
 
     def __init__(self, controller=None):
         self.layers = []
         self.controller = controller
+        self.addedFeaturesList = []
 
     def setController(self, controller):
         self.controller = controller
@@ -22,15 +25,20 @@ class RasterMetadata:
     def connectLayersSignal(self):
         for lyr in self.getLayers():
             lyr.featureAdded.connect(
-                self.loadMetadata
+                self.storeFeatureId
             )
+            lyr.editCommandEnded.connect(self.loadMetadata)
 
     def disconnectLayersSignal(self):
         for lyr in self.getLayers():
             try:
                 lyr.featureAdded.disconnect(
-                    self.loadMetadata
+                    self.storeFeatureId
                 )
+            except:
+                pass
+            try:
+                lyr.editCommandEnded.disconnect(self.loadMetadata)
             except:
                 pass
         
@@ -62,36 +70,63 @@ class RasterMetadata:
 
     def getConfigText(self):
         return json.dumps(self.getConfig(), indent=4)
-
-    def loadMetadata(self, featureId):
-        try:
-            if featureId >= 0:
-                return
-            layer = self.getController().getActiveVectorLayer()
-            if not layer:
-                raise Exception('Não há um "VectorLayer" ativo!')
-            config = self.getConfig()
-            if not(layer.name() in config['camadas']):
-                return
-            feature = layer.getFeature(featureId)
-            if not feature.isValid():
-                return
-            rasters = self.getController().getVisibleRasters()
-            if len(rasters) != 1:
-                raise Exception('Para carregar o metadados da image de haver um, e apenas um, "RasterLayer" visível!')
-            raster = rasters[0]
-            if not(raster.name() in config['metadata']):
-                return
-            for attribute in config['metadata'][raster.name()]:
-                fieldIdx = feature.fields().indexOf(attribute['nome'])
-                if fieldIdx < 0:
-                    continue
-                feature[attribute['nome']] = attribute['valor']
-            layer.updateFeature(feature)     
-            self.getController().canvasRefresh() 
-        except Exception as e:
-            self.getController().showErrorMessageBox(str(e))
-          
-         
-
     
+    def storeFeatureId(self, featId):
+        self.addedFeaturesList.append(featId)
+
+    def loadMetadata(self):
+        while self.addedFeaturesList != []:
+            featureId = self.addedFeaturesList.pop()
+            try:
+                if featureId >= 0:
+                    return
+                layer = self.getController().getActiveVectorLayer()
+                if not layer:
+                    raise Exception('Não há um "VectorLayer" ativo!')
+                if not layer.isEditable():
+                    return
+                config = self.getConfig()
+                if not(layer.name() in config['camadas']):
+                    return
+                feature = layer.getFeature(featureId)
+                if not feature.isValid():
+                    return
+                geom = feature.geometry()
+                rasters = self.getController().getVisibleRasters()
+                validRasters = [r for r in rasters if r.name() in config['metadata']]
+                if len(validRasters) == 0:
+                    raise Exception('Deve haver pelo menos uma imagem visível para que se possa carregar os metadados!')
+                activeRasterDict = defaultdict(list)
+                for raster in validRasters:
+                    if not self.checkIfImageIntersectsFeatureGeom(layer, geom, raster):
+                        continue
+                    attrKey = ','.join([attr['valor'] for attr in config['metadata'][raster.name()]])
+                    activeRasterDict[attrKey].append(raster)
+                if len(activeRasterDict.keys()) > 1:
+                    raise Exception('Há mais de uma imagem ativa que intersecta a feição adquirida!')
+                activeKey = list(activeRasterDict)[0]
+                raster = activeRasterDict[activeKey][0]
+                for attribute in config['metadata'][raster.name()]:
+                    fieldIdx = feature.fields().indexOf(attribute['nome'])
+                    if fieldIdx < 0:
+                        continue
+                    feature[attribute['nome']] = attribute['valor']
+                layer.beginEditCommand("FP: Guarda metadado da imagem na camada")
+                layer.updateFeature(feature)
+                layer.endEditCommand()
+                self.getController().canvasRefresh() 
+            except Exception as e:
+                self.getController().showErrorMessageBox(str(e))
+
+    @staticmethod
+    def checkIfImageIntersectsFeatureGeom(layer, geom, raster):
+        layerCrs = layer.crs()
+        rasterCrs = raster.crs()
+        rasterExtent = raster.extent()
+        rasterExtentGeom = QgsGeometry.fromRect(rasterExtent)
+        if rasterCrs != layerCrs:
+            coordinateTransformer = QgsCoordinateTransform(
+                        rasterCrs, layerCrs, QgsProject.instance()
+                    )
+            rasterExtentGeom.transform(coordinateTransformer)
+        return geom.intersects(rasterExtentGeom)

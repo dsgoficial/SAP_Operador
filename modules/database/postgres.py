@@ -68,33 +68,93 @@ class Postgres:
     def getLayerContrainsCodes(self, layerName):
         pgCursor = self.getConnection().cursor()
         pgCursor.execute(
-            """SELECT d.column_name, pg_get_constraintdef(c.oid)
-            FROM
-            (SELECT conname, oid FROM  pg_constraint) c
-            INNER JOIN
-            (
-                SELECT column_name, constraint_name
-                FROM information_schema.constraint_column_usage WHERE table_name = '{0}'
-            ) d
-            ON (c.conname = d.constraint_name AND not(d.column_name = 'id'));""".format(
-                layerName
-            )
+            f"""select distinct case
+                    when split_part(conrelid::regclass::text,'.',2) = '' then split_part(conrelid::regclass::text,'.',1)
+                    else split_part(conrelid::regclass::text,'.',2)
+                    end as cl, pg_get_constraintdef(oid) 
+                FROM
+                    pg_constraint WHERE contype = 'c' and case
+                    when split_part(conrelid::regclass::text,'.',2) = '' then split_part(conrelid::regclass::text,'.',1)
+                    else split_part(conrelid::regclass::text,'.',2)
+                    end in ('{layerName}')"""
         )
         query = pgCursor.fetchall()
         pgCursor.close()
         if not query:
             return {}
         result = {}
-        for field, text in query:
-            if not(field and text):
-                return 
-            codeList = []
-            for code in " ".join(" ".join(text.split("(")).split(")")).split(" "):
-                if not code.isnumeric():
-                    continue
-                codeList.append(code)
-            result[field] = ",".join(codeList)
+        for cl, constraintDef in query:
+            if not(cl and constraintDef):
+                return {}
+            tableName, field, codeList = self.parseCheckConstraintQuery(cl, constraintDef)
+            result[field] = ",".join(map(str,codeList))
         return result
+    
+    def parseCheckConstraintQuery(self, queryValue0, queryValue1):
+        try:
+            if "ANY" in queryValue1 or "@" in queryValue1:
+                return self.parseCheckConstraintWithAny(queryValue0, queryValue1)
+            else:
+                return self.parseCheckConstraintWithOr(queryValue0, queryValue1)
+        except Exception as e:
+            raise Exception(
+                self.tr("Error parsing check constraint!\n" + ":".join(e.args))
+            )
+
+    def parseCheckConstraintWithOr(self, queryValue0, queryValue1):
+        if "." in queryValue0:
+            query0Split = queryValue0.split(".")
+            tableSchema = query0Split[0]
+            tableName = query0Split[1]
+        else:
+            tableName = queryValue0
+        query1Split = (
+            queryValue1.replace("CHECK ", "")
+            .replace("(", "")
+            .replace(")", "")
+            .replace(" ", "")
+            .replace('"', "")
+            .split("OR")
+        )
+        checkList = []
+        for i in query1Split:
+            attrSplit = i.split("=")
+            attribute = attrSplit[0]
+            try:
+                checkList.append(int(attrSplit[1]))
+            except:
+                pass  # ignore checks that are not from dsgtools
+        return tableName, attribute, checkList
+
+    def parseCheckConstraintWithAny(self, queryValue0, queryValue1):
+        if "." in queryValue0:
+            query0Split = queryValue0.split(".")
+            tableSchema = query0Split[0]
+            tableName = query0Split[1]
+        else:
+            tableName = queryValue0
+        query1Split = (
+            queryValue1.replace('"', "")
+            .replace("ANY", "")
+            .replace("ARRAY", "")
+            .replace("::smallint", "")
+            .replace("(", "")
+            .replace(")", "")
+            .replace("CHECK", "")
+            .replace("[", "")
+            .replace("]", "")
+            .replace(" ", "")
+        )
+        checkList = []
+        splitToken = ""
+        if "=" in query1Split:
+            splitToken = "="
+        elif "<@" in query1Split:
+            splitToken = "<@"
+        equalSplit = query1Split.split(splitToken)
+        attribute = equalSplit[0]
+        checkList = list(map(int, equalSplit[1].split(",")))
+        return tableName, attribute, checkList
 
     def getLayerColumns(self, layerName, layerSchema):
         pgCursor = self.getConnection().cursor()

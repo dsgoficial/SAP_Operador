@@ -14,8 +14,8 @@ class ActivityInfoWidgetBuilder(IActivityInfoWidgetBuilder):
     def setController(self, controller):
         self.obj.setController( controller )
 
-    def setEPSG(self, title, description):
-        self.obj.setEPSG( title, description )
+    def addObservation(self, title, description):
+        self.obj.addObservation( title, description )
 
     def setDescription(self, title, description):
         self.obj.setDescription( title, description )

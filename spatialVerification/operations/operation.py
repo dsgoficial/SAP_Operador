@@ -9,12 +9,12 @@ class Operation( QtCore.QObject ):
             self,
             qgis,
             workspaceWkt=None,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(Operation, self).__init__()
         self.qgis = qgis
         self.workspaceWkt = workspaceWkt
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
     
     def setWorkspaceWkt(self, workspaceWkt):
         self.workspaceWkt = workspaceWkt

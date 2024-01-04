@@ -12,18 +12,24 @@ class RuleStatistics(Processing):
     def run(self, parameters):
         proc = super().run(parameters)
         if 'OUTPUT' in proc and proc['OUTPUT']:
-            html = ''
+            result = {}
+            currentRuleKey = None
             for line in proc['OUTPUT'].split('\n\n'):
-                if '[regras]' in line.lower():
-                    html+='<h3>{0}</h3>'.format(line)
+                if '[regras]' in line.lower() and not(line in result):
+                    # html+='<h3>{0}</h3>'.format(line)
+                    currentRuleKey = line
+                    result[line] = []
                 elif 'passaram' in line.lower():
-                    html += u"<p style=\"color:green\">{0}</p>".format(line)
-                else:
-                    html += u"<p style=\"color:red\">{0}</p>".format(line)
-            return html
-        return "<p style=\"color:red\">{0}</p>".format(
-            'Não há regras para as camadas carregadas!'
-        )
+                    continue
+                #     html += u"<p style=\"color:green\">{0}</p>".format(line)
+                elif currentRuleKey and line:
+                    # html += u"<p style=\"color:red\">{0}</p>".format(line)
+                    result[currentRuleKey].append(line)
+            return result
+        # return "<p style=\"color:red\">{0}</p>".format(
+        #     'Não há regras para as camadas carregadas!'
+        # )
+        return None
         
     def getParameters(self, parameters):
         layers = [self.getLayerUriFromTable(layerData['schema'], layerData['nome']) for layerData in parameters['layers']]

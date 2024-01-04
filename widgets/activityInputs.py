@@ -59,6 +59,7 @@ class ActivityInputs(Widget):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             results = self.getController().loadActivityInputs(self.getInputsSelected())
+            self.getController().sortLayersOnMolduraGroup()
             #errors = [ item[1] for item in results if not item[0] ]
             #success = [ item[1] for item in results if item[0] ]
             #self.showInfoMessageBox( 'Download Insumos', ''.join( success ) ) if success else ''

@@ -10,13 +10,13 @@ class GUIFactory(IGUIFactory):
     def __init__(self):
         super(GUIFactory, self).__init__()
 
-    def makeRemoteProductionToolsDock(self, controller, obj=None):
+    def makeRemoteProductionToolsDock(self, controller, sap, obj=None):
         director = ProductionToolsDirector()
         builder = ProductionToolsBuilder()
         if obj is not None:
             obj.removeAllWidgets()
             builder.setObject(obj)
-        director.constructRemoteProductionToolsDock( builder, controller )
+        director.constructRemoteProductionToolsDock( builder, controller, sap )
         return builder.getResult()
 
     def makeLocalProductionToolsDock(self, controller, obj=None):

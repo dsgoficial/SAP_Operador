@@ -11,13 +11,19 @@ class SapActivityHttp:
     def getData(self):
         return self.data
 
+    def getScale(self):
+        return self.getData()['dados']['atividade']['denominador_escala']
+
+    def getThemes(self):
+        return self.getData()['dados']['atividade']['temas']
+
     def getNotes(self):
         notes = []
         activityData = self.getData()['dados']['atividade']
         for key in activityData:
-            if 'observacao' in key and activityData[key]:
+            if 'observacao' in key and activityData[key] and activityData[key] != 'None':
                 notes.append(activityData[key])
-        return notes
+        return notes if notes else ['Não Há']
 
     def getRequirements(self):
         activityData = self.getData()['dados']['atividade']
@@ -38,6 +44,9 @@ class SapActivityHttp:
 
     def getTypeProductionData(self):
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
+
+    def getStepTypeId(self):
+        return self.getData()['dados']['atividade']['tipo_etapa_id']
 
     def getMenus(self):
         formatedMenus = []
@@ -129,15 +138,23 @@ class SapActivityHttp:
 
 
     def getConditionalStyleNames(self):
-        return [ data['descricao'] for data in self.getRules() ]
+        return [ data['nome'] for data in self.getRules() ]
             
     def getLayers(self):
         layers = self.getData()['dados']['atividade']['camadas'][:]
         for layer in layers:
             layer.update({
-                'filter': self.getLayerFilter(layer["schema"], layer["nome"])
+                'filter': self.getLayerFilter(layer)
             }) 
         return layers
+
+    def getNoteLayers(self):
+        layers = self.getData()['dados']['atividade']['camadas'][:]            
+        return [
+            layer
+            for layer in layers
+            if 'camada_apontamento' in layer and layer['camada_apontamento']
+        ]
 
     def getLayersQml(self, styleName):
         layersQml = []
@@ -172,14 +189,7 @@ class SapActivityHttp:
         return styles
 
     def getLayerALiases(self):
-        return [
-            {
-                'camadaNome': item['nome'],
-                'camadaApelido': item['alias'] if 'alias' in item else '',
-                'atributosApelido': item['atributos'] if 'atributos' in item else []
-            }
-            for item in self.getData()['dados']['atividade']['camadas']
-        ]
+        return self.getData()['dados']['atividade']['alias']
 
     def getLayerActions(self):
         return [
@@ -310,7 +320,8 @@ class SapActivityHttp:
                 'ordem' : item['ordem'],
                 'description' : item['descricao'],
                 'routineType' : 'qgisModel',
-                'model_xml' : item['model_xml']
+                'model_xml' : item['model_xml'],
+                'parametros' : item['parametros']
             }
             for item in self.getData()['dados']['atividade']['models_qgis'] 
         ]
@@ -334,12 +345,14 @@ class SapActivityHttp:
             return []
         return [
             {
+                'fase': d['fase'] if 'fase' in d else '',
+                'subfase': d['subfase'] if 'subfase' in d else '',
                 'etapa': d['etapa'] if 'etapa' in d else '',
+                'situacao': d['situacao'] if 'situacao' in d else '',
                 'data_inicio': d['data_inicio'] if 'data_inicio' in d else '',
                 'data_fim': d['data_fim'] if 'data_fim' in d else '',
                 'posto_grad': d['posto_grad'] if 'posto_grad' in d else '',
                 'nome_guerra': d['nome_guerra'] if 'nome_guerra' in d else '',
-                'situacao': d['situacao'] if 'situacao' in d else '',
             }
             for d in self.getData()['dados']['atividade']['linhagem']
         ]
@@ -347,15 +360,24 @@ class SapActivityHttp:
     def getUserId(self):
         return self.getData()['dados']['usuario_id']
 
-    def getLayerFilter(self, layerSchema, layerName):
-        if layerName == u"aux_moldura_a":
-            return u""""mi" = '{}'""".format(self.getWorkUnitName())
-        return """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
+    def getLayerFilter(self, layer):
+        layerSchema = layer["schema"]
+        layerName = layer["nome"]
+        
+        #if layerName == u"aux_moldura_a":
+        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
+        filterDefault = """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
                 self.getWorkUnitGeometry(),
                 'id',
                 layerSchema,
                 layerName,
             )
+        
+        if 'camada_apontamento' in layer and layer['camada_apontamento']:
+            subphaseId = self.getSubphaseId()
+            attributeName =  layer["atributo_filtro_subfase"]
+            filterDefault += """ AND ( "{0}" = '{1}' )""".format(attributeName, subphaseId)
+        return filterDefault
 
     def getFrameQuery(self):
         return "?query=SELECT geom_from_wkt('{0}') as geometry".format(
@@ -368,15 +390,34 @@ class SapActivityHttp:
     def getEPSG(self):
         return self.getWorkUnitGeometry().split(';')[0].split('=')[1]
 
+    def getProject(self):
+        return self.getData()['dados']['atividade']['projeto'] if 'projeto' in self.getData()['dados']['atividade'] else '-'
+
+    def getBlock(self):
+        return self.getData()['dados']['atividade']['bloco'] if 'bloco' in self.getData()['dados']['atividade'] else '-'
+
+    def getProductType(self):
+        return self.getData()['dados']['atividade']['tipo_produto'] if 'tipo_produto' in self.getData()['dados']['atividade'] else '-'
+
+    def getLot(self):
+        return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
+
+    def getScale(self):
+        return '1:{}'.format(self.getData()['dados']['atividade']['denominador_escala']) if 'denominador_escala' in self.getData()['dados']['atividade'] else '-'
+
     def getShortcuts(self):
         return self.getData()['dados']['atividade']['atalhos']
 
     def getShortcutsDescription(self):
         descriptionHtml = ''
         for shortcut in self.getData()['dados']['atividade']['atalhos']:
+            if shortcut['idioma'] != 'português':
+                continue
+            if not shortcut['atalho']:
+                continue
             descriptionHtml += '<b>{0}:</b> {1}<br>'.format(
                 shortcut['ferramenta'], 
-                shortcut['atalho'] if shortcut['atalho'] else ''
+                shortcut['atalho']
             )
         return '<div>{0}</div>'.format(descriptionHtml)
         return self.getData()['dados']['atividade']['atalhos']

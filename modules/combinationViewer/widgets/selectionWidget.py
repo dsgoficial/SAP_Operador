@@ -10,12 +10,12 @@ class SelectionWidget(QtWidgets.QWidget, TableFunctions):
     def __init__(self, 
             controller, 
             parent=None,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(SelectionWidget, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
         self.sendTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.selectionTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 

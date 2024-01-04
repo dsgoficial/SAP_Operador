@@ -9,13 +9,14 @@ class AuthSMB(QtWidgets.QDialog):
 
     def __init__(self, 
             parent=None,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(AuthSMB, self).__init__(parent)
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
         uic.loadUi(self.getUIPath(), self)
         self.ok_bt.clicked.connect(self.validate)
         self.cancel_bt.clicked.connect(self.reject)
-        self.infoMessageBox = messageFactory.createMessage('InfoMessageBox')
+        self.infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         self.params = {}
         self.user = ""
         self.passwd = ""

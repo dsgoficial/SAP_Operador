@@ -6,10 +6,10 @@ import platform
 class InputLayer(InputData):
 
     def __init__(self, 
-            groupName='MOLDURA_E_INSUMOS'
+            groupName=None
         ):
         super(InputLayer, self).__init__()
-        self.groupName = groupName
+        self.groupName = 'MOLDURA_E_INSUMOS' if groupName is None else groupName
 
     def getGroupLayer(self):
         root = core.QgsProject.instance().layerTreeRoot()
