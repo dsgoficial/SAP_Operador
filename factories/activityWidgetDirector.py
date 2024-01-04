@@ -17,6 +17,7 @@ class ActivityWidgetDirector:
 
     def constructActivityDataWidget(self, builder, controller, sap):
         builder.enabledMenuButton( len( controller.getSapMenus() ) > 0 )
+        builder.enableWorkflowButton(len(controller.getDSGToolsQAWorkflows()) > 0)
         builder.setController(controller)
 
     def constructActivityInputsWidget(self, builder, controller):

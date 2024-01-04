@@ -64,6 +64,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'ValidateUserOperations', 
             self.qgis 
         )
+        self.qaToolBox = None
         self.prodToolsSettings.reclassifyMode.connect(self.handleReclassifyMode)
 
     def loadChangeStyleWidget(self):
@@ -123,7 +124,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if self.sapActivity is None:
             return
         self.loadShortcuts()
-        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap, self.productionTools)
+        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        self.qaToolBox.refreshToolboxObject()
         self.qgis.addDockWidget(self.productionTools, side='left')  
 
     def loadShortcuts(self):
@@ -208,6 +210,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Salve todas suas alterações antes de finalizar!'
             )
             return
+        if len(self.getDSGToolsQAWorkflows()) > 0 and (self.qaToolBox is None or not self.qaToolBox.allWorkflowsAreFinishedWithoutFlags()):
+            self.showInfoMessageBox(
+                self.productionTools,
+                'Aviso',
+                'Rode todos os processos de validação do DSGTools e corrija as flags antes de finalizar!'
+            )
+            return
+        self.qgis.cleanProject()
 
         stepTypeId = self.sapActivity.getStepTypeId()
         noteLayers = self.sapActivity.getNoteLayers()
@@ -746,6 +756,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getSapMenus(self):
         return self.sapActivity.getMenus()
 
+    def getDSGToolsQAWorkflows(self):
+        return self.sapActivity.getWorkflows()
+
     def loadMenu(self):
         try:
             self.acquisitionMenu.removeMenuDock() if self.acquisitionMenu else ''
@@ -812,6 +825,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         })
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
+
+    def loadDsgToolsQAToolbox(self):
+        if self.qaToolBox is not None:
+            return
+        self.qaToolBox = self.toolFactoryDsgTools.getTool('QAToolBox', self)
+        self.qaToolBox.run(self.getDSGToolsQAWorkflows())
 
     def moveLayerToGroup(self, layer, positionToInsert=0):
         root = core.QgsProject.instance().layerTreeRoot()

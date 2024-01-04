@@ -55,6 +55,16 @@ class SapActivityHttp:
             formatedMenu['menuName'] = data['nome']
             formatedMenus.append( formatedMenu )
         return formatedMenus
+    
+    def getWorkflows(self):
+        workflowDictList = []
+        for data in self.getData()['dados']['atividade']['workflow_dsgtools']:
+            workflowString = data.get('workflow_json', None)
+            if workflowString is None:
+                continue
+            workflowDict = json.loads(workflowString)
+            workflowDictList.append(workflowDict)
+        return workflowDictList
 
     def getActivityGroupName(self):
         """ return "{}_{}".format(
