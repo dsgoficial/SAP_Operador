@@ -33,7 +33,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="DSGToolsQAToolboxBtn">
+      <widget class="QPushButton" name="loadDSGToolsQAToolboxBtn">
        <property name="enabled">
         <bool>false</bool>
        </property>
