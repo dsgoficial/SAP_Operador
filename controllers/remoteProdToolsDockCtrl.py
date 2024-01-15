@@ -125,6 +125,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.loadShortcuts()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        if self.qaToolBox is None:
+            self.loadDsgToolsQAToolbox()
         self.qaToolBox.refreshToolboxObject()
         self.qgis.addDockWidget(self.productionTools, side='left')  
 
