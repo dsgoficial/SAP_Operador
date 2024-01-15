@@ -817,10 +817,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             reviewToolBar.run(gridLayer)
             return
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
+        frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
         result = createReviewGrid.run({
-            'input': core.QgsProject.instance().mapLayersByName('moldura')[0],
-            'x_grid_size': 0.01,
-            'y_grid_size': 0.008,
+            'input': frameLyr,
+            'x_grid_size': 0.01 if frameLyr.crs().isGeographic() else 1e3,
+            'y_grid_size': 0.008 if frameLyr.crs().isGeographic() else 800,
             'related_task_id': self.sapActivity.getId()
         })
         outputLayer = result['OUTPUT']
