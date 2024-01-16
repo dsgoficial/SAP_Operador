@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 3.29.2 - dev
+## 3.29.2
 
 Correção de bug:
 
