@@ -1,6 +1,6 @@
 import json
 
-class SapActivityHttp:
+class SapActivityLocal:
 
     def __init__(self):
         self.data = {}
@@ -55,16 +55,6 @@ class SapActivityHttp:
             formatedMenu['menuName'] = data['nome']
             formatedMenus.append( formatedMenu )
         return formatedMenus
-    
-    def getWorkflows(self):
-        workflowDictList = []
-        for data in self.getData()['dados']['atividade']['workflow_dsgtools']:
-            workflowString = data.get('workflow_json', None)
-            if workflowString is None:
-                continue
-            workflowDict = json.loads(workflowString)
-            workflowDictList.append(workflowDict)
-        return workflowDictList
 
     def getActivityGroupName(self):
         """ return "{}_{}".format(
@@ -264,46 +254,32 @@ class SapActivityHttp:
         ]))
 
     def getInputs(self):
-        inputs = self.getData()['dados']['atividade']['insumos'][:]
-        for data in inputs:
-            if not(data['tipo_insumo_id'] == 3):
-                continue
-            data.update({
-                'usuario': self.getDatabaseUserName(),
-                'senha': self.getDatabasePassword(),
-                'workUnitGeometry': self.getWorkUnitGeometry()
-            })
-        return inputs
+        return []
+        # inputs = self.getData()['dados']['atividade']['insumos'][:]
+        # for data in inputs:
+        #     if not(data['tipo_insumo_id'] == 3):
+        #         continue
+        #     data.update({
+        #         'usuario': self.getDatabaseUserName(),
+        #         'senha': self.getDatabasePassword(),
+        #         'workUnitGeometry': self.getWorkUnitGeometry()
+        #     })
+        # return inputs
 
     def getDatabasePassword(self):
-        """ if 'login_info' in self.getData()['dados']:
-            return self.getData()['dados']['login_info']['senha']
-        return self.getData()['senha'] """
-        if self.getTypeProductionData() == 2:
-            return self.getData()['dados']['login_info']['senha']
-        elif self.getTypeProductionData() == 3:
-            return self.getData()['senha']
+        return self.getData()['local_db']['password']
 
     def getDatabaseUserName(self):
-        """ if 'login_info' in self.getData()['dados']:
-            return self.getData()['dados']['login_info']['login']
-        return self.getData()['login'] """
-        if self.getTypeProductionData() == 2:
-            return self.getData()['dados']['login_info']['login']
-        elif self.getTypeProductionData() == 3:
-            return self.getData()['login']
+        return self.getData()['local_db']['username']
 
     def getDatabaseServer(self):
-        path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
-        return path.split(':')[0]
+        return self.getData()['local_db']['host']
 
     def getDatabasePort(self):
-        path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
-        return path.split(':')[1].split('/')[0]
+        return self.getData()['local_db']['port']
 
     def getDatabaseName(self):
-        path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
-        return path.split(':')[1].split('/')[1]
+        return self.getData()['local_db']['database']
     
     def getWorkUnitGeometry(self):
         return self.getData()['dados']['atividade']['geom']
@@ -312,7 +288,7 @@ class SapActivityHttp:
         return self.getData()['dados']['atividade']['unidade_trabalho']
 
     def getFmeConfig(self):
-        return self.getData()['dados']['atividade']['fme']
+        return []#self.getData()['dados']['atividade']['fme']
     
     def getQgisModels(self):
         return [

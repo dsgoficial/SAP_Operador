@@ -1,5 +1,4 @@
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 from Ferramentas_Producao.modules.combinationViewer.models.filters import Filters
 from Ferramentas_Producao.modules.combinationViewer.factories.widgetFactory import WidgetFactory
 
@@ -7,13 +6,13 @@ class CombinationViewerCtrl:
     
     def __init__(
             self,
-            widgetFactory=WidgetFactory(),
-            qgis=QgisCtrl(),
-            filters=Filters()
+            widgetFactory=None,
+            qgis=None,
+            filters=None,
         ):
-        self.widgetFactory = widgetFactory
-        self.qgis = qgis
-        self.filters = filters
+        self.widgetFactory = WidgetFactory() if widgetFactory is None else widgetFactory
+        self.qgis = QgisApi() if qgis is None else qgis
+        self.filters = Filters() if filters is None else filters
         self.dlg = None
         self.qgis.on('LayersAdded', self.refreshDialog)
 

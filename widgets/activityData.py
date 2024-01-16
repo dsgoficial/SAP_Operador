@@ -3,12 +3,21 @@ from Ferramentas_Producao.interfaces.IActivityDataWidget import IActivityDataWid
 
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from .remoteLoadLayers import RemoteLoadLayers
 
 class ActivityData(Widget, IActivityDataWidget):
 
-    def __init__(self, controller=None):
+    def __init__(self, controller=None, sap=None):
         super(ActivityData, self).__init__(controller)
         uic.loadUi(self.getUiPath(), self)
+        self.loadReviewToolBtn.setVisible(False)
+        self.sap = sap
+
+    def setSap(self, sap):
+        self.sap = sap
+
+    def getSap(self):
+        return self.sap
 
     def getUiPath(self):
         return os.path.join(
@@ -28,7 +37,12 @@ class ActivityData(Widget, IActivityDataWidget):
 
     @QtCore.pyqtSlot(bool)
     def on_summaryBtn_clicked(self):
-        self.getController().showActivityDataSummary()
+        activityDataModel = self.sap.getActivityDataModel()
+        self.dlg = RemoteLoadLayers()
+        self.dlg.loadLayers(activityDataModel.getLayers())
+        self.dlg.load.connect(self.getController().loadActivityLayersByNames)
+        self.dlg.show()
+        
 
     @QtCore.pyqtSlot(bool)
     def on_loadMenuBtn_clicked(self):
@@ -37,6 +51,10 @@ class ActivityData(Widget, IActivityDataWidget):
     @QtCore.pyqtSlot(bool)
     def on_loadReviewToolBtn_clicked(self):
         self.getController().loadReviewTool()
+    
+    @QtCore.pyqtSlot(bool)
+    def on_loadDSGToolsQAToolboxBtn_clicked(self):
+        self.getController().loadDsgToolsQAToolbox()
 
     def setVisibleWidgetsLayout(self, layout, visible):
         for idx in range(layout.count()):
@@ -48,3 +66,6 @@ class ActivityData(Widget, IActivityDataWidget):
 
     def enabledMenuButton(self, enable):
         self.loadMenuBtn.setEnabled( enable )
+
+    def enableWorkflowButton(self, enable):
+        self.loadDSGToolsQAToolboxBtn.setEnabled(enable)

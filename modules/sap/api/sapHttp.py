@@ -139,23 +139,21 @@ class SapHttp(ISapApi):
             return response.json()
         return {}
 
-    def endActivity(self, activityId, withoutCorrection):
+    def endActivity(self, data):
         response = self.httpPostJson(
             url="{0}/distribuicao/finaliza".format(self.getServer()),
-            postData={
-                'atividade_id' : activityId,
-                'sem_correcao' : withoutCorrection,
-            }
+            postData=data
         )
         return response.json()['message']
 
-    def reportError(self, activityId, errorId, errorDescription):
+    def reportError(self, activityId, errorId, errorDescription, wkt):
         response = self.httpPostJson(
             url="{0}/distribuicao/problema_atividade".format(self.getServer()),
             postData={
                 'atividade_id' : activityId,
                 'tipo_problema_id' : errorId,
-                'descricao' : errorDescription
+                'descricao' : errorDescription,
+                'polygon_ewkt': wkt
             }
         )
         return response.json()['message']
@@ -163,6 +161,23 @@ class SapHttp(ISapApi):
     def getErrorsTypes(self):
         response = self.httpGet(
             url="{0}/distribuicao/tipo_problema".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}
+
+    def incorrectEnding(self, description):
+        response = self.httpPostJson(
+            url="{0}/producao/finalizacao_incorreta".format(self.getServer()),
+            postData={
+                'descricao' : description
+            }
+        )
+        return response.json()['message']
+
+    def getRemotePluginsPath(self):
+        response = self.httpGet(
+            url="{0}/distribuicao/plugin_path".format(self.getServer())
         )
         if response:
             return response.json()

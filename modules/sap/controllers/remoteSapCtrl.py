@@ -9,17 +9,18 @@ class RemoteSapCtrl(SapCtrl):
     
     def __init__(self, 
             qgis,
-            messageFactory=UtilsFactory().createMessageFactory(),
-            sapApi=SapApiHttpSingleton.getInstance(),
-            dataModelFactory=DataModelFactory(),
-            guiFactory=GUIFactory()
+            messageFactory=None,
+            sapApi=None,
+            dataModelFactory=None,
+            guiFactory=None,
         ):
         super(RemoteSapCtrl, self).__init__()
         self.qgis = qgis
-        self.messageFactory = messageFactory
-        self.dataModelFactory = dataModelFactory
-        self.sapApi = sapApi
-        self.guiFactory = guiFactory
+        self.reportErrorDialog = None
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
+        self.dataModelFactory = DataModelFactory() if dataModelFactory is None else dataModelFactory
+        self.sapApi = SapApiHttpSingleton.getInstance() if sapApi is None else sapApi
+        self.guiFactory = GUIFactory() if guiFactory is None else guiFactory
         self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
 
     def setupActivityDataModel(self, data):
@@ -51,7 +52,6 @@ class RemoteSapCtrl(SapCtrl):
         infoMessageBox.show(parent, title, message)    
         
     def authUser(self, user, password, server):
-        self.sapApi.setServer(server)
         response = self.sapApi.loginUser(
             user, 
             password,
@@ -59,6 +59,9 @@ class RemoteSapCtrl(SapCtrl):
             self.qgis.getPluginsVersions()
         )
         return response['success']
+
+    def setServer(self, server):
+        self.sapApi.setServer(server)
 
     def reAuthUser(self):
         user = self.qgis.getProjectVariable('productiontools:user')
@@ -124,11 +127,8 @@ class RemoteSapCtrl(SapCtrl):
         #response['senha'] = self.qgis.getProjectVariable('productiontools:password')
         return response
 
-    def endActivity(self, withoutCorrection):
-        return self.sapApi.endActivity(
-            self.activityDataModel.getId(), 
-            withoutCorrection
-        )
+    def endActivity(self, data):
+        return self.sapApi.endActivity(data)
 
     def getErrorsTypes(self):
         response = self.sapApi.getErrorsTypes()
@@ -136,20 +136,28 @@ class RemoteSapCtrl(SapCtrl):
             return []
         return response['dados']
     
-    def showReportErrorDialog(self):
-        reportErrorDialog = self.guiFactory.createReportErrorDialog(self)
-        reportErrorDialog.loadErrorsTypes(
+    def showReportErrorDialog(self, callback):
+        if self.reportErrorDialog:
+            self.reportErrorDialog.close()
+        self.reportErrorDialog = self.guiFactory.createReportErrorDialog(
+            self,
+            self.qgis
+        )
+        self.reportErrorDialog.loadErrorsTypes(
             self.getErrorsTypes()
         )
-        return reportErrorDialog.exec_() == QtWidgets.QDialog.Accepted	
+        self.reportErrorDialog.reported.connect(callback)
+        return self.reportErrorDialog.show()
 
-    def showEndActivityDialog(self, withoutCorrection):
-        endActivityDialog = self.guiFactory.createEndActivityDialog(self)
+    #mostrar nova parte apenas quando etapaId 2 e 5
+    def showEndActivityDialog(self, withoutCorrection, stepTypeId):
+        activeObs = stepTypeId in [2,5]
+        endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
         return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
         
-    def reportError(self, errorId, errorDescription):
-        return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription)
+    def reportError(self, errorId, errorDescription, wkt):
+        return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription, wkt)
 
     def hasActivityRecord(self):
         return (
@@ -170,12 +178,14 @@ class RemoteSapCtrl(SapCtrl):
         )
 
     def isValidActivity(self):
-        if not(self.hasActivityRecord()):
-            return True
-        if not self.hasValidAuthentication():
-            return True
         response = self.getCurrentActivity()
         if not response:
             return True   
         self.setupActivityDataModel(response)
         return self.qgis.getProjectVariable('productiontools:activityName') == self.activityDataModel.getDescription()
+
+    def incorrectEnding(self, description):
+        return self.sapApi.incorrectEnding(description)
+
+    def getRemotePluginsPath(self):
+        return self.sapApi.getRemotePluginsPath()

@@ -1,7 +1,7 @@
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 from Ferramentas_Producao.timers.timer import Timer
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 from datetime import datetime
 import json
 
@@ -9,11 +9,11 @@ class Pomodoro(QtWidgets.QWidget):
 
     def __init__(
             self,
-            qgis=QgisCtrl()
+            qgis=None,
         ):
         super(Pomodoro, self).__init__()
         uic.loadUi(self.getUiPath(), self)
-        self.qgis = qgis
+        self.qgis = QgisApi() if qgis is None else qgis
         self.pomodoro = 0
         self.paused = False
         self.timeOnSeconds = 25 * 60
@@ -53,8 +53,7 @@ class Pomodoro(QtWidgets.QWidget):
         self.setCronText(self.getFormatedTime())
 
     def saveState(self):
-        now = datetime.now()
-        date = now.strftime("%d-%m-%Y")
+        date = self.getCurrentDate()
         self.qgis.setSettingsVariable(
             'productiontools:pomodoro', 
             json.dumps({
@@ -62,12 +61,18 @@ class Pomodoro(QtWidgets.QWidget):
             })
         )
 
+    def getCurrentDate(self):
+        now = datetime.now()
+        return now.strftime("%d-%m-%Y")
+
     def restoreState(self):
         dumpData = self.qgis.getSettingsVariable('productiontools:pomodoro')
         if not dumpData:
             return
-        data = json.loads(dumpData)
-        self.pomodoro = list(data.values())[0]
+        date = self.getCurrentDate()
+        if not(date in dumpData):
+            return
+        self.pomodoro = list(dumpData.values())[0]
 
     def getFormatedTime(self):
         return '{}:{}'.format(int(self.currentTime/60), str(round((float("{:.2f}".format(self.currentTime/60)) % 1) * 60)).zfill(2) )
@@ -91,6 +96,16 @@ class Pomodoro(QtWidgets.QWidget):
             '''
             <html><head/><body><p align="center"><span style=" font-size:12pt; font-weight:600;">{}</span></p></body></html>
             '''.format(value)
+        )
+
+    def setWorkStatusText(self, minutesActive, minutesNoActive):
+        self.monitoringLb.setText(
+            '''
+            <html><head/><body>
+            <p align="center"><span style=" font-size:12pt; font-weight:600;">Tempo ativo (minutos): {}</span></p>
+            <p align="center"><span style=" font-size:12pt; font-weight:600;">Tempo ocioso (minutos): {}</span></p>
+            </body></html>
+            '''.format(minutesActive, minutesNoActive)
         )
 
     @QtCore.pyqtSlot(bool)

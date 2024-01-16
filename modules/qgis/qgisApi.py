@@ -23,17 +23,17 @@ import json
 class QgisApi(IQgisApi):
 
     def __init__(self,
-            inputDataFactory=InputDataFactory(),
-            processingProviderFactory=ProcessingProviderFactory(),
-            layerActionsFactory=LayerActionsFactory(),
-            mapFunctionsFactory=MapFunctionsFactory(),
-            mapToolsFactory=MapToolsFactory()
+            inputDataFactory=None,
+            processingProviderFactory=None,
+            layerActionsFactory=None,
+            mapFunctionsFactory=None,
+            mapToolsFactory=None,
         ):
-        self.inputDataFactory = inputDataFactory
-        self.processingProviderFactory = processingProviderFactory
-        self.mapFunctionsFactory = mapFunctionsFactory
-        self.mapToolsFactory = mapToolsFactory
-        self.layerActionsFactory = layerActionsFactory
+        self.inputDataFactory = InputDataFactory() if inputDataFactory is None else inputDataFactory
+        self.processingProviderFactory = ProcessingProviderFactory() if processingProviderFactory is None else processingProviderFactory
+        self.mapFunctionsFactory = MapFunctionsFactory() if mapFunctionsFactory is None else mapFunctionsFactory
+        self.mapToolsFactory = MapToolsFactory() if mapToolsFactory is None else mapToolsFactory
+        self.layerActionsFactory = LayerActionsFactory() if layerActionsFactory is None else layerActionsFactory
         self.customToolBar = None
     
     def load(self):
@@ -96,7 +96,7 @@ class QgisApi(IQgisApi):
         return False
 
     def checkModifiedLayersByStepId(self, stepId, noteLayers):
-        if stepId == 3:
+        if stepId == 3: #correcao
             for noteLayer in noteLayers:
                 layer = self.getLayerFromTable(
                     noteLayer['schema'],
@@ -116,7 +116,7 @@ class QgisApi(IQgisApi):
                     ):
                         continue
                     return False
-        elif stepId == 2:
+        elif stepId == 2: #revisao
             for noteLayer in noteLayers:
                 layer = self.getLayerFromTable(
                     noteLayer['schema'],
@@ -130,6 +130,7 @@ class QgisApi(IQgisApi):
         return True
 
     def runProcessingModel(self, parametersData):
+        self.setActiveGroup("SAIDA_MODEL")
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
@@ -137,6 +138,20 @@ class QgisApi(IQgisApi):
         parameters = json.loads(parametersData['parametros']) if parametersData['parametros'] else {}
         processing.runAndLoadResults(model, parameters)
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
+
+    def setActiveGroup(self, groupName, pos=0):
+        iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        group = rootNode.findGroup(groupName)
+        if group is None:
+            group = rootNode.insertGroup(pos, groupName)
+        view = iface.layerTreeView()
+        m = view.model()
+        listIndexes = m.match(m.index(0, 0), QtCore.Qt.DisplayRole, groupName, QtCore.Qt.MatchFixedString)
+        if listIndexes:
+            i = listIndexes[0]
+            view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.ClearAndSelect)
+        iface.mapCanvas().freeze(False)
 
     def getLayerUriFromTable(self, layerSchema, layerName):
         layersUri = []
@@ -204,7 +219,7 @@ class QgisApi(IQgisApi):
             return
         return keys[shortcutKeyName]
 
-    def createAction(self, name, iconPath, callback, shortcutKeyName, register=False):
+    def createAction(self, name, iconPath, callback, shortcutKeyName='', register=False):
         a = QAction(
             QIcon(iconPath),
             name,
@@ -345,7 +360,8 @@ class QgisApi(IQgisApi):
             'SaveAllEdits': iface.actionSaveAllEdits().triggered,
             'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
             'MessageLog': core.QgsApplication.messageLog().messageReceived,
-            'LayersAdded': core.QgsProject.instance().layersAdded
+            'LayersAdded': core.QgsProject.instance().layersAdded,
+            'NewProject': iface.newProjectCreated,
         }
 
     def on(self, event, callback):
@@ -388,6 +404,7 @@ class QgisApi(IQgisApi):
             iface.mapCanvas().unsetMapTool(tool)
         else:
             iface.mapCanvas().setMapTool(tool)
+        return tool
 
     def getVisibleRasters(self):
         root = core.QgsProject.instance().layerTreeRoot()
@@ -648,6 +665,7 @@ class QgisApi(IQgisApi):
         return [
             (name, os.path.join(repositoryPluginsPath, name))
             for name in result[0].decode('u16').split('\r\n')
+            if name != ''
         ]
 
     def getLinuxPluginPaths(self):
@@ -661,6 +679,7 @@ class QgisApi(IQgisApi):
         return [
             (name, os.path.join(repositoryPluginsPath, name))
             for name in result[0].decode('u8').split('\n')
+            if name != ''
         ]
 
     def createMenuBar(self, menuName):
@@ -676,5 +695,28 @@ class QgisApi(IQgisApi):
     def closeQgis(self):
         core.QgsApplication.taskManager().cancelAll()
         iface.actionExit().trigger()
+
+    def setActiveLayerByName(self, layerName):
+        layer = self.getLayerFromName(layerName)
+        if not layer:
+            return
+        iface.setActiveLayer(layer)
+
+    def loadThemes(self, themes):
+        for theme in themes:
+            themeLayers = [ '{}.{}'.format(l['schema'], l['camada']) for l in theme['camadas'] ]
+            root = core.QgsProject().instance().layerTreeRoot().clone()
+            for rLayer in root.findLayers():
+                rLayer.setItemVisibilityChecked(False)
+                rLayerName = '{}.{}'.format(
+                    rLayer.layer().dataProvider().uri().schema(),
+                    rLayer.layer().dataProvider().uri().table()
+                )
+                if not(rLayerName in themeLayers):
+                    continue
+                rLayer.setItemVisibilityChecked(True)
+            model = core.QgsLayerTreeModel(root)
+            themeCollection = core.QgsProject.instance().mapThemeCollection()
+            themeCollection.insert(theme['nome'], core.QgsMapThemeCollection.createThemeFromCurrentState(root, model))
 
 

@@ -8,12 +8,12 @@ class CombinationViewerDlg(QtWidgets.QDialog, TableFunctions):
     def __init__(self, 
             controller=None, 
             parent=None,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None
         ):
         super(CombinationViewerDlg, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
         self.setup()
 
     def getUiPath(self):

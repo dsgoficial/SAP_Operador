@@ -5,7 +5,7 @@ class ReportErrorDialogSingleton:
     dialog = None
 
     @staticmethod
-    def getInstance(controller):
+    def getInstance(controller, qgis):
         if not ReportErrorDialogSingleton.dialog:
-            ReportErrorDialogSingleton.dialog = ReportErrorDialog(controller)
+            ReportErrorDialogSingleton.dialog = ReportErrorDialog(controller, qgis)
         return ReportErrorDialogSingleton.dialog

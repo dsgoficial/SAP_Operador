@@ -1,4 +1,5 @@
 
+from collections import OrderedDict
 from Ferramentas_Producao.factories.GUIFactory import GUIFactory
 from Ferramentas_Producao.factories.timerFactory import TimerFactory
 from Ferramentas_Producao.factories.spatialVerificationFactory import SpatialVerificationFactory
@@ -12,6 +13,7 @@ import json
 import sip
 
 from Ferramentas_Producao.widgets.pomodoro import Pomodoro
+from Ferramentas_Producao.monitoring.canvas import Canvas
 
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
@@ -29,21 +31,24 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             databaseFactory,
             processingFactoryDsgTools,
             fme,
-            pomodoro,
             prodToolsSettings,
             toolFactoryDsgTools,
-            guiFactory=GUIFactory(),
-            spatialVerificationFactory=SpatialVerificationFactory()
+            pomodoro=None,
+            guiFactory=None,
+            spatialVerificationFactory=None,
+            canvasMonitoring=None,
         ):
         super(RemoteProdToolsDockCtrl, self).__init__()
         self.sap = sap
         self.qgis = qgis
         self.fme = fme
+        self.pomodoro = Pomodoro() if pomodoro is None else pomodoro
+        self.canvasMonitoring = Canvas() if canvasMonitoring is None else canvasMonitoring
+        self.canvasMonitoring.changeStatus.connect(self.pomodoro.setWorkStatusText)
         self.databaseFactory = databaseFactory
         self.processingFactoryDsgTools = processingFactoryDsgTools
-        self.guiFactory = guiFactory
-        self.spatialVerificationFactory = spatialVerificationFactory
-        #self.pomodoro = pomodoro
+        self.guiFactory = GUIFactory() if guiFactory is None else guiFactory
+        self.spatialVerificationFactory = SpatialVerificationFactory() if spatialVerificationFactory is None else spatialVerificationFactory
         self.prodToolsSettings = prodToolsSettings
         self.toolFactoryDsgTools = toolFactoryDsgTools
         self.sapActivity = None
@@ -52,12 +57,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.nextStyleAction = None
         self.prevStyleAction = None
         self.qgis.on('ReadProject', self.readProjectCallback)
+        self.qgis.on('NewProject', self.createProjectCallback)
         self.loadedLayerIds = []
         self.acquisitionMenu = None
         self.validateUserOperations = self.spatialVerificationFactory.createVerification( 
             'ValidateUserOperations', 
             self.qgis 
         )
+        self.qaToolBox = None
+        self.prodToolsSettings.reclassifyMode.connect(self.handleReclassifyMode)
 
     def loadChangeStyleWidget(self):
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -87,17 +95,24 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.productionTools.close() if self.productionTools else ''
         
     def authUser(self, username, password, server):
+        self.sap.setServer(server)
+        #self.prodToolsSettings.checkPluginUpdates()
         self.qgis.setProjectVariable('productiontools:user', username)
         self.qgis.setProjectVariable('productiontools:password', password)
         self.qgis.setSettingsVariable('productiontools:server', server)
         return self.sap.authUser(username, password, server)
 
+    def checkPluginUpdates(self, server):
+        self.sap.setServer(server)
+        return self.prodToolsSettings.checkPluginUpdates()
+
     def getPomodoroWidget(self):
-        return Pomodoro()
+        return self.pomodoro
         
     def unload(self):
         self.removeDock()
         self.qgis.off('ReadProject', self.readProjectCallback)
+        self.qgis.off('NewProject', self.createProjectCallback)
         #self.pomodoro.unload()
 
     def reload(self):
@@ -110,6 +125,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.loadShortcuts()
         self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        if self.qaToolBox is None:
+            self.loadDsgToolsQAToolbox()
+        self.qaToolBox.refreshToolboxObject()
         self.qgis.addDockWidget(self.productionTools, side='left')  
 
     def loadShortcuts(self):
@@ -135,9 +153,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.loadShortcuts()
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
-        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self)
+        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap)
         self.qgis.addDockWidget(self.productionTools, side='left')
-        self.prodToolsSettings.checkPluginUpdates()  
+        #self.prodToolsSettings.checkPluginUpdates()  
+
+        genericSelectionToolParameters = self.processingFactoryDsgTools.createProcessing('GenericSelectionToolParameters', self)
+        genericSelectionToolParameters.run({})
+        
         return self.productionTools  
 
     def removeDock(self):
@@ -190,6 +212,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Salve todas suas alterações antes de finalizar!'
             )
             return
+        if len(self.getDSGToolsQAWorkflows()) > 0 and (self.qaToolBox is None or not self.qaToolBox.allWorkflowsAreFinishedWithoutFlags()):
+            self.showInfoMessageBox(
+                self.productionTools,
+                'Aviso',
+                'Rode todos os processos de validação do DSGTools e corrija as flags antes de finalizar!'
+            )
+            return
+        self.qgis.cleanProject()
 
         stepTypeId = self.sapActivity.getStepTypeId()
         noteLayers = self.sapActivity.getNoteLayers()
@@ -208,18 +238,19 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Existem apontamentos não resolvidos!'
             )
             return
-        self.qgis.cleanProject()
         withoutCorrection = stepTypeId == 2 and checkStep
-        result = self.sap.showEndActivityDialog(withoutCorrection)
+        result = self.sap.showEndActivityDialog(withoutCorrection, stepTypeId)
         if not result:
             return
-        self.reload()
+        self.resetProject()
 
     def showReportErrorDialog(self):
+        self.sap.showReportErrorDialog(
+            self.resetProject
+        )
+    
+    def resetProject(self):
         self.qgis.cleanProject()
-        result = self.sap.showReportErrorDialog()
-        if not result:
-            return
         self.reload()
         
     def getActivityDatabase(self):
@@ -232,7 +263,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
 
     def getActivityLayerNames(self):
-        return [item["nome"] for item in self.sapActivity.getLayers()]
+        return [
+            item["nome"] for item in self.sapActivity.getLayers()
+            if not('camada_incomum' in item and item['camada_incomum'])
+        ]
 
     def getActivityInputs(self):
         return self.sapActivity.getInputs()
@@ -365,7 +399,188 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
+        self.canvasMonitoring.start()
 
+        self.loadReviewTool()
+        
+        loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
+        loadThemes.run({'themes': self.sapActivity.getThemes()})
+        self.sortLayersOnMolduraGroup()
+
+    def loadActivityLayersByNames(self, names):
+        layerNames = [ l for l in self.getActivityLayerNames() if l in names]
+        scale = self.sapActivity.getScale()
+        self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
+        self.qgis.setProjectVariable('productiontools_scale', int(scale.split(':')[-1]), encrypt=False)
+        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+        result = loadLayersFromPostgis.run({ 
+            'dbName' : self.sapActivity.getDatabaseName(), 
+            'dbHost' : self.sapActivity.getDatabaseServer(), 
+            'layerNames' : layerNames, 
+            'dbPassword' : self.sapActivity.getDatabasePassword(), 
+            'dbPort' : self.sapActivity.getDatabasePort(), 
+            'dbUser' : self.sapActivity.getDatabaseUserName() 
+        })
+        loadedLayerIds = result['OUTPUT']
+
+        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
+        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
+
+        groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
+        groupLayers.run({'layerIds': loadedLayerIds})
+
+        defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
+        if defaultStyle:
+            self.qgis.loadMapLayerStyles(
+                loadedLayerIds,
+                self.sapActivity.getLayerStyles(),
+                defaultStyle
+            )
+            self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+
+        """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
+        matchAndApplyQmlStylesToLayers.run({
+            'layersQml': self.sapActivity.getLayersQml(styleName),
+            'layerIds': loadedLayerIds
+        }) """
+
+        assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
+        database = self.getActivityDatabase()
+        assignValueMapToLayers.run({
+            'valueMaps': {
+                    layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
+                    for layer in self.sapActivity.getLayers()
+            },
+            'layerIds': loadedLayerIds
+        }) 
+
+        assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
+        assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
+
+        assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
+        assignAliasesToLayers.run({
+            'aliases': self.sapActivity.getLayerALiases(),
+            'layerIds': loadedLayerIds
+        })
+
+        assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
+        assignActionsToLayers.run({
+            'actions': self.sapActivity.getLayerActions(),
+            'layerIds': loadedLayerIds
+        })
+        rules = self.sapActivity.getRules()
+        if rules != []:
+            assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
+            assignFormatRulesToLayers.run({
+                'rules': rules,
+                'layerIds': loadedLayerIds
+            })
+
+        """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
+        assignConditionalStyleToLayers.run({
+            'conditionals': self.sapActivity.getLayerConditionalStyle(),
+            'layerIds': loadedLayerIds
+        }) """
+
+        setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
+        setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
+
+        frameQuery = self.sapActivity.getFrameQuery()
+        if not self.frameLoaded( frameQuery ):
+            self.qgis.loadInputData({
+                'query': self.sapActivity.getFrameQuery(),
+                'epsg': self.sapActivity.getEPSG(),
+                'nome': 'moldura',
+                'tipo_insumo_id': 100,
+                'qml': self.sapActivity.getFrameQml()
+            })
+
+        self.qgis.loadLayerActions(loadedLayerIds)
+
+        self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
+        
+        if self.sapActivity.getStepTypeId() == 3:
+            mapLayerIdNote = {}  
+            noteLayers = self.sapActivity.getNoteLayers()
+            for layerNote in noteLayers:
+                layerId = next(filter(lambda layerId: layerNote['nome'] in layerId, loadedLayerIds) , None)
+                mapLayerIdNote[layerId] = layerNote
+            noteLayerIds = mapLayerIdNote.keys()
+            loadedNotelayers = self.qgis.getLayerFromIds(noteLayerIds)
+            for layer in loadedNotelayers:
+                note = mapLayerIdNote[layer.id()]
+                self.qgis.setFieldsReadOnly( 
+                    [layer.id()], 
+                    [
+                        n
+                        for n in layer.fields().names()
+                        if not(n == note['atributo_justificativa_apontamento'] or n == note['atributo_situacao_correcao'])
+                    ], 
+                    True 
+                )
+
+        if self.sapActivity.getStepTypeId() == 2:
+            self.qgis.loadDefaultFieldValue(
+                loadedLayerIds,
+                [
+                    {
+                        'name': 'subfase_id',
+                        'value': self.sapActivity.getSubphaseId()
+                    }
+                ]
+            )
+            self.qgis.setFieldsReadOnly( loadedLayerIds, ['subfase_id'], True )
+        
+        self.prodToolsSettings.initSaveTimer()
+
+        self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
+        self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
+        self.validateUserOperations.start()
+        self.canvasMonitoring.start()
+
+        self.loadReviewTool()
+        
+        loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
+        loadThemes.run({'themes': self.sapActivity.getThemes()})
+        self.sortLayersOnMolduraGroup()
+
+    def sortLayersOnMolduraGroup(self):
+        utils.iface.mapCanvas().freeze(True)
+        rootNode = core.QgsProject.instance().layerTreeRoot()
+        oldGroup = rootNode.findGroup('MOLDURA_E_INSUMOS')
+        newGroup = rootNode.addGroup('MOLDURA_E_INSUMOS')
+        auxDict = OrderedDict(
+            {
+                core.QgsWkbTypes.PointGeometry: [],
+                core.QgsWkbTypes.LineGeometry: [],
+                core.QgsWkbTypes.PolygonGeometry: [],
+            }
+        )
+        rasterList = []
+        for layerTreeView in oldGroup.children():
+            lyr = layerTreeView.layer()
+            if isinstance(lyr, core.QgsRasterLayer):
+                rasterList.append(layerTreeView)
+                continue
+            if lyr.name() in ("moldura"):
+                idx = -1
+                myClone = layerTreeView.clone()
+                newGroup.insertChildNode(idx, myClone)
+                oldGroup.removeChildNode(layerTreeView)
+                continue
+            auxDict[lyr.geometryType()].append(layerTreeView)
+        for geomType, layerTreeViewList in auxDict.items():
+            for layerTreeView in sorted(layerTreeViewList, key=lambda x: x.layer().name(), reverse=False):
+                myClone = layerTreeView.clone()
+                newGroup.insertChildNode(-1, myClone)
+                oldGroup.removeChildNode(layerTreeView)
+        for rasterNode in sorted(rasterList, key=lambda x: x.layer().name().lower(), reverse=False):
+            myClone = rasterNode.clone()
+            newGroup.insertChildNode(-1, myClone)
+            oldGroup.removeChildNode(rasterNode)
+        rootNode.removeChildNode(oldGroup)
+        utils.iface.mapCanvas().freeze(False)
+    
     def frameLoaded(self, frameQuery):
         layers = self.qgis.getLoadedVectorLayers()
         for l in layers:
@@ -504,11 +719,23 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         messageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
-        self.sap.reAuthUser()
-        self.prodToolsSettings.checkPluginUpdates()
         self.productionTools.close() if self.productionTools else ''
+        
+        user = self.qgis.getProjectVariable('productiontools:user')
+        password = self.qgis.getProjectVariable('productiontools:password')
+        server = self.qgis.getSettingsVariable('productiontools:server')
+        if not(user and password and server):
+            return
+
+        self.sap.setServer(server)
+        if self.prodToolsSettings.checkPluginUpdates():
+            return
+        self.sap.authUser(user, password, server)
+        
+       
         if self.sap.isValidActivity():
             self.prodToolsSettings.initSaveTimer()
+            self.canvasMonitoring.start()
             return
         self.qgis.cleanProject()
         self.showInfoMessageBox(
@@ -521,11 +748,18 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             '''
         )
 
+    def createProjectCallback(self):
+        self.productionTools.close() if self.productionTools else ''
+        self.canvasMonitoring.stop()
+
     def zoomToFeature(self, layerId, layerSchema, layerName):
         self.qgis.zoomToFeature(layerId, layerSchema, layerName)  
     
     def getSapMenus(self):
         return self.sapActivity.getMenus()
+
+    def getDSGToolsQAWorkflows(self):
+        return self.sapActivity.getWorkflows()
 
     def loadMenu(self):
         try:
@@ -534,6 +768,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.acquisitionMenu = customFeatureTool.run( self.getSapMenus() )
         except Exception as e:
             self.showErrorMessageBox( None, 'Erro', str(e) )
+
+    def handleReclassifyMode(self):
+        if not (self.acquisitionMenu and self.acquisitionMenu.menuDock):
+            return
+        self.acquisitionMenu.menuDock.reclassifyCkb.setChecked( not self.acquisitionMenu.menuDock.reclassifyCkb.isChecked() )
     
     def loadReviewTool(self):
         frameQuery = self.sapActivity.getFrameQuery()
@@ -545,19 +784,25 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        result = loadLayersFromPostgis.run({ 
-            'dbName' : self.sapActivity.getDatabaseName(), 
-            'dbHost' : self.sapActivity.getDatabaseServer(), 
-            'layerNames' : ['aux_grid_revisao_a'], 
-            'dbPassword' : self.sapActivity.getDatabasePassword(), 
-            'dbPort' : self.sapActivity.getDatabasePort(), 
-            'dbUser' : self.sapActivity.getDatabaseUserName() 
-        })
-        loadedLayerIds = result['OUTPUT']
-        if loadedLayerIds == []:
-            return
-        gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        candidateLayerList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
+        if candidateLayerList == []:
+            loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+            result = loadLayersFromPostgis.run({ 
+                'dbName' : self.sapActivity.getDatabaseName(), 
+                'dbHost' : self.sapActivity.getDatabaseServer(), 
+                'layerNames' : ['aux_grid_revisao_a'], 
+                'dbPassword' : self.sapActivity.getDatabasePassword(), 
+                'dbPort' : self.sapActivity.getDatabasePort(), 
+                'dbUser' : self.sapActivity.getDatabaseUserName() 
+            })
+            loadedLayerIds = result['OUTPUT']
+            if loadedLayerIds == []:
+                return
+            gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+        else:
+            gridLayer = candidateLayerList[0]
+        self.moveLayerToGroup(gridLayer)
+
         assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
         assingFilterToLayers.run({
             'layers': [
@@ -568,27 +813,36 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 }
             ]
         })
-        self.moveLayerToGroup(loadedLayerIds[0])
+        
         reviewToolBar = self.toolFactoryDsgTools.getTool('ReviewToolBar', self)
         if gridLayer.featureCount() != 0:
             reviewToolBar.run(gridLayer)
             return
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
+        frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
         result = createReviewGrid.run({
-            'input': core.QgsProject.instance().mapLayersByName('moldura')[0],
-            'x_grid_size': 0.01,
-            'y_grid_size': 0.008,
+            'input': frameLyr,
+            'x_grid_size': 0.01 if frameLyr.crs().isGeographic() else 1e3,
+            'y_grid_size': 0.008 if frameLyr.crs().isGeographic() else 800,
             'related_task_id': self.sapActivity.getId()
         })
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
 
-    def moveLayerToGroup(self, loadedLayerId):
-        utils.iface.mapCanvas().freeze(True)
-        rootNode = core.QgsProject.instance().layerTreeRoot()
-        group = rootNode.findGroup('MOLDURA_E_INSUMOS')
-        lyrNode = rootNode.findLayer(loadedLayerId)
-        myClone = lyrNode.clone()
-        group.insertChildNode(0, myClone)
-        rootNode.removeChildNode(lyrNode)
-        utils.iface.mapCanvas().freeze(False)
+    def loadDsgToolsQAToolbox(self):
+        if self.qaToolBox is not None:
+            return
+        self.qaToolBox = self.toolFactoryDsgTools.getTool('QAToolBox', self)
+        self.qaToolBox.run(self.getDSGToolsQAWorkflows())
+
+    def moveLayerToGroup(self, layer, positionToInsert=0):
+        root = core.QgsProject.instance().layerTreeRoot()
+        mylayer = root.findLayer(layer.id())
+        myClone = mylayer.clone()
+        parent = mylayer.parent()
+
+        group = root.findGroup(self.sapActivity.getDatabaseName())
+        group.insertChildNode(positionToInsert, myClone)
+
+        parent.removeChildNode(mylayer)
+

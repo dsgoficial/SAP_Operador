@@ -6,10 +6,10 @@ from PyQt5 import QtCore, uic, QtWidgets
 class Postgis(InputLayer):
 
     def __init__(self,
-            databaseFactory=DatabaseFactory()
+            databaseFactory=None
         ):
         super(Postgis, self).__init__()
-        self.databaseFactory = databaseFactory
+        self.databaseFactory = DatabaseFactory() if databaseFactory is None else databaseFactory
 
     def getUri(self, 
             dbName, 

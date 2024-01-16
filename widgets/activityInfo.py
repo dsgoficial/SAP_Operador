@@ -1,8 +1,11 @@
 from Ferramentas_Producao.widgets.widget import Widget
 from Ferramentas_Producao.interfaces.IActivityInfoWidget import IActivityInfoWidget
-from Ferramentas_Producao.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
 import json
 from PyQt5 import QtWidgets, QtGui, QtCore
+import textwrap
+
+wrapper = textwrap.TextWrapper(width=40)
 
 class ActivityInfo(Widget, IActivityInfoWidget):
 
@@ -15,7 +18,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton.clicked.connect(self.finish)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
         self.reportErrorButton.clicked.connect(self.reportError)
-        self.qgis = QgisCtrl()
+        self.qgis = QgisApi()
 
     def finish(self, b):
         self.endActivityButton.setEnabled(False)
@@ -36,7 +39,9 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def addObservation(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                "<b>{0}</b> {1}".format(title, description), 
+                "<b>{0}</b> <span>{1}</span>".format(title, '<br/>'.join(
+                    wrapper.wrap(text=description)
+                )), 
                 self
             )
         )
@@ -44,7 +49,9 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setDescription(self, title, description):
         self.layout.addWidget(
             QtWidgets.QLabel(
-                '<span style="font-size: 15px;">{0}</span>'.format(description), 
+                '<span style="font-size: 15px;"><span>{0}</span></span>'.format(
+                    '<br/>'.join(wrapper.wrap(text=description)
+                )), 
                 self
             )
         )
@@ -52,7 +59,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def setNotes(self, title, notes):            
         self.layout.addWidget(QtWidgets.QLabel("<b>{0}</b>".format(title), self))
         for note in notes:
-            self.layout.addWidget(QtWidgets.QLabel(note, self))
+            self.layout.addWidget(QtWidgets.QLabel('<span>{0}</span>'.format('<br/>'.join(wrapper.wrap(text=note))), self))
     
     def setRequirements(self, title, requirements):
         if not requirements:
@@ -61,8 +68,10 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.layout.addWidget( QtWidgets.QLabel("<b>{0}</b>".format(title), self) )
         for item in requirements:
             description = item['descricao']
-            cbx = QtWidgets.QCheckBox(description, self)
-            cbx.setCheckState(self.getRequirementState(description))
+            cbx = QtWidgets.QCheckBox('\n'.join(wrapper.wrap(text=description)), self)
+            savedState = self.getRequirementState(description)
+            cbx.setCheckState(savedState)
+            self.updateEndActivityButton(savedState, description)
             cbx.stateChanged.connect( lambda state, description=description: self.updateEndActivityButton(state, description) )
             self.layout.addWidget(cbx)
 

@@ -6,11 +6,11 @@ class Widget(QtWidgets.QWidget, IWidget):
 
     def __init__(self, 
             controller,
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=None,
         ):
         super(Widget, self).__init__()
         self.controller = controller
-        self.messageFactory = messageFactory
+        self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
 
     def setController(self, controller):
         self.controller = controller
@@ -23,6 +23,14 @@ class Widget(QtWidgets.QWidget, IWidget):
         errorMessageBox.show(self, title, message)
 
     def showInfoMessageBox(self, title, message):
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
+        infoMessageBox.show(self, title, message)
+
+    def showError(self, title, message):
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
+        errorMessageBox.show(self, title, message)
+
+    def showInfo(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
 

@@ -1,14 +1,11 @@
-from Ferramentas_Producao.widgets.widget import Widget
-from Ferramentas_Producao.interfaces.IActivityDataWidget import IActivityDataWidget
 import os, sys
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
 
-class SelectItems(Widget, IActivityDataWidget):
+class SelectItems(QtWidgets.QWidget):
 
-    def __init__(self, title, controller=None):
-        super(SelectItems, self).__init__(controller)
+    def __init__(self, parent):
+        super(SelectItems, self).__init__(parent=parent)
         uic.loadUi(self.getUiPath(), self)
-        self.groupBox.setTitle(title)
 
     def getUiPath(self):
         return os.path.join(

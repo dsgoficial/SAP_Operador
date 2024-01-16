@@ -3,6 +3,7 @@ import os
 from PyQt5 import QtWidgets, uic, QtCore
 from Ferramentas_Producao.modules.utils.interfaces.IMessage  import IMessage
 from .errorMessageBox import ErrorMessageBox
+from qgis.utils import iface
 
 class RuleMessageDialog(QtWidgets.QDialog, IMessage):
 
@@ -56,11 +57,15 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
                 )
                 parentItem.addChild(childItem)
                 continue
+            color = self.getRuleColor(rule.split(':')[1].strip())
             for layerName in result[rule]:
                 childItem   = QtWidgets.QTreeWidgetItem(self.treeWidget)
                 layerButton = QtWidgets.QPushButton(layerName)
-                layerButton.clicked.connect(lambda b, name=layerName: qgis.setActiveLayerByName(name))
-                layerButton.setStyleSheet('QPushButton { color: red;}')
+                font = layerButton.font()
+                font.setPointSize(13)
+                layerButton.setFont(font)
+                layerButton.clicked.connect(lambda b, name=layerName, qgis=qgis: self.handleLayerButton(qgis, name))
+                layerButton.setStyleSheet('QPushButton { color: '+color+'; background-color: #000000;}')
                 self.treeWidget.setItemWidget(
                     childItem,
                     1, 
@@ -69,3 +74,15 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
                 parentItem.addChild(childItem)
         self.treeWidget.header().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         super().show()
+
+    def handleLayerButton(self, qgis, name):
+        qgis.setActiveLayerByName(name)
+        iface.actionOpenTable().trigger()
+
+    def getRuleColor(self, rule):
+        colors = {
+            'Atributo incomum': 'yellow',
+            'Atributo incorreto': 'red',
+            'Preencher atributo': 'orange'
+        }
+        return 'red' if not(rule in colors) else colors[rule]

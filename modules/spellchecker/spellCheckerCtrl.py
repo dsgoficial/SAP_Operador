@@ -2,8 +2,8 @@ from Ferramentas_Producao.modules.spellchecker.factories.datasetFactory import D
 
 class SpellCheckerCtrl:
 
-    def __init__(self, dataset, datasetFactory=DatasetFactory()):
-        self.datasetFactory = datasetFactory
+    def __init__(self, dataset, datasetFactory=None):
+        self.datasetFactory = DatasetFactory() if datasetFactory is None else datasetFactory
         self.dataset = DatasetFactory().getDataset(dataset)
 
     def hasWord(self, word):

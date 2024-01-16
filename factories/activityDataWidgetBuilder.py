@@ -16,6 +16,9 @@ class ActivityDataWidgetBuilder(IActivityDataWidgetBuilder):
 
     def enabledMenuButton(self, enable):
         self.obj.enabledMenuButton( enable )
+    
+    def enableWorkflowButton(self, enable):
+        self.obj.enableWorkflowButton(enable)
 
     def getResult(self):
         obj = self.obj

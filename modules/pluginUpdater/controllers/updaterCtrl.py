@@ -1,6 +1,6 @@
 from modules.pluginUpdater.factories.updaterFactory import UpdaterFactory
 from modules.pluginUpdater.factories.guiFactory import GuiFactory
-from modules.qgis.qgisCtrl import QgisCtrl
+from modules.qgis.qgisApi import QgisApi
 import json
 import os
 import subprocess
@@ -11,19 +11,21 @@ from PyQt5 import QtCore, uic, QtWidgets
 class UpdaterCtrl:
     
     def __init__(self, 
-            qgis=QgisCtrl(),
-            updaterFactory=UpdaterFactory(),
-            guiFactory=GuiFactory(),
-            time=QtCore.QTimer()
+            sap,
+            qgis=None,
+            updaterFactory=None,
+            guiFactory=None,
+            time=None,
         ):
-        self.qgis = qgis
-        self.updaterFactory = updaterFactory
-        self.guiFactory = guiFactory
+        self.sap = sap
+        self.qgis = QgisApi() if qgis is None else qgis
+        self.updaterFactory = UpdaterFactory() if updaterFactory is None else updaterFactory
+        self.guiFactory = GuiFactory() if guiFactory is None else guiFactory
         self.menuBar = None
         self.messageDialog = None
         self.updater = self.getUpdater()
         self.qgis.on('ReadProject', self.checkUpdates)
-        self.time = time
+        self.time = QtCore.QTimer() if time is None else time
         self.time.timeout.connect(self.update)
 
     def getUpdater(self):
@@ -57,37 +59,28 @@ class UpdaterCtrl:
 
     def update(self):
         self.updater.update()
+        if self.messageDialog:
+            self.messageDialog.close()
         self.qgis.closeQgis()
 
     def checkUpdates(self):
-        if not self.validSettings():
-            return
-        updates = self.updater.checkUpdates()
-        if not updates:
-            return
-        self.openMessageDialog()
-        self.time.start(1000*20)
-
-    def validSettings(self):
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'settings.json'), 'r') as f:
-            data = json.loads(f.read())
         try:
-            if platform.system().lower() == 'windows':
-                if (
-                data['windows']['repository']
-                ):
-                    return True
-            if platform.system().lower() == 'linux':
-                if (
-                    data['linux']['repository']
-                    and 
-                    data['linux']['login']
-                    and 
-                    data['linux']['password']
-                    and 
-                    data['linux']['domain']
-                ):
-                    return True
+            remotePluginPath = self.getRemotePluginPath()
+            if not remotePluginPath:
+                return False
+            self.updater.setRepositoryPluginsPath(remotePluginPath)
+            updates = self.updater.checkUpdates()
+            if not updates:
+                return False
+            self.openMessageDialog()
+            self.time.start(1000*10)
+            return True
         except Exception as e:
             print(str(e))
             return False
+
+    def getRemotePluginPath(self):
+        res = self.sap.getRemotePluginsPath()
+        if 'dados' in res and 'path' in res['dados'] and res['dados']['path']:
+            return res['dados']['path']
+        return None
