@@ -231,7 +231,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         except Exception as e:
             self.showErrorMessageBox( self.productionTools, 'Erro', str(e) )
             return
-        if stepTypeId == 3 and checkStep:
+        if stepTypeId == 3 and not checkStep:
             self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',
@@ -299,7 +299,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 self.sapActivity.getLayerStyles(),
                 defaultStyle
             )
-            self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+            #self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
         """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
