@@ -168,7 +168,7 @@ class SapHttp(ISapApi):
 
     def incorrectEnding(self, description):
         response = self.httpPostJson(
-            url="{0}/producao/finalizacao_incorreta".format(self.getServer()),
+            url="{0}/distribuicao/finalizacao_incorreta".format(self.getServer()),
             postData={
                 'descricao' : description
             }
