@@ -219,7 +219,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Rode todos os processos de validação do DSGTools e corrija as flags antes de finalizar!'
             )
             return
-        self.qgis.cleanProject()
+        #  self.qgis.cleanProject()
 
         stepTypeId = self.sapActivity.getStepTypeId()
         noteLayers = self.sapActivity.getNoteLayers()
