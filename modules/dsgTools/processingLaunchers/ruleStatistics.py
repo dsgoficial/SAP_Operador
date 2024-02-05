@@ -37,5 +37,7 @@ class RuleStatistics(Processing):
         return { 
             'INPUTLAYERS' : layers,
             'RULEFILE' : '.json', 
-            'RULEDATA' : parameters['rules']
+            'RULEDATA' : parameters['rules'],
+            'FLAGS': 'memory:',
+            'UNUSUAL_ATTRIBUTES': 'memory:',
         }
