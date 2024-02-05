@@ -265,7 +265,18 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getActivityLayerNames(self):
         return [
             item["nome"] for item in self.sapActivity.getLayers()
+        ]
+    
+    def getActivityUsualLayerNames(self):
+        return [
+            item["nome"] for item in self.sapActivity.getLayers()
             if not('camada_incomum' in item and item['camada_incomum'])
+        ]
+    
+    def getActivityUnusualLayerNames(self):
+        return [
+            item["nome"] for item in self.sapActivity.getLayers()
+            if 'camada_incomum' in item and item['camada_incomum']
         ]
 
     def getActivityInputs(self):
