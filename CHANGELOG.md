@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 3.29.5
+## 3.29.6
 
 Correção de bug:
 
@@ -9,3 +9,6 @@ Correção de bug:
 - Corrige bug na integração do FP com o Workflow de Validação do DSGTools: erro python com atividades sequenciais terminadas;
 - Corrige bug camadas incomuns;
 - Ajusta mudança de API do estatísticas de regras do DSGTools;
+- Corrige carregamento de domínios;
+- Corrige bug com carregamento de temas;
+
