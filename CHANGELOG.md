@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 3.29.6
+## 3.29.7
 
 Correção de bug:
 
@@ -11,4 +11,5 @@ Correção de bug:
 - Ajusta mudança de API do estatísticas de regras do DSGTools;
 - Corrige carregamento de domínios;
 - Corrige bug com carregamento de temas;
+- Corrige tamanho de grid para produtos de grandes escalas.
 
