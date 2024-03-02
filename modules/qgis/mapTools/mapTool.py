@@ -1,5 +1,5 @@
-from Ferramentas_Producao.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 from qgis.utils import iface
 from qgis import gui, core
 

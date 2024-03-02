@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.mapTools.convergencePoint import ConvergencePoint
+from SAP_Operador.modules.qgis.mapTools.convergencePoint import ConvergencePoint
 
 class ConvergencePointMapToolSingleton:
 

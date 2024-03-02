@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from Ferramentas_Producao.widgets.loadLocalActivity import LoadLocalActivity
+from SAP_Operador.widgets.loadLocalActivity import LoadLocalActivity
 
 class LoadLocalActivityWidgetBuilder:
 

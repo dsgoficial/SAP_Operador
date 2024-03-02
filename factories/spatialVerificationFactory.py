@@ -1,4 +1,4 @@
-from Ferramentas_Producao.spatialVerification.validateUserOperations import ValidateUserOperations
+from SAP_Operador.spatialVerification.validateUserOperations import ValidateUserOperations
 
 class SpatialVerificationFactory:
 

@@ -40,7 +40,7 @@ from qgis.core import (QgsProcessing,
 import os
 import uuid
 from qgis.utils import iface
-from Ferramentas_Producao.modules.qgis.processingAlgs.processingAlg import ProcessingAlg
+from SAP_Operador.modules.qgis.processingAlgs.processingAlg import ProcessingAlg
 
 class UuidCheckerAlg(ProcessingAlg):
 
@@ -170,7 +170,7 @@ class UuidCheckerAlg(ProcessingAlg):
         return self.tr('Outros')
 
     def groupId(self):
-        return 'FP: Outros'
+        return 'SAP Operador: Outros'
 
     def tr(self, string):
         return QCoreApplication.translate('UuidCheckerAlg', string)

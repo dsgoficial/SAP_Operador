@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Producao.modules.sap.widgets.sapDialog import SapDialog
+from SAP_Operador.modules.sap.widgets.sapDialog import SapDialog
 
 class ReportErrorDialog(SapDialog):
 

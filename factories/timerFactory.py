@@ -1,4 +1,4 @@
-from Ferramentas_Producao.timers.timer import Timer
+from SAP_Operador.timers.timer import Timer
 
 class TimerFactory:
 

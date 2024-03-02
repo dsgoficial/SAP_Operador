@@ -1,5 +1,5 @@
-from Ferramentas_Producao.spatialVerification.operations.addFeatures import AddFeatures
-from Ferramentas_Producao.spatialVerification.operations.changedGeometry import ChangedGeometry
+from SAP_Operador.spatialVerification.operations.addFeatures import AddFeatures
+from SAP_Operador.spatialVerification.operations.changedGeometry import ChangedGeometry
 
 class SpatialOperationFactory:
 

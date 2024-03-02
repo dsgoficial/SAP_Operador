@@ -1,6 +1,6 @@
 
-from Ferramentas_Producao.modules.sap.factories.endActivityDialogSingleton import EndActivityDialogSingleton
-from Ferramentas_Producao.modules.sap.widgets.reportErrorDialog import ReportErrorDialog
+from SAP_Operador.modules.sap.factories.endActivityDialogSingleton import EndActivityDialogSingleton
+from SAP_Operador.modules.sap.widgets.reportErrorDialog import ReportErrorDialog
 
 class GUIFactory:
 

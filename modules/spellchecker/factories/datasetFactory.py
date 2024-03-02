@@ -1,5 +1,5 @@
-from Ferramentas_Producao.modules.spellchecker.datasets.ptBR import PtBR 
-from Ferramentas_Producao.modules.spellchecker.structures.ternarySearchTree import Trie
+from SAP_Operador.modules.spellchecker.datasets.ptBR import PtBR 
+from SAP_Operador.modules.spellchecker.structures.ternarySearchTree import Trie
 
 class DatasetFactory:
 

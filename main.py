@@ -92,7 +92,7 @@ class Main:
     def initGui(self):
         self.qgisCtrl.load()
         self.prodToolsSettingsCtrl.load()
-        self.remoteProdToolsDockCtrl.loadChangeStyleWidget()
+        self.widget = self.remoteProdToolsDockCtrl.loadChangeStyleWidget()
         self.action = self.qgisCtrl.createAction(
             Config.NAME,
             self.getPluginIconPath(),
@@ -119,6 +119,9 @@ class Main:
         self.localProdToolsDockCtrl.unload()
         self.prodToolsSettingsCtrl.unload()
         self.qgisCtrl.removeActionToolBar(self.action)
+        self.qgisCtrl.removeActionToolBar(self.toggle_buffer)
+        self.qgisCtrl.removeActionToolBar(self.toggle_vertices)
+        self.qgisCtrl.removeWidget(self.widget)
         self.qgisCtrl.unload()
         
     def startPlugin(self, b):

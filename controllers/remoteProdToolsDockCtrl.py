@@ -1,10 +1,10 @@
 
 from collections import OrderedDict
-from Ferramentas_Producao.factories.GUIFactory import GUIFactory
-from Ferramentas_Producao.factories.timerFactory import TimerFactory
-from Ferramentas_Producao.factories.spatialVerificationFactory import SpatialVerificationFactory
+from SAP_Operador.factories.GUIFactory import GUIFactory
+from SAP_Operador.factories.timerFactory import TimerFactory
+from SAP_Operador.factories.spatialVerificationFactory import SpatialVerificationFactory
 
-from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
+from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
 from PyQt5 import QtWidgets
 from qgis import core, gui, utils
 
@@ -12,8 +12,8 @@ import os
 import json
 import sip
 
-from Ferramentas_Producao.widgets.pomodoro import Pomodoro
-from Ferramentas_Producao.monitoring.canvas import Canvas
+from SAP_Operador.widgets.pomodoro import Pomodoro
+from SAP_Operador.monitoring.canvas import Canvas
 
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
@@ -87,6 +87,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             )
             self.changeStyleWidget.setPrevAction(self.prevStyleAction)   
             self.prodToolsSettings.addActionMenu(self.prevStyleAction)
+
+        return self.changeStyleWidget
 
     def closedDock(self):
         if not sip.isdeleted(self.changeStyleWidget):

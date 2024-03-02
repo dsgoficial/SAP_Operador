@@ -1,7 +1,7 @@
-from Ferramentas_Producao.modules.qgis.factories.trimLineMapToolSingleton import TrimLineMapToolSingleton
-from Ferramentas_Producao.modules.qgis.factories.expandLineMapToolSingleton import ExpandLineMapToolSingleton
-from Ferramentas_Producao.modules.qgis.factories.convergencePointMapToolSingleton import ConvergencePointMapToolSingleton
-from Ferramentas_Producao.modules.qgis.factories.selectErrorSingleton import SelectErrorSingleton
+from SAP_Operador.modules.qgis.factories.trimLineMapToolSingleton import TrimLineMapToolSingleton
+from SAP_Operador.modules.qgis.factories.expandLineMapToolSingleton import ExpandLineMapToolSingleton
+from SAP_Operador.modules.qgis.factories.convergencePointMapToolSingleton import ConvergencePointMapToolSingleton
+from SAP_Operador.modules.qgis.factories.selectErrorSingleton import SelectErrorSingleton
 
 class MapToolsFactory:
 

@@ -1,7 +1,7 @@
-from Ferramentas_Producao.modules.sap.interfaces.ISapCtrl import ISapCtrl
-from Ferramentas_Producao.modules.sap.factories.sapApiPostgresSingleton import SapApiPostgresSingleton
-from Ferramentas_Producao.modules.sap.factories.dataModelFactory import DataModelFactory
-from Ferramentas_Producao.modules.sap.factories.guiFactory import GUIFactory
+from SAP_Operador.modules.sap.interfaces.ISapCtrl import ISapCtrl
+from SAP_Operador.modules.sap.factories.sapApiPostgresSingleton import SapApiPostgresSingleton
+from SAP_Operador.modules.sap.factories.dataModelFactory import DataModelFactory
+from SAP_Operador.modules.sap.factories.guiFactory import GUIFactory
 
 class SapCtrl(ISapCtrl):
     

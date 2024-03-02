@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from qgis.utils import iface
 from qgis import gui, core
-from Ferramentas_Producao.modules.qgis.mapTools.mapTool import MapTool
+from SAP_Operador.modules.qgis.mapTools.mapTool import MapTool
 
 class ExpandLine(QgsMapToolIdentify, MapTool):
     

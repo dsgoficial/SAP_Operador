@@ -9,7 +9,7 @@ from PyQt5.QtGui import (
     QColor
 )
 
-from Ferramentas_Producao.modules.qgis.mapTools.mapTool import MapTool
+from SAP_Operador.modules.qgis.mapTools.mapTool import MapTool
 
 class ConvergencePoint(QgsMapToolIdentify, MapTool):
     

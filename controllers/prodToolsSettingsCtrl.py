@@ -1,8 +1,8 @@
-from Ferramentas_Producao.factories.GUIFactory import GUIFactory
-from Ferramentas_Producao.factories.timerFactory import TimerFactory
-from Ferramentas_Producao.controllers.prodToolsCtrl import ProdToolsCtrl
-from Ferramentas_Producao.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
-from Ferramentas_Producao.modules.rasterMetadata.controllers.rasterMetadataCtrl import RasterMetadataCtrl
+from SAP_Operador.factories.GUIFactory import GUIFactory
+from SAP_Operador.factories.timerFactory import TimerFactory
+from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
+from SAP_Operador.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
+from SAP_Operador.modules.rasterMetadata.controllers.rasterMetadataCtrl import RasterMetadataCtrl
 import os
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -58,7 +58,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         return self.menuBarActions
 
     def createMenuBar(self):
-        self.menuBarMain = self.qgis.addMenuBar('Ferramentas de Produção')
+        self.menuBarMain = self.qgis.addMenuBar('SAP Operador')
         for action in self.getMenuBarActions():
             self.menuBarMain.addAction(action)
 

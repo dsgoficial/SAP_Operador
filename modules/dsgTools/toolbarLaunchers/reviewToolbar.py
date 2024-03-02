@@ -23,7 +23,7 @@ class ReviewToolBar:
 
     def populateGridLayerWithOutputLayerFeatures(self, gridLayer, outputLayer):
         gridLayer.startEditing()
-        gridLayer.beginEditCommand('FP: populando grid')
+        gridLayer.beginEditCommand('SAP Operador: populando grid')
         gridLayer.addFeatures(
             core.QgsVectorLayerUtils.makeFeaturesCompatible(
                 outputLayer.getFeatures(),

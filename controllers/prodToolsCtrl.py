@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 from PyQt5 import QtCore
 
 class ProdToolsCtrl(QtCore.QObject):

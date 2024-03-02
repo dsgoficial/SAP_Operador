@@ -1,7 +1,7 @@
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
-from Ferramentas_Producao.timers.timer import Timer
-from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
+from SAP_Operador.timers.timer import Timer
+from SAP_Operador.modules.qgis.qgisApi import QgisApi
 from datetime import datetime
 import json
 

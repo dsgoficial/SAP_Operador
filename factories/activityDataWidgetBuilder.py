@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from Ferramentas_Producao.interfaces.IActivityDataWidgetBuilder import IActivityDataWidgetBuilder
-from Ferramentas_Producao.widgets.activityData import ActivityData
+from SAP_Operador.interfaces.IActivityDataWidgetBuilder import IActivityDataWidgetBuilder
+from SAP_Operador.widgets.activityData import ActivityData
 
 class ActivityDataWidgetBuilder(IActivityDataWidgetBuilder):
 

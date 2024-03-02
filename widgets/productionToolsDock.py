@@ -1,5 +1,5 @@
-from Ferramentas_Producao.interfaces.IProductionToolsDock import IProductionToolsDock
-from Ferramentas_Producao.config  import Config
+from SAP_Operador.interfaces.IProductionToolsDock import IProductionToolsDock
+from SAP_Operador.config  import Config
 
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui

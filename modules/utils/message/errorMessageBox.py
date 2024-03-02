@@ -1,6 +1,6 @@
 import os
 from PyQt5 import QtWidgets, uic
-from Ferramentas_Producao.modules.utils.interfaces.IMessage  import IMessage
+from SAP_Operador.modules.utils.interfaces.IMessage  import IMessage
 
 class ErrorMessageBox(IMessage):
 

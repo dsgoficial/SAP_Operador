@@ -60,7 +60,7 @@
   <customwidget>
    <class>SelectItems</class>
    <extends>QWidget</extends>
-   <header>Ferramentas_Producao.widgets.selectItems.h</header>
+   <header>SAP_Operador.widgets.selectItems.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,6 +1,6 @@
-from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
-from Ferramentas_Producao.modules.combinationViewer.models.filters import Filters
-from Ferramentas_Producao.modules.combinationViewer.factories.widgetFactory import WidgetFactory
+from SAP_Operador.modules.qgis.qgisApi import QgisApi
+from SAP_Operador.modules.combinationViewer.models.filters import Filters
+from SAP_Operador.modules.combinationViewer.factories.widgetFactory import WidgetFactory
 
 class CombinationViewerCtrl:
     

@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.processingAlgs.processingProvider import ProcessingProvider
+from SAP_Operador.modules.qgis.processingAlgs.processingProvider import ProcessingProvider
 
 class FPProcessingProviderSingleton:
 

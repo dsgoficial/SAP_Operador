@@ -1,7 +1,7 @@
 import os, sys
 from PyQt5 import QtCore
 from qgis import core, gui
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class Operation( QtCore.QObject ):
 

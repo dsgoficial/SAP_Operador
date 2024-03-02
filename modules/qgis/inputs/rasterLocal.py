@@ -1,8 +1,8 @@
 from PyQt5 import QtCore, uic, QtWidgets
 import os, platform
 from qgis import core, gui, utils
-from Ferramentas_Producao.modules.qgis.inputs.inputRaster import InputRaster
-from Ferramentas_Producao.modules.qgis.widgets.authSMB import AuthSMB
+from SAP_Operador.modules.qgis.inputs.inputRaster import InputRaster
+from SAP_Operador.modules.qgis.widgets.authSMB import AuthSMB
 import copy
 import subprocess
 

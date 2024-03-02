@@ -96,7 +96,7 @@
   <customwidget>
    <class>SelectionWidget</class>
    <extends>QWidget</extends>
-   <header>Ferramentas_Producao.modules.combinationViewer.widgets.selectionWidget.h</header>
+   <header>SAP_Operador.modules.combinationViewer.widgets.selectionWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

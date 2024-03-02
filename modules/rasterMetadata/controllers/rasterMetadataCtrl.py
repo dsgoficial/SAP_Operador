@@ -1,7 +1,7 @@
-from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
-from Ferramentas_Producao.modules.rasterMetadata.factories.widgetFactory import WidgetFactory
-from Ferramentas_Producao.modules.rasterMetadata.models.rasterMetadata import RasterMetadata
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.qgis.qgisApi import QgisApi
+from SAP_Operador.modules.rasterMetadata.factories.widgetFactory import WidgetFactory
+from SAP_Operador.modules.rasterMetadata.models.rasterMetadata import RasterMetadata
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class RasterMetadataCtrl:
     

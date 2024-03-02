@@ -1,7 +1,7 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class ManagementWidget(QtWidgets.QWidget):
     

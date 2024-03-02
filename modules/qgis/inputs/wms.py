@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.inputs.inputLayer import InputLayer
+from SAP_Operador.modules.qgis.inputs.inputLayer import InputLayer
 from qgis import core, gui, utils
 from PyQt5 import QtCore, uic, QtWidgets
 

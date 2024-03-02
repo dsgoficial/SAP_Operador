@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.sap.api.sapPostgres import SapPostgres
+from SAP_Operador.modules.sap.api.sapPostgres import SapPostgres
 
 class SapApiPostgresSingleton:
 

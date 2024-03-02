@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.rasterMetadata.widgets.rasterMetadataDlg import RasterMetadataDlg
+from SAP_Operador.modules.rasterMetadata.widgets.rasterMetadataDlg import RasterMetadataDlg
 
 class WidgetFactory:
 

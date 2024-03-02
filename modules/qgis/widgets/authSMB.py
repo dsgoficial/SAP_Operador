@@ -2,7 +2,7 @@
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from qgis import core, gui
 import sys, os
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 
 class AuthSMB(QtWidgets.QDialog):

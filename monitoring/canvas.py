@@ -1,7 +1,7 @@
 from qgis.PyQt import QtCore
 from qgis.utils import iface
-from Ferramentas_Producao.timers.timer import Timer
-from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
+from SAP_Operador.timers.timer import Timer
+from SAP_Operador.modules.qgis.qgisApi import QgisApi
 from datetime import datetime
 import json
 

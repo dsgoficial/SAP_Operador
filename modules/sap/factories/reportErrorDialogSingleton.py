@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.sap.widgets.reportErrorDialog import ReportErrorDialog
+from SAP_Operador.modules.sap.widgets.reportErrorDialog import ReportErrorDialog
 
 class ReportErrorDialogSingleton:
 

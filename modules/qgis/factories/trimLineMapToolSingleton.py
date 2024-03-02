@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.mapTools.trimLine import TrimLine
+from SAP_Operador.modules.qgis.mapTools.trimLine import TrimLine
 
 class TrimLineMapToolSingleton:
 

@@ -1,8 +1,8 @@
 from PyQt5 import QtCore
 
-from Ferramentas_Producao.interfaces.IProductionToolsBuilder import IProductionToolsBuilder
+from SAP_Operador.interfaces.IProductionToolsBuilder import IProductionToolsBuilder
 
-from Ferramentas_Producao.widgets.productionToolsDock import ProductionToolsDock
+from SAP_Operador.widgets.productionToolsDock import ProductionToolsDock
 
 class ProductionToolsBuilder(IProductionToolsBuilder):
 

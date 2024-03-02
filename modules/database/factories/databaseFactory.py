@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.database.postgres import Postgres
+from SAP_Operador.modules.database.postgres import Postgres
 
 
 class DatabaseFactory:

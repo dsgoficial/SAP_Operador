@@ -1,4 +1,4 @@
-from Ferramentas_Producao.factories.loginSingleton  import LoginSingleton
+from SAP_Operador.factories.loginSingleton  import LoginSingleton
 
 class LoginCtrl:
     

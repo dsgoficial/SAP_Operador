@@ -1,11 +1,12 @@
-from Ferramentas_Producao.modules.qgis.interfaces.IQgisApi import IQgisApi
-from Ferramentas_Producao.modules.qgis.factories.inputDataFactory import InputDataFactory
-from Ferramentas_Producao.modules.qgis.factories.processingProviderFactory import ProcessingProviderFactory
-from Ferramentas_Producao.modules.qgis.factories.layerActionsFactory import LayerActionsFactory
-from Ferramentas_Producao.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
-from Ferramentas_Producao.modules.qgis.factories.mapToolsFactory import MapToolsFactory
+from SAP_Operador.modules.qgis.interfaces.IQgisApi import IQgisApi
+from SAP_Operador.modules.qgis.factories.inputDataFactory import InputDataFactory
+from SAP_Operador.modules.qgis.factories.processingProviderFactory import ProcessingProviderFactory
+from SAP_Operador.modules.qgis.factories.layerActionsFactory import LayerActionsFactory
+from SAP_Operador.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
+from SAP_Operador.modules.qgis.factories.mapToolsFactory import MapToolsFactory
 
 from qgis.PyQt.QtXml import QDomDocument
+from qgis.PyQt.QtWidgets import QToolBar
 from PyQt5 import QtCore, QtWidgets, QtGui 
 from qgis import gui, core
 import base64, os, processing
@@ -37,14 +38,25 @@ class QgisApi(IQgisApi):
         self.customToolBar = None
     
     def load(self):
-        self.customToolBar = iface.addToolBar('FPTools')
+        for toolbar in iface.mainWindow().findChildren(QToolBar):
+            if toolbar.objectName() == "SAP":
+                self.customToolBar = toolbar
+                break
+
+        if not self.customToolBar:
+            self.customToolBar = QToolBar('SAP', iface.mainWindow())
+            self.customToolBar.setObjectName('SAP')
+            iface.addToolBar(self.customToolBar)
 
     def unload(self):
+        if not self.customToolBar.actions():
+            iface.mainWindow().removeToolBar(self.customToolBar)
+            self.customToolBar.deleteLater()
         self.unloadProcessingProvider()
         del self.customToolBar
 
     def unloadProcessingProvider(self):    
-        fpProcProvider = self.processingProviderFactory.createProvider('fp')
+        fpProcProvider = self.processingProviderFactory.createProvider('SAP_Operador')
         core.QgsApplication.processingRegistry().removeProvider(fpProcProvider)
 
     def addWidgetToolBar(self, widget):
@@ -55,6 +67,14 @@ class QgisApi(IQgisApi):
 
     def removeActionToolBar(self, action):
         self.customToolBar.removeAction(action)
+
+    def removeWidget(self, widget):
+        for action in self.customToolBar.actions():
+            # Check if the action is a QWidgetAction and its defaultWidget is your widget
+            if isinstance(action, QtWidgets.QWidgetAction) and action.defaultWidget() == widget:
+                self.customToolBar.removeAction(action)
+                widget.deleteLater()
+                break
     
     def setProjectVariable(self, key, value, encrypt=True):
         if not encrypt:
@@ -385,7 +405,7 @@ class QgisApi(IQgisApi):
 
     def loadProcessingProvider(self, iconPath):
         pass
-        """ fpProcProvider = self.processingProviderFactory.createProvider('fp')
+        """ fpProcProvider = self.processingProviderFactory.createProvider('SAP_Operador')
         fpProcProvider.setIconPath(iconPath)
         core.QgsApplication.processingRegistry().addProvider(fpProcProvider) """
 
@@ -584,7 +604,7 @@ class QgisApi(IQgisApi):
         )
 
     def createProgressMessageBar(self, title):
-        progressMessageBar = iface.messageBar().createMessage('Ferramentas de Produção', title)
+        progressMessageBar = iface.messageBar().createMessage('SAP Operador', title)
         progress = QtWidgets.QProgressBar()
         progress.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         progressMessageBar.layout().addWidget(progress)

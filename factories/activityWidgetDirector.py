@@ -1,4 +1,4 @@
-from Ferramentas_Producao.widgets.selectItems import SelectItems
+from SAP_Operador.widgets.selectItems import SelectItems
 
 class ActivityWidgetDirector:
 

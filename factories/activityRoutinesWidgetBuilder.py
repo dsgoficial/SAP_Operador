@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from Ferramentas_Producao.interfaces.IActivityRoutinesWidgetBuilder import IActivityRoutinesWidgetBuilder
-from Ferramentas_Producao.widgets.activityRoutines import ActivityRoutines
+from SAP_Operador.interfaces.IActivityRoutinesWidgetBuilder import IActivityRoutinesWidgetBuilder
+from SAP_Operador.widgets.activityRoutines import ActivityRoutines
 
 class ActivityRoutinesWidgetBuilder(IActivityRoutinesWidgetBuilder):
 

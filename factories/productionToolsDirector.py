@@ -1,5 +1,5 @@
-from Ferramentas_Producao.factories.activityWidgetFactory import ActivityWidgetFactory
-from Ferramentas_Producao.widgets.localController import LocalController
+from SAP_Operador.factories.activityWidgetFactory import ActivityWidgetFactory
+from SAP_Operador.widgets.localController import LocalController
 
 class ProductionToolsDirector:
 

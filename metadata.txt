@@ -7,9 +7,9 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Ferramentas de Produção
+name=SAP Operador
 qgisMinimumVersion=3.10
-description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
+description=Ferramentas de comunicação com o Sistema de Apoio à Produção.
 version=3.29.3
 author=Brazilian Army Geographic Service
 

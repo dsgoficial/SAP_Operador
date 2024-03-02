@@ -1,7 +1,7 @@
 from qgis.utils import iface
 from qgis import gui, core
 
-from Ferramentas_Producao.modules.qgis.interfaces.IMapFunction import IMapFunction
+from SAP_Operador.modules.qgis.interfaces.IMapFunction import IMapFunction
 
 class MapFunction(IMapFunction):
 

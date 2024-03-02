@@ -1,10 +1,10 @@
-from Ferramentas_Producao.modules.qgis.mapFunctions.smoothLine import SmoothLine
-from Ferramentas_Producao.modules.qgis.mapFunctions.closeLine import CloseLine
-from Ferramentas_Producao.modules.qgis.mapFunctions.trimLine import TrimLine
-from Ferramentas_Producao.modules.qgis.mapFunctions.expandLine import ExpandLine
-from Ferramentas_Producao.modules.qgis.mapFunctions.createNewMapView import CreateNewMapView
-from Ferramentas_Producao.modules.qgis.mapFunctions.convergencePoint import ConvergencePoint
-from Ferramentas_Producao.modules.qgis.mapFunctions.selectRaster import SelectRaster
+from SAP_Operador.modules.qgis.mapFunctions.smoothLine import SmoothLine
+from SAP_Operador.modules.qgis.mapFunctions.closeLine import CloseLine
+from SAP_Operador.modules.qgis.mapFunctions.trimLine import TrimLine
+from SAP_Operador.modules.qgis.mapFunctions.expandLine import ExpandLine
+from SAP_Operador.modules.qgis.mapFunctions.createNewMapView import CreateNewMapView
+from SAP_Operador.modules.qgis.mapFunctions.convergencePoint import ConvergencePoint
+from SAP_Operador.modules.qgis.mapFunctions.selectRaster import SelectRaster
 
 class MapFunctionsFactory:
 

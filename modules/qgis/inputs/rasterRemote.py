@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.inputs.inputRaster import InputRaster
+from SAP_Operador.modules.qgis.inputs.inputRaster import InputRaster
 from qgis import core, gui, utils
 from PyQt5 import QtCore, uic, QtWidgets
 import platform

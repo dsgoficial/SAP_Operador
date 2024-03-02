@@ -1,6 +1,6 @@
-from Ferramentas_Producao.widgets.widget import Widget
-from Ferramentas_Producao.interfaces.IActivityInfoWidget import IActivityInfoWidget
-from Ferramentas_Producao.modules.qgis.qgisApi import QgisApi
+from SAP_Operador.widgets.widget import Widget
+from SAP_Operador.interfaces.IActivityInfoWidget import IActivityInfoWidget
+from SAP_Operador.modules.qgis.qgisApi import QgisApi
 import json
 from PyQt5 import QtWidgets, QtGui, QtCore
 import textwrap

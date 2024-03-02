@@ -1,7 +1,7 @@
 from qgis.utils import iface
 from qgis import gui, core
 import processing
-from Ferramentas_Producao.modules.qgis.mapFunctions.mapFunction import MapFunction
+from SAP_Operador.modules.qgis.mapFunctions.mapFunction import MapFunction
 
 class TrimLine(MapFunction):
 

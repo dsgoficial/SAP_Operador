@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.mapTools.selectError import SelectError
+from SAP_Operador.modules.qgis.mapTools.selectError import SelectError
 
 class SelectErrorSingleton:
 

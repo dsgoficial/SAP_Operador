@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.dsgTools.interfaces.IProcessing import IProcessing
+from SAP_Operador.modules.dsgTools.interfaces.IProcessing import IProcessing
 from qgis import core, gui
 from qgis.utils import iface
 import processing

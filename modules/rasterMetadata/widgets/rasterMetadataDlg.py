@@ -1,7 +1,7 @@
 
 import os, sys, copy, json
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class RasterMetadataDlg(QtWidgets.QDialog):
     def __init__(self, 

@@ -1,8 +1,8 @@
-from Ferramentas_Producao.modules.utils.message.htmlMessageDialog  import HtmlMessageDialog
-from Ferramentas_Producao.modules.utils.message.infoMessageBox  import InfoMessageBox
-from Ferramentas_Producao.modules.utils.message.errorMessageBox  import ErrorMessageBox
-from Ferramentas_Producao.modules.utils.message.questionMessageBox  import QuestionMessageBox
-from Ferramentas_Producao.modules.utils.message.ruleMessageDialog  import RuleMessageDialog
+from SAP_Operador.modules.utils.message.htmlMessageDialog  import HtmlMessageDialog
+from SAP_Operador.modules.utils.message.infoMessageBox  import InfoMessageBox
+from SAP_Operador.modules.utils.message.errorMessageBox  import ErrorMessageBox
+from SAP_Operador.modules.utils.message.questionMessageBox  import QuestionMessageBox
+from SAP_Operador.modules.utils.message.ruleMessageDialog  import RuleMessageDialog
 
 class MessageFactory:
 

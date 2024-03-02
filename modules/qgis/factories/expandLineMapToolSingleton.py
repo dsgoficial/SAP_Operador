@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.mapTools.expandLine import ExpandLine
+from SAP_Operador.modules.qgis.mapTools.expandLine import ExpandLine
 
 class ExpandLineMapToolSingleton:
 

@@ -1,11 +1,11 @@
-from Ferramentas_Producao.modules.qgis.inputs.rasterRemote import RasterRemote
-from Ferramentas_Producao.modules.qgis.inputs.rasterLocal import RasterLocal
-from Ferramentas_Producao.modules.qgis.inputs.postgis import Postgis
-from Ferramentas_Producao.modules.qgis.inputs.message import Message
-from Ferramentas_Producao.modules.qgis.inputs.browserUrl import BrowserUrl
-from Ferramentas_Producao.modules.qgis.inputs.wms import Wms
-from Ferramentas_Producao.modules.qgis.inputs.wfs import Wfs
-from Ferramentas_Producao.modules.qgis.inputs.virtualLayer import VirtualLayer
+from SAP_Operador.modules.qgis.inputs.rasterRemote import RasterRemote
+from SAP_Operador.modules.qgis.inputs.rasterLocal import RasterLocal
+from SAP_Operador.modules.qgis.inputs.postgis import Postgis
+from SAP_Operador.modules.qgis.inputs.message import Message
+from SAP_Operador.modules.qgis.inputs.browserUrl import BrowserUrl
+from SAP_Operador.modules.qgis.inputs.wms import Wms
+from SAP_Operador.modules.qgis.inputs.wfs import Wfs
+from SAP_Operador.modules.qgis.inputs.virtualLayer import VirtualLayer
 
 class InputDataFactory:
 

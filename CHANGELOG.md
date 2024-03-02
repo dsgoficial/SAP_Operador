@@ -6,4 +6,4 @@ Correção de bug:
 
 - Corrige bug de limpar o projeto ao clicar em Finalizar atividade mesmo sem confirmar os dados de login;
 - Corrige bug da construção do grid de revisão ao se carregar uma nova unidade de trabalho quando a moldura está em UTM;
-- Corrige bug na integração do FP com o Workflow de Validação do DSGTools: erro python com atividades sequenciais terminadas;
+- Corrige bug na integração do SAP Operador com o Workflow de Validação do DSGTools: erro python com atividades sequenciais terminadas;

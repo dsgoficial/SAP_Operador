@@ -1,9 +1,9 @@
-from Ferramentas_Producao.interfaces.IGUIFactory import IGUIFactory
-from Ferramentas_Producao.factories.productionToolsDirector import ProductionToolsDirector
-from Ferramentas_Producao.factories.productionToolsBuilder import ProductionToolsBuilder
-from Ferramentas_Producao.widgets.routinesDialog import RoutinesDialog
-from Ferramentas_Producao.widgets.activityDataSummary import ActivityDataSummary
-from Ferramentas_Producao.factories.changeStylesSingleton import ChangeStylesSingleton
+from SAP_Operador.interfaces.IGUIFactory import IGUIFactory
+from SAP_Operador.factories.productionToolsDirector import ProductionToolsDirector
+from SAP_Operador.factories.productionToolsBuilder import ProductionToolsBuilder
+from SAP_Operador.widgets.routinesDialog import RoutinesDialog
+from SAP_Operador.widgets.activityDataSummary import ActivityDataSummary
+from SAP_Operador.factories.changeStylesSingleton import ChangeStylesSingleton
 
 class GUIFactory(IGUIFactory):
     

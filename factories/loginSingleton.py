@@ -1,4 +1,4 @@
-from Ferramentas_Producao.widgets.login  import Login
+from SAP_Operador.widgets.login  import Login
 
 class LoginSingleton:
 

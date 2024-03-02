@@ -211,7 +211,7 @@ class Postgres:
             contrains = self.getLayerContrainsCodes(layerName)
             pgCursor.execute(
                 "SELECT code, code_name FROM {0}.{1} {2};".format(
-                    'dominios', 
+                    'domains', 
                     domains[fieldName], 
                     'WHERE code IN ({0})'.format(contrains[fieldName]) if fieldName in contrains else ''
                 )

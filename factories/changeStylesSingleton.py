@@ -1,4 +1,4 @@
-from Ferramentas_Producao.widgets.changeStyles  import ChangeStyles
+from SAP_Operador.widgets.changeStyles  import ChangeStyles
 
 class ChangeStylesSingleton:
 

@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.combinationViewer.widgets.combinationViewerDlg import CombinationViewerDlg
+from SAP_Operador.modules.combinationViewer.widgets.combinationViewerDlg import CombinationViewerDlg
 
 class WidgetFactory:
 

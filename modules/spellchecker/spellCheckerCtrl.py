@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.spellchecker.factories.datasetFactory import DatasetFactory 
+from SAP_Operador.modules.spellchecker.factories.datasetFactory import DatasetFactory 
 
 class SpellCheckerCtrl:
 

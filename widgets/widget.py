@@ -1,6 +1,6 @@
-from Ferramentas_Producao.interfaces.IWidget import IWidget
+from SAP_Operador.interfaces.IWidget import IWidget
 from PyQt5 import QtWidgets, QtGui, QtCore
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class Widget(QtWidgets.QWidget, IWidget):
 

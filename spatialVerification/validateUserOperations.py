@@ -1,7 +1,7 @@
 import os, sys
 from PyQt5 import QtCore
 from qgis import core, gui
-from Ferramentas_Producao.factories.spatialOperationFactory import SpatialOperationFactory
+from SAP_Operador.factories.spatialOperationFactory import SpatialOperationFactory
 
 class ValidateUserOperations(QtCore.QObject):
     

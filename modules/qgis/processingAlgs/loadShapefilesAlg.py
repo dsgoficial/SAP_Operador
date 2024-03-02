@@ -40,7 +40,7 @@ from qgis.core import (QgsProcessing,
                        QgsVectorLayer)
 import os
 from qgis.utils import iface
-from Ferramentas_Producao.modules.qgis.processingAlgs.processingAlg import ProcessingAlg
+from SAP_Operador.modules.qgis.processingAlgs.processingAlg import ProcessingAlg
 
 class LoadShapefilesAlg(ProcessingAlg):
 
@@ -128,7 +128,7 @@ class LoadShapefilesAlg(ProcessingAlg):
         return self.tr('Outros')
 
     def groupId(self):
-        return 'FP: Outros'
+        return 'SAP Operador: Outros'
 
     def tr(self, string):
         return QCoreApplication.translate('LoadShapefilesAlg', string)

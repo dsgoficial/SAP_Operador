@@ -1,7 +1,7 @@
 
 import os
 from PyQt5 import QtWidgets, uic, QtCore
-from Ferramentas_Producao.modules.utils.interfaces.IMessage  import IMessage
+from SAP_Operador.modules.utils.interfaces.IMessage  import IMessage
 from .errorMessageBox import ErrorMessageBox
 from qgis.utils import iface
 

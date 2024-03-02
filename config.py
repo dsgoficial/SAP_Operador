@@ -1,5 +1,5 @@
 
 class Config:
 
-    NAME = 'Ferramentas de Produção'
+    NAME = 'SAP Operador'
     VERSION = '3.29.3'

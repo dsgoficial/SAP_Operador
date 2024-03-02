@@ -1,7 +1,7 @@
 from qgis import gui, core
 from qgis.utils import iface
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Producao.modules.qgis.mapFunctions.mapFunction import MapFunction
+from SAP_Operador.modules.qgis.mapFunctions.mapFunction import MapFunction
 
 class SelectRaster(MapFunction):
 

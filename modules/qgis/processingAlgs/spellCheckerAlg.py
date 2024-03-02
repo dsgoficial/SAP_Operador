@@ -40,8 +40,8 @@ from qgis.core import (QgsProcessing,
 import os
 from qgis import core
 from qgis.utils import iface
-from Ferramentas_Producao.modules.qgis.processingAlgs.processingAlg import ProcessingAlg
-from Ferramentas_Producao.modules.spellchecker.spellCheckerCtrl import SpellCheckerCtrl
+from SAP_Operador.modules.qgis.processingAlgs.processingAlg import ProcessingAlg
+from SAP_Operador.modules.spellchecker.spellCheckerCtrl import SpellCheckerCtrl
 import re
 
 class SpellCheckerAlg(ProcessingAlg):
@@ -154,7 +154,7 @@ class SpellCheckerAlg(ProcessingAlg):
         return self.tr('Outros')
 
     def groupId(self):
-        return 'FP: Outros'
+        return 'SAP Operador: Outros'
 
     def tr(self, string):
         return QCoreApplication.translate('SpellCheckerAlg', string)

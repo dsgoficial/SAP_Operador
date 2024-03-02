@@ -1,5 +1,5 @@
-from Ferramentas_Producao.widgets.widget import Widget
-from Ferramentas_Producao.interfaces.IActivityDataWidget import IActivityDataWidget
+from SAP_Operador.widgets.widget import Widget
+from SAP_Operador.interfaces.IActivityDataWidget import IActivityDataWidget
 
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore, uic

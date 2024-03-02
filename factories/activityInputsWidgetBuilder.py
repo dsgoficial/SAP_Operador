@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from Ferramentas_Producao.interfaces.IActivityInputsWidgetBuilder import IActivityInputsWidgetBuilder
-from Ferramentas_Producao.widgets.activityInputs import ActivityInputs
+from SAP_Operador.interfaces.IActivityInputsWidgetBuilder import IActivityInputsWidgetBuilder
+from SAP_Operador.widgets.activityInputs import ActivityInputs
 
 class ActivityInputsWidgetBuilder(IActivityInputsWidgetBuilder):
 

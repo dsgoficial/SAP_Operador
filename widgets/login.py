@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Producao.config import Config
-from Ferramentas_Producao.modules.sap.interfaces.ILogin  import ILogin
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.config import Config
+from SAP_Operador.modules.sap.interfaces.ILogin  import ILogin
+from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class Login(QtWidgets.QDialog, ILogin):
 

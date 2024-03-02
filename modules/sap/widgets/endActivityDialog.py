@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 import os
-from Ferramentas_Producao.modules.sap.widgets.sapDialog import SapDialog
+from SAP_Operador.modules.sap.widgets.sapDialog import SapDialog
 
 class EndActivityDialog(SapDialog):
 

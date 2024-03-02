@@ -1,4 +1,4 @@
-from Ferramentas_Producao.widgets.widget import Widget
+from SAP_Operador.widgets.widget import Widget
 
 import os, sip
 from PyQt5 import QtWidgets, QtGui, QtCore, uic

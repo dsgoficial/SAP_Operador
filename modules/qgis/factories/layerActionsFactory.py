@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.qgis.layerActions.flashFeature import FlashFeature
+from SAP_Operador.modules.qgis.layerActions.flashFeature import FlashFeature
 
 class LayerActionsFactory:
 

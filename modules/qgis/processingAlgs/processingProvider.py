@@ -4,9 +4,9 @@ from processing.core.ProcessingConfig import ProcessingConfig, Setting
 from qgis.core import QgsApplication, QgsProcessingProvider
 from qgis.PyQt.QtGui import QIcon
 
-from Ferramentas_Producao.modules.qgis.processingAlgs.uuidCheckerAlg import UuidCheckerAlg
-from Ferramentas_Producao.modules.qgis.processingAlgs.spellCheckerAlg import SpellCheckerAlg
-from Ferramentas_Producao.modules.qgis.processingAlgs.loadShapefilesAlg import LoadShapefilesAlg
+from SAP_Operador.modules.qgis.processingAlgs.uuidCheckerAlg import UuidCheckerAlg
+from SAP_Operador.modules.qgis.processingAlgs.spellCheckerAlg import SpellCheckerAlg
+from SAP_Operador.modules.qgis.processingAlgs.loadShapefilesAlg import LoadShapefilesAlg
 
 class ProcessingProvider(QgsProcessingProvider):
 
@@ -23,26 +23,26 @@ class ProcessingProvider(QgsProcessingProvider):
 
     def load(self):
         ProcessingConfig.settingIcons[self.name()] = self.icon()
-        ProcessingConfig.addSetting(Setting(self.name(), 'ACTIVATE_FP',
+        ProcessingConfig.addSetting(Setting(self.name(), 'ACTIVATE_SAP_Operador',
                                             'Activate', True))
         ProcessingConfig.readSettings()
         self.refreshAlgorithms()
         return True
 
     def unload(self):
-        ProcessingConfig.removeSetting('ACTIVATE_FP')
+        ProcessingConfig.removeSetting('ACTIVATE_SAP_Operador')
 
     def isActive(self):
-        return ProcessingConfig.getSetting('ACTIVATE_FP')
+        return ProcessingConfig.getSetting('ACTIVATE_SAP_Operador')
 
     def setActive(self, active):
-        ProcessingConfig.setSettingValue('ACTIVATE_FP', active)
+        ProcessingConfig.setSettingValue('ACTIVATE_SAP_Operador', active)
 
     def id(self):
-        return 'fp'
+        return 'SAP Operador'
 
     def name(self):
-        return 'Ferramentas de Produção'
+        return 'SAP Operador'
 
     def setIconPath(self, iconPath):
         self.iconPath = iconPath

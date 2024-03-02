@@ -111,7 +111,7 @@ class RasterMetadata:
                     if fieldIdx < 0:
                         continue
                     feature[attribute['nome']] = attribute['valor']
-                layer.beginEditCommand("FP: Guarda metadado da imagem na camada")
+                layer.beginEditCommand("SAP Operador: Guarda metadado da imagem na camada")
                 layer.updateFeature(feature)
                 layer.endEditCommand()
                 self.getController().canvasRefresh() 
