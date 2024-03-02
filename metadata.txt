@@ -9,8 +9,8 @@
 [general]
 name=SAP Operador
 qgisMinimumVersion=3.10
-description=Ferramentas de comunicação com o Sistema de Apoio à Produção.
-version=3.29.3
+description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
+version=3.29.7
 author=Brazilian Army Geographic Service
 
 # Tags are comma separated with spaces allowed

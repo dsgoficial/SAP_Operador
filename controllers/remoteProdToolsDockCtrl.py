@@ -267,7 +267,18 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def getActivityLayerNames(self):
         return [
             item["nome"] for item in self.sapActivity.getLayers()
+        ]
+    
+    def getActivityUsualLayerNames(self):
+        return [
+            item["nome"] for item in self.sapActivity.getLayers()
             if not('camada_incomum' in item and item['camada_incomum'])
+        ]
+    
+    def getActivityUnusualLayerNames(self):
+        return [
+            item["nome"] for item in self.sapActivity.getLayers()
+            if 'camada_incomum' in item and item['camada_incomum']
         ]
 
     def getActivityInputs(self):
@@ -406,7 +417,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadReviewTool()
         
         loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
-        loadThemes.run({'themes': self.sapActivity.getThemes()})
+        for theme in self.sapActivity.getThemes():
+            loadThemes.run({'themes': theme['definicao_tema']})
         self.sortLayersOnMolduraGroup()
 
     def loadActivityLayersByNames(self, names):
@@ -821,13 +833,23 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             reviewToolBar.run(gridLayer)
             return
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
+        scale = self.sapActivity.getScale()
         frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
-        result = createReviewGrid.run({
-            'input': frameLyr,
-            'x_grid_size': 0.01 if frameLyr.crs().isGeographic() else 1e3,
-            'y_grid_size': 0.008 if frameLyr.crs().isGeographic() else 800,
-            'related_task_id': self.sapActivity.getId()
-        })
+        if (int(scale.split(':')[-1])) <= 10000:
+            param = {
+                'input': frameLyr,
+                'x_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2),
+                'y_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2),
+                'related_task_id': self.sapActivity.getId()
+            }
+        else:
+            param = {
+                'input': frameLyr,
+                'x_grid_size': (0.01) if frameLyr.crs().isGeographic() else (1e3),
+                'y_grid_size': (0.008) if frameLyr.crs().isGeographic() else (800),
+                'related_task_id': self.sapActivity.getId()
+            }
+        result = createReviewGrid.run(param)
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
 

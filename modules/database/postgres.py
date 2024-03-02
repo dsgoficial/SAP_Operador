@@ -33,9 +33,9 @@ class Postgres:
         domains = self.getLayerDomains(layerName, layerSchema)
         for field in fields:
             if not(
-                    (field in domains) 
+                    currentDomain := next(filter(lambda d: d['field'] == field, domains) , None)
                     and 
-                    (domains[field] in tablesWithFilter)
+                    (currentDomain['field'] in tablesWithFilter)
                 ):
                 continue
             return self.getTableValues('dominio', field)
@@ -197,30 +197,33 @@ class Postgres:
         pgCursor.close()
         if not query:
             return {}
-        return {
-            item[0].split('(')[1].split(')')[0].replace(' ', '') :
-            item[0].split('(')[1].split('.')[1]
+        return [
+            {
+                'field': item[0].split('(')[1].split(')')[0].replace(' ', ''),
+                'map' : item[0].split('(')[1].split('.')[1],
+                'schema': item[0].split('REFERENCES ')[1].split('.')[0]        
+            }
             for item in query
-        }
+        ]
 
     def getAttributeValueMap(self, layerName, layerSchema):        
         domains = self.getLayerDomains(layerName, layerSchema)
         fieldsValueMap = []        
         pgCursor = self.getConnection().cursor()
-        for fieldName in domains:
+        for domain in domains:
             contrains = self.getLayerContrainsCodes(layerName)
             pgCursor.execute(
                 "SELECT code, code_name FROM {0}.{1} {2};".format(
-                    'domains', 
-                    domains[fieldName], 
-                    'WHERE code IN ({0})'.format(contrains[fieldName]) if fieldName in contrains else ''
+                    domain['schema'], 
+                    domain['map'], 
+                    'WHERE code IN ({0})'.format(contrains[domain['field']]) if domain['field'] in contrains else ''
                 )
             )
             query = pgCursor.fetchall()
             if not query:
                 continue
             fieldsValueMap.append({
-                'attribute': fieldName,
+                'attribute': domain['field'],
                 'valueMap': {v : k for k, v in dict(query).items()}
             })
         pgCursor.close()

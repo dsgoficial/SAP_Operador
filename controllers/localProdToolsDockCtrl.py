@@ -407,7 +407,8 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         self.loadReviewTool()
         
         loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
-        loadThemes.run({'themes': self.sapActivity.getThemes()})
+        for theme in self.sapActivity.getThemes():
+            loadThemes.run({'themes': theme['definicao_tema']})
         self.sortLayersOnMolduraGroup()
 
     def sortLayersOnMolduraGroup(self):

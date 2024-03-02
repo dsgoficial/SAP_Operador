@@ -39,7 +39,7 @@ class ActivityData(Widget, IActivityDataWidget):
     def on_summaryBtn_clicked(self):
         activityDataModel = self.sap.getActivityDataModel()
         self.dlg = RemoteLoadLayers()
-        self.dlg.loadLayers(activityDataModel.getLayers())
+        self.dlg.loadLayers([l for l in activityDataModel.getLayers() if 'camada_incomum' in l and l['camada_incomum']])
         self.dlg.load.connect(self.getController().loadActivityLayersByNames)
         self.dlg.show()
         

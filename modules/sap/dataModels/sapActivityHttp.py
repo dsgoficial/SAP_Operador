@@ -15,7 +15,13 @@ class SapActivityHttp:
         return self.getData()['dados']['atividade']['denominador_escala']
 
     def getThemes(self):
-        return self.getData()['dados']['atividade']['temas']
+        themes = self.getData()['dados']['atividade']['temas']
+        fixThemes = []
+        for theme in themes:
+            fixedTheme = dict(theme)
+            fixedTheme['definicao_tema'] = json.loads(theme['definicao_tema'])
+            fixThemes.append(fixedTheme)
+        return fixThemes
 
     def getNotes(self):
         notes = []
