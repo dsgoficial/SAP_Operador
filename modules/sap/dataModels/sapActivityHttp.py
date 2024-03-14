@@ -321,16 +321,19 @@ class SapActivityHttp:
         return self.getData()['dados']['atividade']['fme']
     
     def getQgisModels(self):
-        return [
+        qgis_models = [
             {
-                'ordem' : item['ordem'],
-                'description' : item['descricao'],
-                'routineType' : 'qgisModel',
-                'model_xml' : item['model_xml'],
-                'parametros' : item['parametros']
+                'ordem': item['ordem'],
+                'description': item['descricao'],
+                'routineType': 'qgisModel',
+                'model_xml': item['model_xml'],
+                'parametros': item['parametros']
             }
-            for item in self.getData()['dados']['atividade']['models_qgis'] 
+            for item in self.getData()['dados']['atividade']['models_qgis']
         ]
+        
+        sorted_models = sorted(qgis_models, key=lambda x: x['ordem'])
+        return sorted_models
 
     def getRuleRoutines(self):
         rules = self.getRules()
