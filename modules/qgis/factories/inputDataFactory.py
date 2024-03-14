@@ -6,6 +6,7 @@ from SAP_Operador.modules.qgis.inputs.browserUrl import BrowserUrl
 from SAP_Operador.modules.qgis.inputs.wms import Wms
 from SAP_Operador.modules.qgis.inputs.wfs import Wfs
 from SAP_Operador.modules.qgis.inputs.virtualLayer import VirtualLayer
+from SAP_Operador.modules.qgis.inputs.arcGisMapServer import ArcGisMapServer
 
 class InputDataFactory:
 
@@ -19,6 +20,7 @@ class InputDataFactory:
             6: Wms,
             7: Wfs,
             8: Wms,
+            10: ArcGisMapServer,
             100: VirtualLayer
         }
         if not(typeNumber in types):

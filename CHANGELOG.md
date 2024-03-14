@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## 3.29.7
+## 3.29.8
+
+Melhorias:
+
+- Altera o comportamento default da configuração da ferramenta de revisão do dsgtools para Pan to Next;
 
 Correção de bug:
 

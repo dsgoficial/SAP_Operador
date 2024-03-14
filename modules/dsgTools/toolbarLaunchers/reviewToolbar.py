@@ -17,7 +17,8 @@ class ReviewToolBar:
         reviewToolBar.setState(
             layer=gridLayer,
             rankFieldName='rank',
-            visitedFieldName='visited'
+            visitedFieldName='visited',
+            zoomType=1,
         )
         return reviewToolBar
 
