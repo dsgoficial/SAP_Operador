@@ -141,8 +141,9 @@ class Main:
             self.remoteProdToolsDockCtrl.closedDock()
         remoteSapCtrl = RemoteSapCtrl( self.qgisCtrl )
         remoteSapCtrl.setupActivityDataModelExternally( activityData )
-        productionTools = self.remoteProdToolsDockCtrl.loadDockWidget( 
-            remoteSapCtrl.getActivityDataModel()
+        productionTools = self.remoteProdToolsDockCtrl.loadDockWidgetExternally( 
+            remoteSapCtrl.getActivityDataModel(),
+            remoteSapCtrl
         )
         widget = productionTools.getActivityWidget('Atividade:')
         if not widget:

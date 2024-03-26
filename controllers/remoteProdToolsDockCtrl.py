@@ -163,6 +163,19 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         genericSelectionToolParameters.run({})
         
         return self.productionTools  
+    
+    def loadDockWidgetExternally(self, sapActivity, sap):
+        self.sapActivity = sapActivity
+        self.loadShortcuts()
+        self.loadChangeStyleTool( self.sapActivity.getStylesName() )
+        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, sap)
+        self.qgis.addDockWidget(self.productionTools, side='left')
+        #self.prodToolsSettings.checkPluginUpdates()  
+
+        genericSelectionToolParameters = self.processingFactoryDsgTools.createProcessing('GenericSelectionToolParameters', self)
+        genericSelectionToolParameters.run({})
+        
+        return self.productionTools  
 
     def removeDock(self):
         self.qgis.removeDockWidget(self.productionTools) if self.productionTools else ''

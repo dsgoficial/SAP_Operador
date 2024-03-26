@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 3.29.9
+
+Correção de bug:
+
+- Corrige bug para carregar atividade via SAP_Gerente;
+
 ## 3.29.8
 
 Melhorias:
