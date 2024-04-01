@@ -18,12 +18,10 @@ class MonitorCanvas(QThread, UserHistoric):
     def startMonitoring(self):
         self.isMonitoring = True
         self.hasChangedCanvas = True
-        #print('Started monitoring')
         iface.mapCanvas().mapCanvasRefreshed.connect(self.updateMonitoring)
 
     def stopMonitoring(self):
         self.isMonitoring = False
-        #print('Stopped monitoring')
         # try:
         #     iface.mapCanvas().mapCanvasRefreshed.disconnect(self.updateMonitoring)
         # except TypeError:
@@ -40,12 +38,10 @@ class MonitorCanvas(QThread, UserHistoric):
                 self.hasChangedCanvas = False
                 self.updateWorkTime()
                 self.updateTickTimer.emit()
-                #print('Updating work time!')
                 QThread.sleep(60)
             elif not self.hasChangedCanvas and not self.isMonitoring:
                 self.updateIdleTime()
                 self.updateTickTimer.emit()
-                #print('Updating idle time!')
                 QThread.sleep(60)
             elif not self.hasChangedCanvas and self.isMonitoring:
                 self.stopMonitoring()

@@ -76,7 +76,6 @@ class UpdaterCtrl:
             self.time.start(1000*10)
             return True
         except Exception as e:
-            print(str(e))
             return False
 
     def getRemotePluginPath(self):

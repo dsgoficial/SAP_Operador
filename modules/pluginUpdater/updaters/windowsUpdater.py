@@ -48,7 +48,6 @@ class WindowsUpdater:
             remoteVersion = self.getRemotePluginVersion(remotePlugins[pluginName])
             localVersion = self.versiontuple(localVersion)
             remoteVersion = self.versiontuple(remoteVersion)
-            print(pluginName, localVersion, remoteVersion, remoteVersion <= localVersion)
             if remoteVersion <= localVersion:
                 continue
             updates.append(
