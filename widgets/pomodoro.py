@@ -72,7 +72,7 @@ class Pomodoro(QtWidgets.QWidget):
         date = self.getCurrentDate()
         if not(date in dumpData):
             return
-        self.pomodoro = list(dumpData.values())[0]
+        #self.pomodoro = list(dumpData.values())[0]
 
     def getFormatedTime(self):
         return '{}:{}'.format(int(self.currentTime/60), str(round((float("{:.2f}".format(self.currentTime/60)) % 1) * 60)).zfill(2) )
