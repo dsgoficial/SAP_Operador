@@ -1,12 +1,12 @@
 # CHANGELOG
 
-## 3.29.9
+## 3.29.11
 
 Correção de bug:
 
-- Corrige bug para carregar atividade via SAP_Gerente;
+- Atualização na forma como o getPluginsVersions() realiza a leitura das versões de plugin no metadata.txt, utilizando o cp.read_file() e não o cp.readfp();
 
-## 3.29.8
+## 3.29.9
 
 Melhorias:
 
@@ -22,4 +22,4 @@ Correção de bug:
 - Corrige carregamento de domínios;
 - Corrige bug com carregamento de temas;
 - Corrige tamanho de grid para produtos de grandes escalas.
-
+- Corrige bug para carregar atividade via SAP_Gerente;

@@ -279,14 +279,15 @@ class QgisApi(IQgisApi):
                 )
                 with open(metadata_path) as mf:
                     cp = ConfigParser()
-                    cp.readfp(mf)
+                    cp.read_file(mf)
+                    # cp.readfp(mf)
                     pluginsVersions.append(
                         {
                             'nome' : name,
                             'versao' : cp.get('general', 'version').split('-')[0]
                         }
                     )
-            except AttributeError:
+            except (AttributeError, FileNotFoundError, KeyError):
                 pass
         return pluginsVersions
 
