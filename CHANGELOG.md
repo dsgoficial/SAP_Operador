@@ -1,10 +1,11 @@
 # CHANGELOG
 
-## 3.29.11
+## 3.29.12
 
 Correção de bug:
 
 - Atualização na forma como o getPluginsVersions() realiza a leitura das versões de plugin no metadata.txt, utilizando o cp.read_file() e não o cp.readfp();
+- Atualizado a função de carregar alias para as camadas.
 
 ## 3.29.9
 

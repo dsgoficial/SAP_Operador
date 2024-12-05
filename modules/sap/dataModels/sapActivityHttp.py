@@ -195,7 +195,8 @@ class SapActivityHttp:
         return styles
 
     def getLayerALiases(self):
-        return self.getData()['dados']['atividade']['alias']
+        data = self.getData()['dados']['atividade']['alias']
+        return data[0]['definicao_alias'] if len(data)> 0 else None
 
     def getLayerActions(self):
         return [

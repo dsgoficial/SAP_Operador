@@ -9,8 +9,8 @@
 [general]
 name=SAP Operador
 qgisMinimumVersion=3.10
-description=Conjunto de ferramentas usadas na produção cartográfica do 1CGEO.
-version=3.29.11
+description=Conjunto de ferramentas usadas na produção cartográfica da DSG.
+version=3.29.12
 author=Brazilian Army Geographic Service
 
 # Tags are comma separated with spaces allowed
@@ -22,4 +22,3 @@ experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
-

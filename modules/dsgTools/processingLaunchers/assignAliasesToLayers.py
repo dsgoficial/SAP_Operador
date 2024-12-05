@@ -18,6 +18,6 @@ class AssignAliasesToLayers(Processing):
             uris.append(uri)
         return {
                 'FILE': '.json',
-                'TEXT': json.dumps(parameters['aliases']),
+                'TEXT': parameters['aliases'],
                 'INPUT_LAYERS' : uris
             }

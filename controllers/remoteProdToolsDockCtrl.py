@@ -346,11 +346,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
 
-        assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
-        assignAliasesToLayers.run({
-            'aliases': self.sapActivity.getLayerALiases(),
-            'layerIds': loadedLayerIds
-        })
+        alias = self.sapActivity.getLayerALiases()
+        if alias:
+            assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
+            assignAliasesToLayers.run({
+                'aliases': alias,
+                'layerIds': loadedLayerIds
+            })
 
         assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
         assignActionsToLayers.run({
@@ -484,11 +486,13 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
 
-        assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
-        assignAliasesToLayers.run({
-            'aliases': self.sapActivity.getLayerALiases(),
-            'layerIds': loadedLayerIds
-        })
+        alias = self.sapActivity.getLayerALiases()
+        if alias:
+            assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
+            assignAliasesToLayers.run({
+                'aliases': alias,
+                'layerIds': loadedLayerIds
+            })
 
         assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
         assignActionsToLayers.run({
