@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.29.13
+
+- Corrige bug camadas incomuns;
+
 ## 3.29.12
 
 Correção de bug:

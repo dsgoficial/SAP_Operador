@@ -31,7 +31,9 @@ class ActivityData(Widget, IActivityDataWidget):
     def on_loadLayersBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.getController().loadActivityLayers()
+            activityDataModel = self.sap.getActivityDataModel()
+            camadasComuns = [l['nome'] for l in activityDataModel.getLayers() if ('camada_incomum' not in l or not l['camada_incomum'])]
+            self.getController().loadActivityLayersByNames(camadasComuns)
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 

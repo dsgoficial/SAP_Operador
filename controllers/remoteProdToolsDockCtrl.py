@@ -281,18 +281,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return [
             item["nome"] for item in self.sapActivity.getLayers()
         ]
-    
-    def getActivityUsualLayerNames(self):
-        return [
-            item["nome"] for item in self.sapActivity.getLayers()
-            if not('camada_incomum' in item and item['camada_incomum'])
-        ]
-    
-    def getActivityUnusualLayerNames(self):
-        return [
-            item["nome"] for item in self.sapActivity.getLayers()
-            if 'camada_incomum' in item and item['camada_incomum']
-        ]
 
     def getActivityInputs(self):
         return self.sapActivity.getInputs()
@@ -465,7 +453,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 self.sapActivity.getLayerStyles(),
                 defaultStyle
             )
-            self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+            # self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
         """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
@@ -572,7 +560,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.loadReviewTool()
         
         loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
-        loadThemes.run({'themes': self.sapActivity.getThemes()})
+        for theme in self.sapActivity.getThemes():
+            loadThemes.run({'themes': theme['definicao_tema']})
         self.sortLayersOnMolduraGroup()
 
     def sortLayersOnMolduraGroup(self):
