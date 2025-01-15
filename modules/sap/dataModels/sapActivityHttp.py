@@ -48,6 +48,12 @@ class SapActivityHttp:
     def getId(self):
         return self.getData()['dados']['atividade']['id']
 
+    def getWorkUnitId(self):
+        return self.getData()['dados']['atividade']['unidade_trabalho_id']
+    
+    def getStepId(self):
+        return self.getData()['dados']['atividade']['etapa_id']
+
     def getTypeProductionData(self):
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
 

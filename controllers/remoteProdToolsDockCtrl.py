@@ -796,7 +796,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     
     def loadReviewTool(self):
         frameQuery = self.sapActivity.getFrameQuery()
-        if not self.frameLoaded( frameQuery ):
+        if not self.frameLoaded(frameQuery):
             self.qgis.loadInputData({
                 'query': self.sapActivity.getFrameQuery(),
                 'epsg': self.sapActivity.getEPSG(),
@@ -808,12 +808,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if candidateLayerList == []:
             loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
             result = loadLayersFromPostgis.run({ 
-                'dbName' : self.sapActivity.getDatabaseName(), 
-                'dbHost' : self.sapActivity.getDatabaseServer(), 
-                'layerNames' : ['aux_grid_revisao_a'], 
-                'dbPassword' : self.sapActivity.getDatabasePassword(), 
-                'dbPort' : self.sapActivity.getDatabasePort(), 
-                'dbUser' : self.sapActivity.getDatabaseUserName() 
+                'dbName': self.sapActivity.getDatabaseName(), 
+                'dbHost': self.sapActivity.getDatabaseServer(), 
+                'layerNames': ['aux_grid_revisao_a'], 
+                'dbPassword': self.sapActivity.getDatabasePassword(), 
+                'dbPort': self.sapActivity.getDatabasePort(), 
+                'dbUser': self.sapActivity.getDatabaseUserName() 
             })
             loadedLayerIds = result['OUTPUT']
             if loadedLayerIds == []:
@@ -823,11 +823,21 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             gridLayer = candidateLayerList[0]
         self.moveLayerToGroup(gridLayer)
 
+        # Check for field existence and build appropriate filter
+        fields = [field.name() for field in gridLayer.fields()]
+        has_new_fields = 'unidade_trabalho_id' in fields and 'etapa_id' in fields
+        
+        if has_new_fields:
+            filter_expr = f'unidade_trabalho_id = {self.sapActivity.getWorkUnitId()} AND etapa_id = {self.sapActivity.getStepId()}'
+        else:
+            # Fall back to old atividade_id filter
+            filter_expr = f'atividade_id = {self.sapActivity.getId()}'
+
         assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
         assingFilterToLayers.run({
             'layers': [
                 {
-                    'filter': f'atividade_id = {self.sapActivity.getId()}',
+                    'filter': filter_expr,
                     'nome': 'aux_grid_revisao_a',
                     'schema': gridLayer.dataProvider().uri().schema()
                 }
@@ -838,23 +848,35 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if gridLayer.featureCount() != 0:
             reviewToolBar.run(gridLayer)
             return
+
+        # Set up grid creation parameters
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
         scale = self.sapActivity.getScale()
         frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
-        if (int(scale.split(':')[-1])) <= 10000:
+        
+        # Determine grid size based on scale
+        if int(scale.split(':')[-1]) <= 10000:
             param = {
                 'input': frameLyr,
                 'x_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2),
-                'y_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2),
-                'related_task_id': self.sapActivity.getId()
+                'y_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2)
             }
         else:
             param = {
                 'input': frameLyr,
                 'x_grid_size': (0.01) if frameLyr.crs().isGeographic() else (1e3),
-                'y_grid_size': (0.008) if frameLyr.crs().isGeographic() else (800),
-                'related_task_id': self.sapActivity.getId()
+                'y_grid_size': (0.008) if frameLyr.crs().isGeographic() else (800)
             }
+        
+        # Add new IDs if the fields exist
+        if has_new_fields:
+            param.update({
+                'unit_work_id': self.sapActivity.getWorkUnitId(),
+                'step_id': self.sapActivity.getStepId()
+            })
+        else:
+            param['related_task_id'] = self.sapActivity.getId()
+            
         result = createReviewGrid.run(param)
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
