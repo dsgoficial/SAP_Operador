@@ -1,6 +1,13 @@
 # CHANGELOG
 
+## 3.29.14
+
+Melhorias:
+- Altera a chave do grid de revisão para considerar unidade_trabalho_id e etapa_id, conforme modelagens Topo 1.4.3 e Orto 2.5.2. Alteração feita de forma a funcionar também com versões antigas do grid de revisão.
+
 ## 3.29.13
+
+Correção de bug:
 
 - Corrige bug camadas incomuns;
 
