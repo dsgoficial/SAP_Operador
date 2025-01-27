@@ -15,5 +15,7 @@ class CreateReviewGrid(Processing):
             'X_GRID_SIZE': parameters['x_grid_size'],
             'Y_GRID_SIZE': parameters['y_grid_size'],
             'RELATED_TASK_ID': parameters['related_task_id'],
+            'UNIT_WORK_ID': parameters['unit_work_id'],
+            'STEP_ID': parameters['step_id'],
             'OUTPUT': 'memory:'
         }

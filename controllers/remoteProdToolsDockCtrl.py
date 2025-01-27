@@ -425,6 +425,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.sortLayersOnMolduraGroup()
 
     def loadActivityLayersByNames(self, names):
+        if len(names) == 0:
+            self.showInfoMessageBox(None, 'Aviso', 'Sem camadas a serem carregadas!')
+            return
         layerNames = [ l for l in self.getActivityLayerNames() if l in names]
         scale = self.sapActivity.getScale()
         self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
@@ -868,16 +871,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'y_grid_size': (0.008) if frameLyr.crs().isGeographic() else (800)
             }
         
-        # Add new IDs if the fields exist
-        if has_new_fields:
-            param.update({
-                'unit_work_id': self.sapActivity.getWorkUnitId(),
-                'step_id': self.sapActivity.getStepId()
-            })
-        else:
-            param['related_task_id'] = self.sapActivity.getId()
-            
+        param.update({
+            'related_task_id': self.sapActivity.getId(),
+            'unit_work_id': self.sapActivity.getWorkUnitId(),
+            'step_id': self.sapActivity.getStepId()
+        })
+        
         result = createReviewGrid.run(param)
+
+
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
 

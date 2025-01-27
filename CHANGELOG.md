@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 3.29.15
+
+Melhorias:
+- Aviso no caso de Carregar Camadas não existam camadas associadas aquela subfase;
+
+Correção de bug:
+- Correção do bug de carregamento do aux_grid_revisao_a;
+
 ## 3.29.14
 
 Melhorias:
