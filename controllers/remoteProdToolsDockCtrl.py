@@ -1,4 +1,3 @@
-
 from collections import OrderedDict
 from SAP_Operador.factories.GUIFactory import GUIFactory
 from SAP_Operador.factories.timerFactory import TimerFactory
@@ -66,6 +65,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
         self.qaToolBox = None
         self.prodToolsSettings.reclassifyMode.connect(self.handleReclassifyMode)
+
+        # Inicializa com o total de violação de regras em 1.
+        self.total_rule_violations = 1
 
     def loadChangeStyleWidget(self):
         self.changeStyleWidget = self.guiFactory.getWidget('ChangeStyleWidget', controller=self)
@@ -234,7 +236,14 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Rode todos os processos de validação do DSGTools e corrija as flags antes de finalizar!'
             )
             return
-        #  self.qgis.cleanProject()
+        # Verifica se a rotina de Estatística de Regras possui erros.
+        if hasattr(self, 'total_rule_violations') and self.total_rule_violations > 0:
+            self.showInfoMessageBox(
+                self.productionTools,
+                'Aviso',
+                'A atividade somente pode ser finalizada quando a rotina de Estatística de Regras não possuir erros.'
+            )
+            return
 
         stepTypeId = self.sapActivity.getStepTypeId()
         noteLayers = self.sapActivity.getNoteLayers()
@@ -354,6 +363,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'rules': rules,
                 'layerIds': loadedLayerIds
             })
+        else:
+            # Caso não seja carregada nenhuma regra, o total de violações de regras é tornado 0.
+            self.total_rule_violations = 0
 
         """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({
@@ -707,6 +719,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             result,
             self.qgis
         )
+        # Calcula quantas violações de regras tem e armazena em self.total_rule_violations
+        self.total_rule_violations =  len(result['[REGRAS] : Atributo incorreto']) + len(result['[REGRAS] : Preencher atributo'])
+        
+        return result
 
     def runQgisModel(self, routineData):
         html = self.qgis.runProcessingModel(routineData)

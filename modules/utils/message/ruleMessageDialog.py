@@ -1,4 +1,3 @@
-
 import os
 from PyQt5 import QtWidgets, uic, QtCore
 from SAP_Operador.modules.utils.interfaces.IMessage  import IMessage
