@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.16
+
+Melhorias:
+- Caso a subfase tenha Regras cadastradas, a atividade só poderá ser finalizada caso as regras de Atributo Incorreto e Atributo a ser Preenchido estiverem retornando zero erro.
+
 ## 3.29.15
 
 Melhorias:
