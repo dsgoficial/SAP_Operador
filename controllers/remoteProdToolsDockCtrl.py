@@ -509,6 +509,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'rules': rules,
                 'layerIds': loadedLayerIds
             })
+        else:
+            # Caso não seja carregada nenhuma regra, o total de violações de regras é tornado 0.
+            self.total_rule_violations = 0
 
         """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({
