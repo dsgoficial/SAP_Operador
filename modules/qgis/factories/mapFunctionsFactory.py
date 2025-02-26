@@ -4,7 +4,6 @@ from SAP_Operador.modules.qgis.mapFunctions.trimLine import TrimLine
 from SAP_Operador.modules.qgis.mapFunctions.expandLine import ExpandLine
 from SAP_Operador.modules.qgis.mapFunctions.createNewMapView import CreateNewMapView
 from SAP_Operador.modules.qgis.mapFunctions.convergencePoint import ConvergencePoint
-from SAP_Operador.modules.qgis.mapFunctions.selectRaster import SelectRaster
 
 class MapFunctionsFactory:
 
@@ -16,6 +15,5 @@ class MapFunctionsFactory:
             'ExpandLine':  ExpandLine,
             'CreateNewMapView': CreateNewMapView,
             'ConvergencePoint': ConvergencePoint,
-            'SelectRaster': SelectRaster
         }
         return functionNames[functionName]()
