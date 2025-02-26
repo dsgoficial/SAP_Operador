@@ -101,9 +101,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         self.qgis.setSettings(settings)
         #self.qgis.setActionShortcut('EnableSnappingAction', '')
 
-    def onOffLayers(self):
-        self.qgis.setHiddenLayers()
-
     def showMarkersOnlySelectedFeatures(self):
         values = {
             True: 'true',
@@ -168,16 +165,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'icons'
         )
         return [
-            {
-                'name': 'Ligar/Desligar camada',
-                'iconPath':os.path.join(iconRootPath, 'on_off.png'),
-                'callback': self.onOffLayers
-            },
-            # {
-            #     'name': 'Mostrar/Esconder marcadores para feições selecionadas',
-            #     'iconPath':os.path.join(iconRootPath, 'vertex.png'),
-            #     'callback': self.showMarkersOnlySelectedFeatures
-            # },
             {
                 'name': 'Suavizador de linhas',
                 'iconPath':os.path.join(iconRootPath, 'smoothLayer.png'),

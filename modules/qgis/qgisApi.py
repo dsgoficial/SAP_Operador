@@ -212,24 +212,6 @@ class QgisApi(IQgisApi):
         iface.mainWindow().menuBar().insertMenu(iface.firstRightStandardMenu().menuAction(), menu)
         return menu
 
-    def setHiddenLayers(self):
-        layerTreeRoot = core.QgsProject.instance().layerTreeRoot()
-        f = iface.activeLayer()
-        if f:
-            b = layerTreeRoot.findLayer(f.id()).isVisible()
-            if b:
-                iface.actionHideSelectedLayers().trigger()
-            else:
-                iface.actionShowSelectedLayers().trigger()
-            return
-        selectedGroups = iface.layerTreeView().selectedNodes()
-        if not(len(selectedGroups) == 1):
-            return
-        group = selectedGroups[0]
-        group.setItemVisibilityChecked(
-            not group.itemVisibilityChecked()
-        )
-
     def getShortcutKey(self, shortcutKeyName):
         keys = {
             'Y': QtCore.Qt.Key_Y,
