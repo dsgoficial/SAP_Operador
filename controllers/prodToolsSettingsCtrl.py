@@ -200,11 +200,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'iconPath':os.path.join(iconRootPath, 'nmea.png'),
                 'callback': self.qgis.enableNMEA
             },
-             {
-                'name': 'Reclassify Mode',
-                'iconPath': '',
-                'callback': self.reclassifyMode.emit
-            },
+            # {
+            #     'name': 'Reclassify Mode',
+            #     'iconPath': '',
+            #     'callback': self.reclassifyMode.emit
+            # },
         ]
 
         
