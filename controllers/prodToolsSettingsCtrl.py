@@ -186,11 +186,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'callback': lambda: self.qgis.activeTool('ConvergencePoint')
             },
             {
-                'name': 'Visualizado de combinações',
-                'iconPath':os.path.join(iconRootPath, 'combinationViewer.svg'),
-                'callback': lambda: self.combinationViewer.openDialog()
-            },
-            {
                 'name': 'Raster Metadata Atribute',
                 'iconPath':os.path.join(iconRootPath, 'raster.png'),
                 'callback': lambda: self.rasterMetadata.openDialog()

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.17
+
+Melhorias:
+- Minor fix nos textos de representação das funções.
+
 ## 3.29.16
 
 Melhorias:
