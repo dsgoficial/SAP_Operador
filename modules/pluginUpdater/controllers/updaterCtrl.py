@@ -42,7 +42,7 @@ class UpdaterCtrl:
         )
         return [
             {
-                'name': 'atualizador de plugins local',
+                'name': 'Atualizador de plugins local',
                 'iconPath': os.path.join(iconRootPath, 'updater.png'),
                 'callback': self.openSettingsDialog
             }

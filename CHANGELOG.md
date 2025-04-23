@@ -2,6 +2,9 @@
 
 ## 3.29.17
 
+Melhorias:
+- Minor fix nos textos de representação das funções.
+
 Correção de bug:
 - Correção do bug de integração com o DSGTools;
 
