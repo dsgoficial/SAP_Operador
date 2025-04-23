@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.17
+
+Correção de bug:
+- Correção do bug de integração com o DSGTools;
+
 ## 3.29.16
 
 Melhorias:

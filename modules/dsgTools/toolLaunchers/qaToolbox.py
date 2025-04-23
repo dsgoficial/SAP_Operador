@@ -1,37 +1,37 @@
 from qgis.utils import plugins
 import json
 
-class QAToolBox:
+class workflowToolBox:
     
     def __init__(self, controller):
         self.controller = controller
 
     def getTool(self):
         toolboxManager = self.getManager()
-        qaToolBox = toolboxManager.qaToolBox
-        if qaToolBox is not None:
-            return qaToolBox
+        workflowToolBox = toolboxManager.workflowToolBox
+        if workflowToolBox is not None:
+            return workflowToolBox
         return self.refreshToolboxObject()
 
     def getManager(self):
         return plugins['DsgTools'].guiManager.productionToolsGuiManager.toolBoxesGuiManager
 
     def run(self, workflowDictList):
-        qaToolBox = self.getTool()
+        workflowToolBox = self.getTool()
         # hide import button
-        qaToolBox.showEditionButton(False)
+        workflowToolBox.showEditionButton(False)
         # import payload
-        qaToolBox.importWorkflowFromJsonPayload(workflowDictList)
+        workflowToolBox.importWorkflowFromJsonPayload(workflowDictList)
         # show interface
         toolboxManager = self.getManager()
-        toolboxManager.showQaToolBox()
-        return qaToolBox
+        toolboxManager.showWorkflowToolBox()
+        return workflowToolBox
 
     def refreshToolboxObject(self):
         toolboxManager = self.getManager()
-        return toolboxManager.refreshQaToolBoxObject()
+        return toolboxManager.refreshWorkflowToolBoxObject()
     
     def allWorkflowsAreFinishedWithoutFlags(self):
-        qaToolBox = self.getTool()
-        return qaToolBox.allWorkflowsAreFinishedWithoutFlags()
+        workflowToolBox = self.getTool()
+        return workflowToolBox.allWorkflowsAreFinishedWithoutFlags()
         
