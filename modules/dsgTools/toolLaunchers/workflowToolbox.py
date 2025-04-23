@@ -1,7 +1,7 @@
 from qgis.utils import plugins
 import json
 
-class workflowToolBox:
+class WorkflowToolBox:
     
     def __init__(self, controller):
         self.controller = controller

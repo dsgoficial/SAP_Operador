@@ -55,8 +55,8 @@ class ActivityData(Widget, IActivityDataWidget):
         self.getController().loadReviewTool()
     
     @QtCore.pyqtSlot(bool)
-    def on_loadDSGToolsQAToolboxBtn_clicked(self):
-        self.getController().loadDsgToolsQAToolbox()
+    def on_loadDSGToolsworkflowToolboxBtn_clicked(self):
+        self.getController().loadDsgToolsworkflowToolbox()
 
     def setVisibleWidgetsLayout(self, layout, visible):
         for idx in range(layout.count()):
@@ -70,4 +70,4 @@ class ActivityData(Widget, IActivityDataWidget):
         self.loadMenuBtn.setEnabled( enable )
 
     def enableWorkflowButton(self, enable):
-        self.loadDSGToolsQAToolboxBtn.setEnabled(enable)
+        self.loadDSGToolsworkflowToolboxBtn.setEnabled(enable)

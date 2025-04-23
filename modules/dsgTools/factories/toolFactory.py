@@ -1,6 +1,6 @@
 from SAP_Operador.modules.dsgTools.toolLaunchers.customFeatureTool import CustomFeatureTool
 from SAP_Operador.modules.dsgTools.toolbarLaunchers.reviewToolbar import ReviewToolBar
-from SAP_Operador.modules.dsgTools.toolLaunchers.qaToolbox import QAToolBox
+from SAP_Operador.modules.dsgTools.toolLaunchers.workflowToolbox import WorkflowToolBox
 
 class ToolFactory:
 
@@ -11,7 +11,7 @@ class ToolFactory:
         toolNames = {
             'CustomFeatureTool': CustomFeatureTool,
             'ReviewToolBar': ReviewToolBar,
-            'QAToolBox': QAToolBox
+            'WorkflowToolBox': WorkflowToolBox
         }
         return toolNames[toolName](controller)
             
