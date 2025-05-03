@@ -2,7 +2,7 @@ from collections import OrderedDict
 from SAP_Operador.factories.GUIFactory import GUIFactory
 from SAP_Operador.factories.timerFactory import TimerFactory
 from SAP_Operador.factories.spatialVerificationFactory import SpatialVerificationFactory
-
+from PyQt5.QtWidgets import QMessageBox
 from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
 from PyQt5 import QtWidgets
 from qgis import core, gui, utils
@@ -117,22 +117,57 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.removeDock()
         self.qgis.off('ReadProject', self.readProjectCallback)
         self.qgis.off('NewProject', self.createProjectCallback)
-        #self.pomodoro.unload()
 
     def reload(self):
-        self.prodToolsSettings.checkPluginUpdates()
-        if self.productionTools is None:
-            return
-        self.removeDock()
-        self.sapActivity = self.sap.getActivity()
-        if self.sapActivity is None:
-            return
-        self.loadShortcuts()
-        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
-        if self.workflowToolbox is None:
-            self.loadDsgToolsworkflowToolbox()
-        self.workflowToolbox.refreshToolboxObject()
-        self.qgis.addDockWidget(self.productionTools, side='left')  
+        try:
+            self.sapActivity = self.sap.getActivity()
+            self.prodToolsSettings.checkPluginUpdates()
+            if self.productionTools is None:
+                return
+            self.removeDock()
+            self.sapActivity = self.sap.getActivity()
+            if self.sapActivity is None:
+                return
+            self.loadShortcuts()
+            self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+            if self.workflowToolbox is None:
+                self.loadDsgToolsworkflowToolbox()
+            self.workflowToolbox.refreshToolboxObject()
+            self.qgis.addDockWidget(self.productionTools, side='left')
+        except Exception as e:
+            error_message = str(e)
+            if "Sem atividades disponíveis para iniciar" in error_message:
+                QMessageBox.information(
+                    self.qgis.getMainWindow(),
+                    "Informação",
+                    "Não há atividades disponíveis para iniciar no momento.",
+                    QMessageBox.Ok
+                )
+                self.cleanupAfterNoActivities()
+                self.closeOperatorWindow()
+            else:
+                QMessageBox.warning(
+                    self.qgis.getMainWindow(),
+                    "Erro",
+                    f"Ocorreu um erro inesperado: {error_message}",
+                    QMessageBox.Ok
+                )
+            return False
+        return True
+
+    def cleanupAfterNoActivities(self):
+        if hasattr(self, 'validateUserOperations') and self.validateUserOperations:
+            self.validateUserOperations.stop()
+        if hasattr(self, 'canvasMonitoring') and self.canvasMonitoring:
+            self.canvasMonitoring.stop()
+        if hasattr(self, 'changeStyleWidget') and self.changeStyleWidget and not sip.isdeleted(self.changeStyleWidget):
+            self.changeStyleWidget.setEnabled(False)
+
+    def closeOperatorWindow(self):
+        if hasattr(self, 'productionTools') and self.productionTools:
+            self.removeDock()
+        if self.qgis:
+            self.qgis.cleanProject()            
 
     def loadShortcuts(self):
         shortcuts = self.sapActivity.getShortcuts()

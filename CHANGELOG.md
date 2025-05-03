@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.18
+
+Correção de bug:
+- Caso o operador finalize uma atividade e não exista outra disponível, ele recebe uma mensagem na tela do QGIS, fecha o SAP Operador e limpa o projeto.
+
 ## 3.29.17
 
 Melhorias:
