@@ -940,7 +940,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def loadDsgToolsworkflowToolbox(self):
         if self.workflowToolbox is not None:
             return
-        self.workflowToolbox = self.toolFactoryDsgTools.getTool('workflowToolbox', self)
+        self.workflowToolbox = self.toolFactoryDsgTools.getTool('WorkflowToolBox', self)
         self.workflowToolbox.run(self.getDSGToolsQAWorkflows())
 
     def moveLayerToGroup(self, layer, positionToInsert=0):
