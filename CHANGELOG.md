@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.20
+
+Melhorias:
+- Remoção da função de remover vértice duplicado direto na camada, pois estava quebrando o Snap;
+
 ## 3.29.19
 
 Correção de bug:

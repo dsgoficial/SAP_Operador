@@ -408,8 +408,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) """
 
-        setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
-        setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
+        # setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
+        # setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
 
         frameQuery = self.sapActivity.getFrameQuery()
         if not self.frameLoaded( frameQuery ):
@@ -554,8 +554,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) """
 
-        setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
-        setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
+        # setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
+        # setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
 
         frameQuery = self.sapActivity.getFrameQuery()
         if not self.frameLoaded( frameQuery ):
