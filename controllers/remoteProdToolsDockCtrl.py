@@ -271,8 +271,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Rode todos os processos de validação do DSGTools e corrija as flags antes de finalizar!'
             )
             return
-        # Verifica se a rotina de Estatística de Regras possui erros.
-        if hasattr(self, 'total_rule_violations') and self.total_rule_violations > 0:
+        # Verifica se a rotina de Estatística de Regras possui erros e (02SET25) confere se não é a etapa de revisão:
+        if (hasattr(self, 'total_rule_violations') and self.total_rule_violations > 0) and self.sapActivity.getStepTypeId() != 2:
             self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',

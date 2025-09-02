@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.21
+
+Melhorias:
+- Remoção do check de regras quando etapa da atividade for Revisão.
+
 ## 3.29.20
 
 Melhorias:
