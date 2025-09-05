@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.22
+
+Correção de bug:
+- Correção do bug de necessitar relogar no SAP Operador ao finalizar uma atividade.
+
 ## 3.29.21
 
 Melhorias:

@@ -129,7 +129,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             if self.sapActivity is None:
                 return
             self.loadShortcuts()
-            self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+            self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.sap, self.productionTools)
             if self.workflowToolbox is None:
                 self.loadDsgToolsworkflowToolbox()
             self.workflowToolbox.refreshToolboxObject()
