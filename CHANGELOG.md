@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.23
+
+Correção de bug:
+- Remoção do check de finalização de Workflow quando a etapa for de revisão.
+
 ## 3.29.22
 
 Correção de bug:

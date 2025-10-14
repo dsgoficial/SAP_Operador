@@ -264,7 +264,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'Salve todas suas alterações antes de finalizar!'
             )
             return
-        if len(self.getDSGToolsQAWorkflows()) > 0 and (self.workflowToolbox is None or not self.workflowToolbox.allWorkflowsAreFinishedWithoutFlags()):
+        # Adicção da verificação de etapa, se for revisão, não cobra Workflow
+        if self.sapActivity.getStepTypeId() != 2 and len(self.getDSGToolsQAWorkflows()) > 0 and (self.workflowToolbox is None or not self.workflowToolbox.allWorkflowsAreFinishedWithoutFlags()):
             self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',
