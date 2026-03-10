@@ -1,7 +1,7 @@
 from SAP_Operador.widgets.widget import Widget
 from SAP_Operador.interfaces.IActivityDataWidget import IActivityDataWidget
 import os, sys
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 
 class LoadLocalActivity(Widget, IActivityDataWidget):
 
@@ -39,7 +39,7 @@ class LoadLocalActivity(Widget, IActivityDataWidget):
                 'Selecione no mínimo uma camada!'
             )
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.getController().loadActivityLayers(
                 self.layersSelectItems.getSelections(),

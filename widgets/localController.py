@@ -1,5 +1,5 @@
 from SAP_Operador.widgets.widget import Widget
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 import os, json
 
 class LocalController(Widget):

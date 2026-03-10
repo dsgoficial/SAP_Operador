@@ -1,5 +1,5 @@
 from SAP_Operador.interfaces.ITimer import ITimer
-from PyQt5 import QtCore, QtWidgets, QtGui 
+from qgis.PyQt import QtCore, QtWidgets, QtGui 
 
 class Timer(ITimer):
 

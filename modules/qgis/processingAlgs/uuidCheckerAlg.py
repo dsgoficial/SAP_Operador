@@ -1,6 +1,5 @@
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import QColor
-from qgis.PyQt.Qt import QVariant
+from qgis.PyQt.QtCore import QCoreApplication, QMetaType
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsProcessing,
                        QgsFeatureSink,
                        QgsProcessingAlgorithm,
@@ -147,7 +146,7 @@ class UuidCheckerAlg(ProcessingAlg):
 
     def getFlagFields(self):
         sinkFields = QgsFields()
-        sinkFields.append(QgsField('erro', QVariant.String))
+        sinkFields.append(QgsField('erro', QMetaType.Type.QString))
         return sinkFields
 
     def hasDuplicateValues(self, value, valueList):

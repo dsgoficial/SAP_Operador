@@ -3,7 +3,7 @@ from SAP_Operador.modules.sap.factories.sapApiHttpSingleton import SapApiHttpSin
 from SAP_Operador.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Operador.modules.sap.factories.guiFactory import GUIFactory
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class LocalSapCtrl(SapCtrl):
 

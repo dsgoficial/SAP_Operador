@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from .qTableWidgetIntegerItem import QTableWidgetIntegerItem
 
 class TableFunctions(QtCore.QObject):
@@ -18,7 +18,7 @@ class TableFunctions(QtCore.QObject):
             item = QTableWidgetIntegerItem(itemValue)
         except:
             item = QtWidgets.QTableWidgetItem(itemValue)
-        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         return item
 
     def createEditableItem(self, value):

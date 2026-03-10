@@ -12,8 +12,8 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QLabel, QHBoxLayout
+from qgis.PyQt.QtGui import QAction, QIcon
+from qgis.PyQt.QtWidgets import QLabel, QHBoxLayout
 # Initialize Qt resources from file resources.py
 from .resources import *
 
@@ -324,7 +324,7 @@ class Pomodoro:
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dockwidget)
 
     def getWidget(self):
         """Run method that loads and starts the plugin"""

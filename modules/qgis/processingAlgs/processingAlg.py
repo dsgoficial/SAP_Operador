@@ -1,6 +1,5 @@
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import QColor
-from qgis.PyQt.Qt import QVariant
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsProcessing,
                        QgsFeatureSink,
                        QgsProcessingAlgorithm,
@@ -50,7 +49,7 @@ class ProcessingAlg(QgsProcessingAlgorithm):
         raise NotImplementedError('Abstract Method')
 
     def getFlagGeometry(self, feature):
-        if QgsWkbTypes.geometryType(feature.geometry().wkbType()) == QgsWkbTypes.LineGeometry:
+        if QgsWkbTypes.geometryType(feature.geometry().wkbType()) == QgsWkbTypes.GeometryType.LineGeometry:
             multiPoints = feature.geometry().convertToType(0, True)
             pointList = multiPoints.asMultiPoint()
             return QgsGeometry.fromPointXY(pointList[int(len(pointList)/2)])

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt5 import QtCore, QtGui, uic, QtWidgets
+from qgis.PyQt import QtCore, QtGui, uic, QtWidgets
 from qgis import core, gui
 import sys, os
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory

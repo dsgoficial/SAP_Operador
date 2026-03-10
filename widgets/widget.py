@@ -1,5 +1,5 @@
 from SAP_Operador.interfaces.IWidget import IWidget
-from PyQt5 import QtWidgets, QtGui, QtCore
+from qgis.PyQt import QtWidgets, QtGui, QtCore
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class Widget(QtWidgets.QWidget, IWidget):

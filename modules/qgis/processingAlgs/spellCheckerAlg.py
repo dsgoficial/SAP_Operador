@@ -1,6 +1,5 @@
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import QColor
-from qgis.PyQt.Qt import QVariant
+from qgis.PyQt.QtCore import QCoreApplication, QMetaType
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsProcessing,
                        QgsFeatureSink,
                        QgsProcessingAlgorithm,
@@ -94,7 +93,7 @@ class SpellCheckerAlg(ProcessingAlg):
         progressStep = 100/listSize if listSize else 0
         errorFieldName = '{}_erro'.format(attributeName)
         #field = core.QgsField('{}_erro'.format(attributeName))
-        fieldRelation = core.QgsField('id', QVariant.Double)
+        fieldRelation = core.QgsField('id', QMetaType.Type.Double)
         for step, layer in enumerate(inputLyrList):
             if not layer.isEditable():
                 raise Exception('Todas as camadas de entrada devem está com a edição ativa!')
@@ -139,9 +138,9 @@ class SpellCheckerAlg(ProcessingAlg):
 
     def getFlagFields(self):
         sinkFields = QgsFields()
-        sinkFields.append(QgsField('erro', QVariant.String))
-        sinkFields.append(QgsField('correcao', QVariant.String))
-        sinkFields.append(QgsField('outras_opcoes', QVariant.String))
+        sinkFields.append(QgsField('erro', QMetaType.Type.QString))
+        sinkFields.append(QgsField('correcao', QMetaType.Type.QString))
+        sinkFields.append(QgsField('outras_opcoes', QMetaType.Type.QString))
         return sinkFields
 
     def name(self):

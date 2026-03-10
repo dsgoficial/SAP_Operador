@@ -13,7 +13,7 @@ class LoginCtrl:
         self.loginView = LoginSingleton.getInstance(controller=self)
 
     def showView(self):
-        self.loginView.exec_()
+        self.loginView.exec()
 
     def getRemoteSettings(self):
         return (

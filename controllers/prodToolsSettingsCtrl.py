@@ -4,7 +4,7 @@ from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
 from SAP_Operador.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
 from SAP_Operador.modules.rasterMetadata.controllers.rasterMetadataCtrl import RasterMetadataCtrl
 import os
-from PyQt5.QtCore import QThread, pyqtSignal
+from qgis.PyQt.QtCore import QThread, pyqtSignal
 
 class ProdToolsSettingsCtrl(ProdToolsCtrl):
 

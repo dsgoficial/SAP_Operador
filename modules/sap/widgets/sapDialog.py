@@ -1,5 +1,5 @@
 import os, sys, copy, json
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class SapDialog(QtWidgets.QDialog):

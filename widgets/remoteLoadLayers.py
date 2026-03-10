@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class RemoteLoadLayers(QtWidgets.QDialog):
 
@@ -27,7 +27,7 @@ class RemoteLoadLayers(QtWidgets.QDialog):
 
     @QtCore.pyqtSlot(bool)
     def on_loadBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         layerNames = self.layersW.getSelections()
         if not layerNames:
             QtWidgets.QApplication.restoreOverrideCursor()

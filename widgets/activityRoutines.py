@@ -1,6 +1,6 @@
 from SAP_Operador.widgets.widget import Widget
 
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 import os, json
 
 class ActivityRoutines(Widget):
@@ -46,14 +46,14 @@ class ActivityRoutines(Widget):
             QtWidgets.QSpacerItem(
                 20, 
                 150,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
         )
 
     @QtCore.pyqtSlot(bool)
     def on_runRoutineBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.getController().runRoutine(self.getRoutineSelected())
         finally:

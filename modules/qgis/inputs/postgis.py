@@ -1,7 +1,7 @@
 from SAP_Operador.modules.qgis.inputs.inputLayer import InputLayer
 from SAP_Operador.modules.database.factories.databaseFactory import DatabaseFactory
 from qgis import core, gui, utils
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class Postgis(InputLayer):
 

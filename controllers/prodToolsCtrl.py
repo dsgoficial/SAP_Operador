@@ -1,5 +1,5 @@
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
-from PyQt5 import QtCore
+from qgis.PyQt import QtCore
 
 class ProdToolsCtrl(QtCore.QObject):
 

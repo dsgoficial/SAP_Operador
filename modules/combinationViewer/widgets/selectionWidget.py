@@ -1,5 +1,5 @@
 import os, sys, copy, json
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 from .tableFunctions import TableFunctions
 
@@ -16,8 +16,8 @@ class SelectionWidget(QtWidgets.QWidget, TableFunctions):
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
         self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
-        self.sendTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.selectionTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.sendTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.selectionTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
 
     def getUiPath(self):
         return os.path.join(

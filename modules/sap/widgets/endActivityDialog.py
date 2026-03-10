@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic, QtGui, QtCore
+from qgis.PyQt import QtWidgets, uic, QtGui, QtCore
 import os
 from SAP_Operador.modules.sap.widgets.sapDialog import SapDialog
 
@@ -50,7 +50,7 @@ class EndActivityDialog(SapDialog):
 
     @QtCore.pyqtSlot(bool)
     def on_endBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.endBtn.setEnabled(False)
         try:
             self.getController().endActivity(self.getData())

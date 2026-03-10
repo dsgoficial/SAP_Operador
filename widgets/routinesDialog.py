@@ -1,5 +1,5 @@
 import os, sys, copy, json
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 
 class RoutinesDialog(QtWidgets.QDialog):
@@ -60,13 +60,13 @@ class RoutinesDialog(QtWidgets.QDialog):
             lambda *args, index=index: self.handlePlayBtn(index)
         )
         layout.addWidget(button)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
     def handlePlayBtn(self, index):
         self.setCurrentRoutineData(self.getRowData(index))
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.getController().runRoutine(self.getRoutineSelected())
         finally:
@@ -114,7 +114,7 @@ class RoutinesDialog(QtWidgets.QDialog):
 
     def createNotEditableItem(self, value):
         item = QtWidgets.QTableWidgetItem(self.validateValue(value))
-        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         return item
     
     def createEditableItem(self, value):

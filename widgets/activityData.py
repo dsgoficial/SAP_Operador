@@ -2,7 +2,7 @@ from SAP_Operador.widgets.widget import Widget
 from SAP_Operador.interfaces.IActivityDataWidget import IActivityDataWidget
 
 import os
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 from .remoteLoadLayers import RemoteLoadLayers
 
 class ActivityData(Widget, IActivityDataWidget):
@@ -29,7 +29,7 @@ class ActivityData(Widget, IActivityDataWidget):
 
     @QtCore.pyqtSlot(bool)
     def on_loadLayersBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             activityDataModel = self.sap.getActivityDataModel()
             camadasComuns = [l['nome'] for l in activityDataModel.getLayers() if ('camada_incomum' not in l or not l['camada_incomum'])]

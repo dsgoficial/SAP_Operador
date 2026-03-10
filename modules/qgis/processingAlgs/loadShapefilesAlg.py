@@ -1,6 +1,5 @@
-from PyQt5.QtCore import QCoreApplication
-from PyQt5.QtGui import QColor
-from qgis.PyQt.Qt import QVariant
+from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsProcessing,
                        QgsFeatureSink,
                        QgsProcessingAlgorithm,
@@ -86,9 +85,9 @@ class LoadShapefilesAlg(ProcessingAlg):
         progressStep = 100/listSize if listSize else 0
         rootNode = QgsProject.instance().layerTreeRoot().addGroup('shapefiles')
         groups = {
-            QgsWkbTypes.PointGeometry: self.createGroup('Ponto', rootNode),
-            QgsWkbTypes.LineGeometry: self.createGroup('Linha', rootNode),
-            QgsWkbTypes.PolygonGeometry: self.createGroup('Area', rootNode),
+            QgsWkbTypes.GeometryType.PointGeometry: self.createGroup('Ponto', rootNode),
+            QgsWkbTypes.GeometryType.LineGeometry: self.createGroup('Linha', rootNode),
+            QgsWkbTypes.GeometryType.PolygonGeometry: self.createGroup('Area', rootNode),
             
         }
         for step, data in enumerate(shapefileData):

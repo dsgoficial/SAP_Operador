@@ -1,5 +1,5 @@
 import os
-from PyQt5 import QtWidgets, uic, QtCore
+from qgis.PyQt import QtWidgets, uic, QtCore
 from SAP_Operador.modules.utils.interfaces.IMessage  import IMessage
 from .errorMessageBox import ErrorMessageBox
 from qgis.utils import iface
@@ -71,7 +71,7 @@ class RuleMessageDialog(QtWidgets.QDialog, IMessage):
                     layerButton
                 )
                 parentItem.addChild(childItem)
-        self.treeWidget.header().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.treeWidget.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         super().show()
 
     def handleLayerButton(self, qgis, name):

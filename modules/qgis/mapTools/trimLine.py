@@ -1,7 +1,7 @@
 from qgis.core import QgsFeature
 from qgis.gui import QgsMapToolIdentify
-from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt import QtWidgets
 from qgis.utils import iface
 from qgis import gui, core
 
@@ -11,7 +11,7 @@ class TrimLine(QgsMapToolIdentify, MapTool):
     
     def __init__(self):
         super(TrimLine, self).__init__(iface.mapCanvas())
-        self.setCursor(Qt.CrossCursor)
+        self.setCursor(Qt.CursorShape.CrossCursor)
         self.selectedFeatureIds = []
 
     def canvasReleaseEvent(self, event):
@@ -22,7 +22,7 @@ class TrimLine(QgsMapToolIdentify, MapTool):
         validFeatures = [
             feat
             for feat in foundFeatures
-            if feat.mLayer.geometryType() == core.QgsWkbTypes.LineGeometry
+            if feat.mLayer.geometryType() == core.QgsWkbTypes.GeometryType.LineGeometry
         ]
         if not validFeatures:
             return
@@ -44,7 +44,7 @@ class TrimLine(QgsMapToolIdentify, MapTool):
         self.selectedFeatureIds = []
 
     def execute(self):
-        QtWidgets.QApplication.setOverrideCursor(Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             featureToTrimId = self.selectedFeatureIds[0]
             featureTargetId = self.selectedFeatureIds[1]

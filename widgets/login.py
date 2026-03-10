@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 from SAP_Operador.config import Config
 from SAP_Operador.modules.sap.interfaces.ILogin  import ILogin
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
@@ -111,7 +111,7 @@ class Login(QtWidgets.QDialog, ILogin):
     @QtCore.pyqtSlot(bool)
     def on_submitBtn_clicked(self):
         self.submitBtn.setEnabled(False)
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             if self.isCurrentRemoteMode():
                 self.loginRemote()

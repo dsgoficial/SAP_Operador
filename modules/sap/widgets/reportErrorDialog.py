@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 from SAP_Operador.modules.sap.widgets.sapDialog import SapDialog
 
 class ReportErrorDialog(SapDialog):
@@ -14,7 +14,7 @@ class ReportErrorDialog(SapDialog):
         ):
         super(ReportErrorDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
-        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         self.controller = controller
         self.qgis = qgis
         self.wkt = None

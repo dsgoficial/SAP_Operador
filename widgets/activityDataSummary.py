@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 import os
 
 class ActivityDataSummary(QtWidgets.QDialog):
@@ -37,8 +37,8 @@ class ActivityDataSummary(QtWidgets.QDialog):
             QtWidgets.QSpacerItem(
                 20, 
                 150,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
         )
 

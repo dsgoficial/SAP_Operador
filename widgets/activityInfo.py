@@ -2,7 +2,7 @@ from SAP_Operador.widgets.widget import Widget
 from SAP_Operador.interfaces.IActivityInfoWidget import IActivityInfoWidget
 from SAP_Operador.modules.qgis.qgisApi import QgisApi
 import json
-from PyQt5 import QtWidgets, QtGui, QtCore
+from qgis.PyQt import QtWidgets, QtGui, QtCore
 import textwrap
 
 wrapper = textwrap.TextWrapper(width=40)
@@ -81,8 +81,8 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             QtWidgets.QSpacerItem(
                 150, 
                 20,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
         )
         layout.addWidget(self.endActivityButton)

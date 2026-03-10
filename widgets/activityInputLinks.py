@@ -1,6 +1,6 @@
 from SAP_Operador.widgets.widget import Widget
 
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 import os, json
 
 class ActivityInputLinks(Widget):
@@ -43,7 +43,7 @@ class ActivityInputLinks(Widget):
             QtWidgets.QSpacerItem(
                 20, 
                 150,
-                QtWidgets.QSizePolicy.Expanding,
-                QtWidgets.QSizePolicy.Expanding
+                QtWidgets.QSizePolicy.Policy.Expanding,
+                QtWidgets.QSizePolicy.Policy.Expanding
             )
         )

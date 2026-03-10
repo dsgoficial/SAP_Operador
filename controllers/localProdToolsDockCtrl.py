@@ -5,7 +5,7 @@ from SAP_Operador.factories.timerFactory import TimerFactory
 from SAP_Operador.factories.spatialVerificationFactory import SpatialVerificationFactory
 
 from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
-from PyQt5 import QtWidgets
+from qgis.PyQt import QtWidgets
 from qgis import core, gui, utils
 
 import os
@@ -418,9 +418,9 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         newGroup = rootNode.addGroup('MOLDURA_E_INSUMOS')
         auxDict = OrderedDict(
             {
-                core.QgsWkbTypes.PointGeometry: [],
-                core.QgsWkbTypes.LineGeometry: [],
-                core.QgsWkbTypes.PolygonGeometry: [],
+                core.QgsWkbTypes.GeometryType.PointGeometry: [],
+                core.QgsWkbTypes.GeometryType.LineGeometry: [],
+                core.QgsWkbTypes.GeometryType.PolygonGeometry: [],
             }
         )
         rasterList = []
@@ -466,7 +466,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         return QtWidgets.QFileDialog.getExistingDirectory(
             self.productionTools if self.productionTools else utils.iface.mainWindow(), 
             u"Selecione pasta de destino dos insumos:",
-            options=QtWidgets.QFileDialog.ShowDirsOnly
+            options=QtWidgets.QFileDialog.Option.ShowDirsOnly
         )
 
     def loadActivityInputs(self, inputData):
@@ -567,7 +567,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             self.getActivityLayerNames(),
             self.sapActivity.getConditionalStyleNames()
         )
-        dialog.exec_()
+        dialog.exec()
 
     def showHtmlMessageDialog(self, parent, title, message):
         self.htmlMessageDlg = self.messageFactory.createMessage('HtmlMessageDialog')

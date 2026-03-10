@@ -3,7 +3,7 @@ from SAP_Operador.modules.sap.factories.sapApiHttpSingleton import SapApiHttpSin
 from SAP_Operador.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Operador.modules.sap.factories.guiFactory import GUIFactory
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class RemoteSapCtrl(SapCtrl):
     
@@ -154,7 +154,7 @@ class RemoteSapCtrl(SapCtrl):
         activeObs = stepTypeId in [2,5]
         endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
-        return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
+        return endActivityDialog.exec() == QtWidgets.QDialog.Accepted
         
     def reportError(self, errorId, errorDescription, wkt):
         return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription, wkt)

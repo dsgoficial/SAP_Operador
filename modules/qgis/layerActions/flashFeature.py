@@ -13,13 +13,13 @@ from qgis.gui import (
     QgsRubberBand
 )
 
-from PyQt5.QtCore import (
+from qgis.PyQt.QtCore import (
     QTimer,
     QVariantAnimation,
     Qt
 )
 
-from PyQt5.QtGui import (
+from qgis.PyQt.QtGui import (
     QColor
 )
 
@@ -38,7 +38,7 @@ class FlashFeature:
 
     def valueChangedAnimation(self, value, animation, rb, geomType):
         c = value
-        if ( geomType == QgsWkbTypes.PolygonGeometry ):
+        if ( geomType == QgsWkbTypes.GeometryType.PolygonGeometry ):
             rb.setFillColor( c )
         else:
             rb.setStrokeColor( c )
@@ -66,7 +66,7 @@ class FlashFeature:
         canvasCrs = iface.mapCanvas().mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(layerCrs, canvasCrs, QgsProject.instance())
         geomType = QgsWkbTypes.geometryType(featureGeometry.wkbType())
-        if geomType == QgsWkbTypes.LineGeometry:
+        if geomType == QgsWkbTypes.GeometryType.LineGeometry:
             multiPoints = featureGeometry.convertToType(0, True)
             pointList = multiPoints.asMultiPoint()
             return transform.transform(pointList[int(len(pointList)/2)])
@@ -83,8 +83,8 @@ class FlashFeature:
         horizLine = QgsGeometry.fromPolyline([leftPt, rightPt])
         vertLine = QgsGeometry.fromPolyline([topPt, bottomPt])
         
-        crossRb = QgsRubberBand(iface.mapCanvas(), QgsWkbTypes.LineGeometry)
-        crossRb.setColor(Qt.red)
+        crossRb = QgsRubberBand(iface.mapCanvas(), QgsWkbTypes.GeometryType.LineGeometry)
+        crossRb.setColor(Qt.GlobalColor.red)
         crossRb.setWidth(2)
         crossRb.addGeometry(horizLine, None)
         crossRb.addGeometry(vertLine, None)
@@ -96,10 +96,10 @@ class FlashFeature:
         rb.addGeometry( featureGeometry, layerCrs )
         flashes=3
         duration=500
-        if geomType == QgsWkbTypes.LineGeometry or geomType == QgsWkbTypes.PointGeometry:
+        if geomType == QgsWkbTypes.GeometryType.LineGeometry or geomType == QgsWkbTypes.GeometryType.PointGeometry:
             rb.setWidth( 2 )
             rb.setSecondaryStrokeColor( QColor( 255, 255, 255 ) )
-        if geomType == QgsWkbTypes.PointGeometry :
+        if geomType == QgsWkbTypes.GeometryType.PointGeometry :
             rb.setIcon( QgsRubberBand.ICON_CIRCLE )
         startColor = QColor(255, 0, 0, 255)
         startColor.setAlpha( 255 )

@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from qgis.PyQt import QtCore
 
 from SAP_Operador.interfaces.IProductionToolsBuilder import IProductionToolsBuilder
 

@@ -1,6 +1,6 @@
 from SAP_Operador.modules.qgis.inputs.inputData import InputData
 from qgis import core, gui, utils
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class Message(InputData):
 

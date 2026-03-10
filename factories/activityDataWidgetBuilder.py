@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from qgis.PyQt import QtWidgets, QtGui, QtCore
 from SAP_Operador.interfaces.IActivityDataWidgetBuilder import IActivityDataWidgetBuilder
 from SAP_Operador.widgets.activityData import ActivityData
 

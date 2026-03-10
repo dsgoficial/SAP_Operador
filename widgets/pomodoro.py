@@ -1,5 +1,5 @@
 import os
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 from SAP_Operador.timers.timer import Timer
 from SAP_Operador.modules.qgis.qgisApi import QgisApi
 from datetime import datetime

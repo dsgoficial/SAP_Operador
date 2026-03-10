@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 import os, platform
 from qgis import core, gui, utils
 from SAP_Operador.modules.qgis.inputs.inputRaster import InputRaster
@@ -21,7 +21,7 @@ class RasterLocal(InputRaster):
 
     def getAuthSMB(self):
         authSMB = AuthSMB(utils.iface.mainWindow())
-        r = authSMB.exec_()
+        r = authSMB.exec()
         if not r:
             return
         return authSMB

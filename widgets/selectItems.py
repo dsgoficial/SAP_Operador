@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 
 class SelectItems(QtWidgets.QWidget):
 

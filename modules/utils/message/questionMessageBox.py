@@ -1,5 +1,5 @@
 import os
-from PyQt5 import QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic
 from SAP_Operador.modules.utils.interfaces.IMessage  import IMessage
 
 class QuestionMessageBox(IMessage):
@@ -13,4 +13,4 @@ class QuestionMessageBox(IMessage):
             title, 
             text
         )
-        return result == QtWidgets.QMessageBox.Yes
+        return result == QtWidgets.QMessageBox.StandardButton.Yes

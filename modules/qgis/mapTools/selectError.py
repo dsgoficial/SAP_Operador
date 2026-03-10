@@ -1,11 +1,11 @@
 from qgis.core import QgsFeature, QgsGeometry
 from qgis.gui import QgsMapToolIdentify
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5 import QtWidgets
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt import QtWidgets
 from qgis.utils import iface
 from qgis import gui, core
 import math
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 
 from SAP_Operador.modules.qgis.mapTools.mapTool import MapTool
 
@@ -15,7 +15,7 @@ class SelectError(QgsMapToolIdentify, MapTool):
     
     def __init__(self):
         super(SelectError, self).__init__(iface.mapCanvas())
-        self.setCursor(Qt.CrossCursor)
+        self.setCursor(Qt.CursorShape.CrossCursor)
         self.rubberBand = None
         self.snapCursorRubberBand = None
         self.transform = core.QgsCoordinateTransform(
@@ -39,7 +39,7 @@ class SelectError(QgsMapToolIdentify, MapTool):
         x = startPoint.x()
         y = startPoint.y()
         r = math.sqrt((endPoint.x() - startPoint.x())**2 + (endPoint.y() - startPoint.y())**2)
-        self.rubberBand.reset(core.QgsWkbTypes.PolygonGeometry)
+        self.rubberBand.reset(core.QgsWkbTypes.GeometryType.PolygonGeometry)
         self.points = []
 
         for itheta in range(nPoints+1):
@@ -50,30 +50,30 @@ class SelectError(QgsMapToolIdentify, MapTool):
         self.rubberBand.closePoints()
 
     def getRubberBand(self):
-        rubberBand = gui.QgsRubberBand(iface.mapCanvas(), core.QgsWkbTypes.PolygonGeometry)
+        rubberBand = gui.QgsRubberBand(iface.mapCanvas(), core.QgsWkbTypes.GeometryType.PolygonGeometry)
         rubberBand.setFillColor(QColor(255, 0, 0, 40))
         rubberBand.setSecondaryStrokeColor(QColor(255, 0, 0, 200))
         rubberBand.setWidth(2)
         return rubberBand
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key.Key_Escape:
             self.initVariable()
             return
   
     def canvasReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             if self.startPoint:
                 return
             self.startPoint = core.QgsPointXY(event.mapPoint())
             self.rubberBand = self.getRubberBand()
             return
-        if event.button() == Qt.RightButton:
+        if event.button() == Qt.MouseButton.RightButton:
             self.execute()
             self.initVariable()
 
     def getSnapRubberBand(self):
-        rubberBand = gui.QgsRubberBand(iface.mapCanvas(), geometryType=core.QgsWkbTypes.PointGeometry)
+        rubberBand = gui.QgsRubberBand(iface.mapCanvas(), geometryType=core.QgsWkbTypes.GeometryType.PointGeometry)
         rubberBand.setFillColor(QColor(255, 0, 0, 40))
         rubberBand.setSecondaryStrokeColor(QColor(255, 0, 0, 200))
         rubberBand.setWidth(2)
@@ -87,7 +87,7 @@ class SelectError(QgsMapToolIdentify, MapTool):
     def canvasMoveEvent(self, event):
         if self.snapCursorRubberBand:
             self.snapCursorRubberBand.hide()
-            self.snapCursorRubberBand.reset(geometryType=core.QgsWkbTypes.PointGeometry)
+            self.snapCursorRubberBand.reset(geometryType=core.QgsWkbTypes.GeometryType.PointGeometry)
             self.snapCursorRubberBand = None
         oldPoint = core.QgsPointXY(event.mapPoint())
         event.snapPoint()

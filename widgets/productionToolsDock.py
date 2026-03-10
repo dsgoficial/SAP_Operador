@@ -2,7 +2,7 @@ from SAP_Operador.interfaces.IProductionToolsDock import IProductionToolsDock
 from SAP_Operador.config  import Config
 
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 
 class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
 
@@ -84,8 +84,8 @@ class ProductionToolsDock(QtWidgets.QDockWidget, IProductionToolsDock):
 
     def addLine(self):
         lineA = QtWidgets.QFrame()
-        lineA.setFrameShape(QtWidgets.QFrame.HLine)
-        lineA.setFrameShadow(QtWidgets.QFrame.Sunken)
+        lineA.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        lineA.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
         self.mainArea.layout().insertWidget(0, lineA)
 
     def addActivityWidget(self, name, widget):

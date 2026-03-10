@@ -6,14 +6,13 @@ from SAP_Operador.modules.qgis.factories.mapFunctionsFactory import MapFunctions
 from SAP_Operador.modules.qgis.factories.mapToolsFactory import MapToolsFactory
 
 from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtWidgets import QToolBar
-from PyQt5 import QtCore, QtWidgets, QtGui 
+from qgis.PyQt.QtWidgets import QMenu, QToolBar
+from qgis.PyQt import QtCore, QtWidgets, QtGui
 from qgis import gui, core
 import base64, os, processing
 from qgis.utils import plugins, iface
 from configparser import ConfigParser
-from PyQt5.QtWidgets import QAction, QMenu
-from PyQt5.QtGui import QIcon
+from qgis.PyQt.QtGui import QAction, QIcon
 import math, uuid
 from configparser import ConfigParser
 import subprocess
@@ -109,7 +108,7 @@ class QgisApi(IQgisApi):
 
     def hasModifiedLayers(self):
         for lyr in core.QgsProject.instance().mapLayers().values():
-            if not(lyr.type() == core.QgsMapLayer.VectorLayer):
+            if not(lyr.type() == core.QgsMapLayer.LayerType.VectorLayer):
                 continue
             if lyr.isModified():
                 return True
@@ -167,7 +166,7 @@ class QgisApi(IQgisApi):
             group = rootNode.insertGroup(pos, groupName)
         view = iface.layerTreeView()
         m = view.model()
-        listIndexes = m.match(m.index(0, 0), QtCore.Qt.DisplayRole, groupName, QtCore.Qt.MatchFixedString)
+        listIndexes = m.match(m.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole, groupName, QtCore.Qt.MatchFlag.MatchFixedString)
         if listIndexes:
             i = listIndexes[0]
             view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.ClearAndSelect)
@@ -238,7 +237,7 @@ class QgisApi(IQgisApi):
         iface.digitizeToolBar().addAction(action)
 
     def addDockWidget(self, dockWidget, side):
-        position = QtCore.Qt.RightDockWidgetArea if side == 'right' else QtCore.Qt.LeftDockWidgetArea
+        position = QtCore.Qt.DockWidgetArea.RightDockWidgetArea if side == 'right' else QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
         dockers = iface.mainWindow().findChildren(QtWidgets.QDockWidget)
         tabify = [ d.objectName() for d in dockers ]
         iface.addTabifiedDockWidget(position, dockWidget, tabify, True)
@@ -414,7 +413,7 @@ class QgisApi(IQgisApi):
         return [
             tl.layer()
             for tl in root.findLayers()
-            if tl.isVisible() and tl.layer().type() == core.QgsMapLayer.RasterLayer
+            if tl.isVisible() and tl.layer().type() == core.QgsMapLayer.LayerType.RasterLayer
         ]
 
     def pageRaster(self, direction):
@@ -425,7 +424,7 @@ class QgisApi(IQgisApi):
             return (False, 'Crie um grupo com o nome "{0}" e coloque as camadas do tipo "Raster" para paginação.'.format(groupName))
         images = [
             tLayer for tLayer in grupo.findLayers() 
-            if tLayer.layer().type() == core.QgsMapLayer.RasterLayer
+            if tLayer.layer().type() == core.QgsMapLayer.LayerType.RasterLayer
         ]
         if len(images) == 0:
             return (False, 'O grupo "{0}" não possue camadas do tipo "Raster"'.format(groupName))
@@ -589,9 +588,9 @@ class QgisApi(IQgisApi):
     def createProgressMessageBar(self, title):
         progressMessageBar = iface.messageBar().createMessage('SAP Operador', title)
         progress = QtWidgets.QProgressBar()
-        progress.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        progress.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
         progressMessageBar.layout().addWidget(progress)
-        iface.messageBar().pushWidget(progressMessageBar, core.Qgis.Info)
+        iface.messageBar().pushWidget(progressMessageBar, core.Qgis.MessageLevel.Info)
         return progressMessageBar, progress
 
     def removeMessageBar(self, messageBar):
@@ -628,12 +627,12 @@ class QgisApi(IQgisApi):
         return [
             l
             for l in core.QgsProject.instance().mapLayers().values()
-            if l.type() == core.QgsMapLayer.VectorLayer
+            if l.type() == core.QgsMapLayer.LayerType.VectorLayer
         ]
     
     def getActiveVectorLayer(self):
         activeLayer = iface.activeLayer()
-        if not( activeLayer and activeLayer.type() == core.QgsMapLayer.VectorLayer ):
+        if not( activeLayer and activeLayer.type() == core.QgsMapLayer.LayerType.VectorLayer ):
             return
         return activeLayer
 

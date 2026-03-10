@@ -1,6 +1,6 @@
 import time
 from datetime import date, timedelta
-from PyQt5.QtCore import QThread, pyqtSignal
+from qgis.PyQt.QtCore import QThread, pyqtSignal
 from qgis.core import QgsSettings
 from .userHistoric import UserHistoric
 

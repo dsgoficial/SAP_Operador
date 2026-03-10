@@ -13,7 +13,7 @@ class PageStyles(MapFunction):
             return (False, 'Selecione uma camada')
         if not(layer.crs().mapUnits() == core.QgsUnitTypes.DistanceMeters):
             return (False, 'A camada ativa deve ter sua unidade de distancia em metros')
-        if not(layer.geometryType() == core.QgsWkbTypes.LineGeometry):
+        if not(layer.geometryType() == core.QgsWkbTypes.GeometryType.LineGeometry):
             return (False, 'A camada ativa deve ser do tipo "LineGeometry"')
         if not(layer.isEditable()):
             return (False, 'A camada ativa deve está no modo editável')

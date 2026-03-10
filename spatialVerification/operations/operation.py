@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore
+from qgis.PyQt import QtCore
 from qgis import core, gui
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-from PyQt5 import QtCore
+from qgis.PyQt import QtCore
 from qgis import core, gui
 from .operation import Operation
 

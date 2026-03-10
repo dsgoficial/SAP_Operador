@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore
+from qgis.PyQt import QtCore
 from qgis import core, gui
 from SAP_Operador.factories.spatialOperationFactory import SpatialOperationFactory
 
@@ -46,7 +46,7 @@ class ValidateUserOperations(QtCore.QObject):
         self.trackList = [
             l for l in self.qgis.getLoadedVectorLayers()
             if (
-                l.type() == core.QgsMapLayer.VectorLayer
+                l.type() == core.QgsMapLayer.LayerType.VectorLayer
                 and
                 l.id() in traceableLayerIds
             )

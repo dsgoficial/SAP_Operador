@@ -6,7 +6,7 @@ import os
 import subprocess
 import platform
 import shutil
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class UpdaterCtrl:
     

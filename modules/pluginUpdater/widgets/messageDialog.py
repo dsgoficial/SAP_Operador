@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 
 class MessageDialog(QtWidgets.QDialog):
 
@@ -7,8 +7,8 @@ class MessageDialog(QtWidgets.QDialog):
         super(MessageDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
-        #self.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        #self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
 
     def getUiPath(self):
         return os.path.join(

@@ -1,5 +1,5 @@
 import os, sys, copy, json
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
 from .tableFunctions import TableFunctions
 
@@ -61,7 +61,7 @@ class CombinationViewerDlg(QtWidgets.QDialog, TableFunctions):
         self.attributeSelection.selectionChange.connect(self.loadLayersFound)
         self.attributeSelection.setSendColumnHidden(2, True)
         self.attributeSelection.setSelectionColumnHidden(2, True)
-        self.layersFoundTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.layersFoundTw.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.adjustColumns(self.layersFoundTw)
         self.adjustRows(self.layersFoundTw)
 
