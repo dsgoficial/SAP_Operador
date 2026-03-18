@@ -116,14 +116,36 @@ class QgisApi(IQgisApi):
         return False
 
     def checkModifiedLayersByStepId(self, stepId, noteLayers):
+        import logging
+        logger = logging.getLogger('SAP_Operador')
+        logger.info(f"[checkModifiedLayersByStepId] stepId={stepId}, noteLayers count={len(noteLayers)}")
+        loadedLayers = core.QgsProject.instance().mapLayers().values()
+        loadedLayerNames = [
+            f"{l.dataProvider().uri().schema()}.{l.dataProvider().uri().table()}"
+            for l in loadedLayers
+            if l.type() == core.QgsMapLayer.VectorLayer
+        ]
+        logger.info(f"[checkModifiedLayersByStepId] Camadas carregadas: {loadedLayerNames}")
+        missingLayers = []
+        for noteLayer in noteLayers:
+            layer = self.getLayerFromTable(
+                noteLayer['schema'],
+                noteLayer['nome']
+            )
+            if not layer:
+                missingLayers.append(f"{noteLayer['schema']}.{noteLayer['nome']}")
+        if missingLayers:
+            logger.warning(f"[checkModifiedLayersByStepId] Camadas de apontamento faltando: {missingLayers}")
+            raise Exception(
+                "Carregue as camadas de apontamento!\n"
+                f"Camadas faltando: {', '.join(missingLayers)}"
+            )
         if stepId == 3: #correcao
             for noteLayer in noteLayers:
                 layer = self.getLayerFromTable(
                     noteLayer['schema'],
                     noteLayer['nome']
                 )
-                if not layer:
-                    raise Exception("Carregue as camadas de apontamento!")
                 for feature in layer.getFeatures():
                     if (
                         feature[noteLayer['atributo_situacao_correcao']] == 1
@@ -142,8 +164,6 @@ class QgisApi(IQgisApi):
                     noteLayer['schema'],
                     noteLayer['nome']
                 )
-                if not layer:
-                    raise Exception("Carregue as camadas de apontamento!")
                 if len(list(layer.getFeatures())) == 0:
                     continue
                 return False
@@ -379,6 +399,10 @@ class QgisApi(IQgisApi):
             return False
 
     def cleanProject(self):
+        import logging, traceback
+        logger = logging.getLogger('SAP_Operador')
+        logger.warning("[cleanProject] CHAMADO - removendo todas as camadas")
+        logger.warning(f"[cleanProject] Stack trace:\n{''.join(traceback.format_stack())}")
         core.QgsProject.instance().removeAllMapLayers()
         core.QgsProject.instance().layerTreeRoot().removeAllChildren()
         self.canvasRefresh()

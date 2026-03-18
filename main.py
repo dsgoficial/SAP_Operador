@@ -1,6 +1,14 @@
-import os, sys
+import os, sys, logging
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+# Configurar logger para debug
+_sap_logger = logging.getLogger('SAP_Operador')
+if not _sap_logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter('[%(name)s] %(levelname)s: %(message)s'))
+    _sap_logger.addHandler(_handler)
+    _sap_logger.setLevel(logging.DEBUG)
 
 
 from .controllers.loginCtrl import LoginCtrl

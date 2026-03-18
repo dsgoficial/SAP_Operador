@@ -797,24 +797,32 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         messageDlg.show(parent, title, message)
 
     def readProjectCallback(self):
+        import logging, traceback
+        logger = logging.getLogger('SAP_Operador')
+        logger.warning(f"[readProjectCallback] DISPARADO")
+        logger.warning(f"[readProjectCallback] Stack trace:\n{''.join(traceback.format_stack())}")
         self.productionTools.close() if self.productionTools else ''
-        
+
         user = self.qgis.getProjectVariable('productiontools:user')
         password = self.qgis.getProjectVariable('productiontools:password')
         server = self.qgis.getSettingsVariable('productiontools:server')
         if not(user and password and server):
+            logger.info("[readProjectCallback] Sem credenciais, retornando")
             return
 
         self.sap.setServer(server)
         if self.prodToolsSettings.checkPluginUpdates():
+            logger.info("[readProjectCallback] Plugin update detectado, retornando")
             return
         self.sap.authUser(user, password, server)
-        
-       
-        if self.sap.isValidActivity():
+
+        isValid = self.sap.isValidActivity()
+        logger.warning(f"[readProjectCallback] isValidActivity={isValid}")
+        if isValid:
             self.prodToolsSettings.initSaveTimer()
             self.canvasMonitoring.start()
             return
+        logger.warning("[readProjectCallback] Atividade INVALIDA - chamando cleanProject!")
         self.qgis.cleanProject()
         self.showInfoMessageBox(
             self.qgis.getMainWindow(),
