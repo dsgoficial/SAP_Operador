@@ -116,16 +116,14 @@ class QgisApi(IQgisApi):
         return False
 
     def checkModifiedLayersByStepId(self, stepId, noteLayers):
-        import logging
-        logger = logging.getLogger('SAP_Operador')
-        logger.info(f"[checkModifiedLayersByStepId] stepId={stepId}, noteLayers count={len(noteLayers)}")
+        print(f"[SAP_DEBUG] checkModifiedLayersByStepId stepId={stepId}, noteLayers count={len(noteLayers)}")
         loadedLayers = core.QgsProject.instance().mapLayers().values()
         loadedLayerNames = [
             f"{l.dataProvider().uri().schema()}.{l.dataProvider().uri().table()}"
             for l in loadedLayers
             if l.type() == core.QgsMapLayer.VectorLayer
         ]
-        logger.info(f"[checkModifiedLayersByStepId] Camadas carregadas: {loadedLayerNames}")
+        print(f"[SAP_DEBUG] Camadas carregadas: {loadedLayerNames}")
         missingLayers = []
         for noteLayer in noteLayers:
             layer = self.getLayerFromTable(
@@ -135,7 +133,7 @@ class QgisApi(IQgisApi):
             if not layer:
                 missingLayers.append(f"{noteLayer['schema']}.{noteLayer['nome']}")
         if missingLayers:
-            logger.warning(f"[checkModifiedLayersByStepId] Camadas de apontamento faltando: {missingLayers}")
+            print(f"[SAP_DEBUG] Camadas de apontamento faltando: {missingLayers}")
             raise Exception(
                 "Carregue as camadas de apontamento!\n"
                 f"Camadas faltando: {', '.join(missingLayers)}"
@@ -399,10 +397,7 @@ class QgisApi(IQgisApi):
             return False
 
     def cleanProject(self):
-        import logging, traceback
-        logger = logging.getLogger('SAP_Operador')
-        logger.warning("[cleanProject] CHAMADO - removendo todas as camadas")
-        logger.warning(f"[cleanProject] Stack trace:\n{''.join(traceback.format_stack())}")
+        print("[SAP_DEBUG] cleanProject CHAMADO - removendo todas as camadas")
         core.QgsProject.instance().removeAllMapLayers()
         core.QgsProject.instance().layerTreeRoot().removeAllChildren()
         self.canvasRefresh()
