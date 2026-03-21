@@ -4,49 +4,66 @@ from SAP_Operador.modules.sap.interfaces.ISapApi import ISapApi
 
 TIMEOUT = 60 * 3
 
-class SapHttp(ISapApi):   
+class SapHttp(ISapApi):
 
     def __init__(self):
         super(SapHttp, self).__init__()
         self.server = None
         self.token = None
+        self._loginCredentials = None
+        self._isReAuthenticating = False
+        self._session = requests.Session()
+        self._session.trust_env = False
+
+    def _reAuth(self):
+        if not self._loginCredentials:
+            return False
+        self._isReAuthenticating = True
+        try:
+            response = self.httpPostJson(
+                url="{0}/login".format(self.getServer()),
+                postData={
+                    "usuario" : self._loginCredentials['user'],
+                    "senha" : self._loginCredentials['password'],
+                    'plugins' : self._loginCredentials['pluginsVersion'],
+                    'qgis' : self._loginCredentials['gisVersion'],
+                    'cliente' : 'sap_fp'
+                }
+            )
+            responseJson = response.json()
+            if not self.validVersion(responseJson):
+                return False
+            self.setToken(responseJson['dados']['token'])
+            return True
+        except Exception:
+            return False
+        finally:
+            self._isReAuthenticating = False
+
+    def _requestWithRetry(self, method, url, **kwargs):
+        headers = kwargs.get('headers', {})
+        if self.getToken():
+            headers['authorization'] = self.getToken()
+        kwargs['headers'] = headers
+        kwargs['timeout'] = TIMEOUT
+        response = getattr(self._session, method)(url, **kwargs)
+        if response.status_code == 403 and not self._isReAuthenticating and self._reAuth():
+            kwargs['headers']['authorization'] = self.getToken()
+            response = getattr(self._session, method)(url, **kwargs)
+        self.checkError(response)
+        return response
 
     def httpPost(self, url, postData, headers):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), headers=headers, timeout=TIMEOUT)
-        self.checkError(response)
-        return response
+        return self._requestWithRetry('post', url, data=json.dumps(postData), headers=headers)
 
-    def httpGet(self, url): 
-        headers = {}
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.get(url, headers=headers, timeout=TIMEOUT)
-        self.checkError(response)
-        return response
+    def httpGet(self, url):
+        return self._requestWithRetry('get', url, headers={})
 
-    def httpPut(self, url, postData={}, headers={}):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), headers=headers, timeout=TIMEOUT)
-        self.checkError(response)
-        return response
+    def httpPut(self, url, postData=None, headers=None):
+        return self._requestWithRetry('put', url, data=json.dumps(postData or {}), headers=headers or {})
 
-    def httpDelete(self, url, postData={}, headers={}):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.delete(url, data=json.dumps(postData), headers=headers, timeout=TIMEOUT)
-        self.checkError(response)
-        return response
+    def httpDelete(self, url, postData=None, headers=None):
+        return self._requestWithRetry('delete', url, data=json.dumps(postData or {}), headers=headers or {})
 
     def setServer(self, server):
         self.server = "{0}/api".format(server)
@@ -61,8 +78,14 @@ class SapHttp(ISapApi):
         return self.token
     
     def loginUser(self, user, password, gisVersion, pluginsVersion):
+        self._loginCredentials = {
+            'user': user,
+            'password': password,
+            'gisVersion': gisVersion,
+            'pluginsVersion': pluginsVersion
+        }
         response = self.httpPostJson(
-            url="{0}/login".format(self.getServer()), 
+            url="{0}/login".format(self.getServer()),
             postData={
                 "usuario" : user,
                 "senha" : password,

@@ -1,6 +1,7 @@
 from SAP_Operador.widgets.widget import Widget
 
-import os, sip
+import os
+from qgis.PyQt import sip
 from qgis.PyQt import QtWidgets, QtGui, QtCore, uic
 
 class ChangeStyles(Widget):
@@ -36,7 +37,7 @@ class ChangeStyles(Widget):
     def prev(self):
         nextIndex = self.stylesCb.currentIndex() - 1
         if nextIndex < 0:
-            self.stylesCb.setCurrentIndex(0)
+            self.stylesCb.setCurrentIndex(self.stylesCb.count() - 1)
             return
         self.stylesCb.setCurrentIndex(nextIndex)
 

@@ -14,8 +14,6 @@ from qgis.utils import plugins, iface
 from configparser import ConfigParser
 from qgis.PyQt.QtGui import QAction, QIcon
 import math, uuid
-from configparser import ConfigParser
-import subprocess
 import platform
 import shutil
 import json
@@ -169,7 +167,7 @@ class QgisApi(IQgisApi):
         listIndexes = m.match(m.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole, groupName, QtCore.Qt.MatchFlag.MatchFixedString)
         if listIndexes:
             i = listIndexes[0]
-            view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.ClearAndSelect)
+            view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
         iface.mapCanvas().freeze(False)
 
     def getLayerUriFromTable(self, layerSchema, layerName):
@@ -213,8 +211,8 @@ class QgisApi(IQgisApi):
 
     def getShortcutKey(self, shortcutKeyName):
         keys = {
-            'Y': QtCore.Qt.Key_Y,
-            'B': QtCore.Qt.Key_B,
+            'Y': QtCore.Qt.Key.Key_Y,
+            'B': QtCore.Qt.Key.Key_B,
         }
         if not shortcutKeyName in keys:
             return
@@ -292,7 +290,7 @@ class QgisApi(IQgisApi):
                 layer.styleManager().addStyle(style['name'], mapLayerStyle) """
                 doc = QDomDocument()
                 doc.setContent(style['qml'])
-                layer.importNamedStyle(doc, core.QgsMapLayer.Symbology | core.QgsMapLayer.Labeling )
+                layer.importNamedStyle(doc, core.QgsMapLayer.StyleCategory.Symbology | core.QgsMapLayer.StyleCategory.Labeling)
                 layer.styleManager().addStyleFromLayer(style['name'])
             layer.styleManager().removeStyle('default')
             layer.styleManager().setCurrentStyle(defaultStyle)
@@ -374,7 +372,7 @@ class QgisApi(IQgisApi):
         try:
             self.getEvents()[event].disconnect(callback)
             return True
-        except:
+        except Exception:
             return False
 
     def cleanProject(self):
@@ -445,7 +443,7 @@ class QgisApi(IQgisApi):
         }
         if not(direction in pageFunctions):
             return (False, 'Direção inválida')
-        currentPostion = images.index(rastersVisiveis[0])
+        currentPostion = images.index(visibleImages[0])
         nextPosition = pageFunctions[direction](currentPostion, images)
         images[currentPostion].setVisible(False)
         images[nextPosition].setVisible(True)
@@ -506,53 +504,9 @@ class QgisApi(IQgisApi):
             return
         mBtnLogFile.setEnabled(True)
         
-    def updateMainWindow(self, customizationData):
-        mSettings = core.QSettings()
-        mw = iface.mainWindow()
-        cp = ConfigParser()
-        cp.read_string(customizationData)
-        items = list(cp['Customization'].items())
-
-        menuBar = mw.menuBar()
-        menuCustomization = [ item for item in items if itemm[0].startswith('menus') ]
-        
-        mSettings.beginGroup( "Customization/Menus" )
-        menus = menuBar.findChildren(core.QMenu)
-        for menu in menus:
-            if not menu.objectName() or not(menu.objectName() in customLayout):
-                continue
-            visible = customLayout[menu.objectName()]
-            if not visible :
-                menuBar.removeAction( menu.menuAction() )
-            else:
-                menuBar.addAction( menu.menuAction() )
-        mSettings.endGroup()
-
-        mSettings.beginGroup( "Customization/Toolbars" )
-        toolBars = mw.findChildren(core.QToolBar)
-        for toolBar in toolBars:
-            objectName = toolBar.objectName()
-            if not objectName or not(objectName in customLayout):
-                continue
-            visible = customLayout[objectName]
-            if not visible :
-                mw.removeToolBar( toolBar )
-                iface.viewMenu().removeAction(toolBar.toggleViewAction())
-            else:
-                iface.viewMenu().addAction(toolBar.toggleViewAction())
-                toolBar.toggleViewAction().trigger() if not toolBar.isVisible() else ''
-        mSettings.endGroup()
-
-        mSettings.beginGroup( "Customization/Docks" )
-        docks = mw.findChildren(core.QDockWidget)
-        for dock in docks:
-            objectName = dock.objectName()
-            if not objectName or not(objectName in customLayout):
-                continue
-            visible = customLayout[objectName]
-            if not visible :
-                mw.removeDockWidget( dock )
-        mSettings.endGroup()
+    # TODO: fix and re-enable - method has multiple bugs (undefined customLayout, typo itemm)
+    # def updateMainWindow(self, customizationData):
+    #     pass
 
     def getDatabaseSettings(self):
         dbaliases = sorted([ 
@@ -647,37 +601,11 @@ class QgisApi(IQgisApi):
         )
 
     def getPluginPaths(self):
-        if platform.system().lower() == 'windows':
-            return self.getWindowsPluginPaths()
-        else:
-            return self.getLinuxPluginPaths()
-
-    def getWindowsPluginPaths(self):
         repositoryPluginsPath = self.getQgisPluginsDirPath()
-        p = subprocess.Popen(
-            'cmd /u /c "dir {0} /B"'.format(repositoryPluginsPath), 
-            stdout=subprocess.PIPE, 
-            shell=True
-        )
-        result = p.communicate()
         return [
             (name, os.path.join(repositoryPluginsPath, name))
-            for name in result[0].decode('u16').split('\r\n')
-            if name != ''
-        ]
-
-    def getLinuxPluginPaths(self):
-        repositoryPluginsPath = self.getQgisPluginsDirPath()
-        p = subprocess.Popen(
-            'ls {0}'.format(repositoryPluginsPath), 
-            stdout=subprocess.PIPE, 
-            shell=True
-        )
-        result = p.communicate()
-        return [
-            (name, os.path.join(repositoryPluginsPath, name))
-            for name in result[0].decode('u8').split('\n')
-            if name != ''
+            for name in os.listdir(repositoryPluginsPath)
+            if os.path.isdir(os.path.join(repositoryPluginsPath, name))
         ]
 
     def createMenuBar(self, menuName):
