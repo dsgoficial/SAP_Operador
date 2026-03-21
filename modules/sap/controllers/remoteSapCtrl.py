@@ -149,10 +149,10 @@ class RemoteSapCtrl(SapCtrl):
         self.reportErrorDialog.reported.connect(callback)
         return self.reportErrorDialog.show()
 
-    #mostrar nova parte apenas quando etapaId 2 e 5
+    #Exibe campo de observação para: Revisão (2), Revisão final (5) e  Revisão/Correção (4) (neste caso fica na propria atv) 
     def showEndActivityDialog(self, withoutCorrection, stepTypeId):
-        activeObs = stepTypeId in [2,5]
-        endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs)
+        activeObs = stepTypeId in [2, 4, 5]
+        endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs, stepTypeId)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
         return endActivityDialog.exec_() == QtWidgets.QDialog.Accepted
         
