@@ -151,8 +151,8 @@ class RemoteSapCtrl(SapCtrl):
 
     #mostrar nova parte apenas quando etapaId 2 e 5
     def showEndActivityDialog(self, withoutCorrection, stepTypeId):
-        activeObs = stepTypeId in [2,5]
-        endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs)
+        activeObs = stepTypeId in [2, 4, 5]
+        endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs, stepTypeId)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
         return endActivityDialog.exec() == QtWidgets.QDialog.Accepted
         

@@ -7,5 +7,5 @@ class GUIFactory:
     def createReportErrorDialog(self, controller, qgis):
         return ReportErrorDialog(controller, qgis)
 
-    def createEndActivityDialog(self, controller, activeObs):
-        return EndActivityDialogSingleton.getInstance(controller, activeObs)
+    def createEndActivityDialog(self, controller, activeObs, stepTypeId=None):
+        return EndActivityDialogSingleton.getInstance(controller, activeObs, stepTypeId)

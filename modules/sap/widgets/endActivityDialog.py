@@ -4,17 +4,24 @@ from SAP_Operador.modules.sap.widgets.sapDialog import SapDialog
 
 class EndActivityDialog(SapDialog):
 
-    def __init__(self, controller=None, activeObs=False):
+    def __init__(self, controller=None, activeObs=False, stepTypeId=None):
         super(EndActivityDialog, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
+        self.stepTypeId = stepTypeId
         self.endBtn.setEnabled(False)
         self.nameLe.textEdited.connect(self.updateEndButton)
         self.withoutCorrection = False
         self.activityDataModel = self.controller.getActivityDataModel()
-        stepTypeId = self.activityDataModel.getStepTypeId()
         self.revisionW.setVisible(activeObs)
-        self.resize(502, 141)
+        if activeObs:
+            if self.stepTypeId == 4:
+                self.label_3.setText('Observação desta atividade (Opcional):')
+            else:
+                self.label_3.setText('Observação para a próxima atividade de correção (Opcional):')
+            self.resize(502, 280)
+        else:
+            self.resize(502, 141)
 
     def setController(self, controller):
         self.controller = controller
@@ -43,9 +50,12 @@ class EndActivityDialog(SapDialog):
         }
         if self.changeFlowCb.currentIndex() != 0:
             data['alterar_fluxo'] = self.changeFlowCb.currentText()
-        obs = self.obsTe.toPlainText()
+        obs = self.obsTe.toPlainText().strip()
         if obs:
-            data['observacao_proxima_atividade'] = obs
+            if self.stepTypeId == 4:
+                data['observacao_atividade'] = obs
+            else:
+                data['observacao_proxima_atividade'] = obs
         return data
 
     @QtCore.pyqtSlot(bool)
