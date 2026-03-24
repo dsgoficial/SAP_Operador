@@ -164,7 +164,7 @@ class QgisApi(IQgisApi):
             group = rootNode.insertGroup(pos, groupName)
         view = iface.layerTreeView()
         m = view.model()
-        listIndexes = m.match(m.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole, groupName, QtCore.Qt.MatchFlag.MatchFixedString)
+        listIndexes = m.match(m.index(0, 0), QtCore.Qt.ItemDataRole.DisplayRole, groupName, 1, QtCore.Qt.MatchFlag.MatchFixedString)
         if listIndexes:
             i = listIndexes[0]
             view.selectionModel().setCurrentIndex(i, QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect)
