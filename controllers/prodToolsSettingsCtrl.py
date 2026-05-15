@@ -1,4 +1,5 @@
 from SAP_Operador.factories.GUIFactory import GUIFactory
+from SAP_Operador.modules.qgis.scripts.themeCycle import ThemeCycle
 from SAP_Operador.factories.timerFactory import TimerFactory
 from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
 from SAP_Operador.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
@@ -27,6 +28,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
         self.saveTimer = None
         self.showMarkers = True
         self.menuBarActions = []
+        self.themeCycle = ThemeCycle()
 
     def load(self):
         self.loadCustomQgisSettings()
@@ -194,6 +196,11 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Habilitar NMEA',
                 'iconPath':os.path.join(iconRootPath, 'nmea.png'),
                 'callback': self.qgis.enableNMEA
+            },
+            {
+                'name': 'Ciclar Map Themes',
+                'iconPath': os.path.join(iconRootPath, 'theme_cycle.svg'),
+                'callback': self.themeCycle.cycle
             },
             # {
             #     'name': 'Reclassify Mode',
