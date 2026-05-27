@@ -6,7 +6,7 @@ class EndActivityDialogSingleton:
 
     @staticmethod
     def getInstance(*args):
-        if not EndActivityDialogSingleton.dialog:
+        if EndActivityDialogSingleton.dialog:
             EndActivityDialogSingleton.dialog.close()
-            EndActivityDialogSingleton.dialog = EndActivityDialog(*args)
+        EndActivityDialogSingleton.dialog = EndActivityDialog(*args)
         return EndActivityDialogSingleton.dialog

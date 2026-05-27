@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.29.24
+
+Correção de bug:
+- Problema ao finalizar atividade, janela não abria por validação incorreta de dados.
+
 ## 3.29.23
 
 Correção de bug:
