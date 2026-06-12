@@ -99,6 +99,7 @@ class ActivityInfo(Widget, IActivityInfoWidget):
             self.endActivityButton.setEnabled(False)
 
     def setRequirementState(self, description, state):
+        state = state.value if hasattr(state, 'value') else int(state)
         activityName = self.qgis.getProjectVariable('productiontools:activityName')
         checklist = self.qgis.getSettingsVariable('productiontools:checklist')
         if not checklist:
@@ -138,8 +139,8 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         if not checklist:
             return QtCore.Qt.CheckState.Unchecked
         checklist = json.loads(checklist)
-        state = int(checklist[activityName][description]) if activityName in checklist and description in checklist[activityName] else QtCore.Qt.CheckState.Unchecked
-        return state
+        state = int(checklist[activityName][description]) if activityName in checklist and description in checklist[activityName] else 0
+        return QtCore.Qt.CheckState(state)
 
     def allRequirementsChecked(self):
         for idx in range(self.layout.count()):

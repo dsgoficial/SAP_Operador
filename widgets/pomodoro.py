@@ -110,7 +110,7 @@ class Pomodoro(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot(bool)
     def on_startBtn_clicked(self):
-        self.cronTimer.start(self.timeOnSeconds)
+        self.cronTimer.start(1000)
         self.startBtn.setVisible(False)
         self.pauseBtn.setVisible(True)
 

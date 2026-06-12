@@ -62,7 +62,7 @@ class SelectItems(QtWidgets.QWidget):
     def searchItems(self, itemList, text):
         for idx in range(itemList.count()):
             item = itemList.item(idx)
-            if not(text.lower() in item.text()):
+            if not(text.lower() in item.text().lower()):
                 item.setHidden(True)
             else:
                 item.setHidden(False)

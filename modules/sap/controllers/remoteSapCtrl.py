@@ -154,7 +154,7 @@ class RemoteSapCtrl(SapCtrl):
         activeObs = stepTypeId in [2, 4, 5]
         endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs, stepTypeId)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
-        return endActivityDialog.exec() == QtWidgets.QDialog.Accepted
+        return endActivityDialog.exec() == QtWidgets.QDialog.DialogCode.Accepted
         
     def reportError(self, errorId, errorDescription, wkt):
         return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription, wkt)

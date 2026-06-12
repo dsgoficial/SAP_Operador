@@ -16,9 +16,6 @@ class RasterRemote(InputRaster):
             return
         if self.loadRaster(fileData['caminho'], fileData['nome'], fileData['epsg']):
             return
-        self.showErrorMessageBox(''.join(
-            [
-                '<p>erro: falha ao carregar raster "{0}" remotamente</p>'.format(d['caminho'])
-                for d in fileData
-            ]
-        ))
+        self.showErrorMessageBox(
+            '<p>erro: falha ao carregar raster "{0}" remotamente</p>'.format(fileData['caminho'])
+        )

@@ -1,4 +1,4 @@
-from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsProcessing,
                        QgsFeatureSink,

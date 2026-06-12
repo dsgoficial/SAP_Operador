@@ -99,6 +99,8 @@ class SelectError(QgsMapToolIdentify, MapTool):
             self.showCircle(self.startPoint, self.endPoint)
 
     def execute(self):
+        if len(self.points) < 3:
+            return
         errorPolygon = 'SRID=4326;{}'.format(
             QgsGeometry.fromPolygonXY([self.points]).asWkt()
         )
