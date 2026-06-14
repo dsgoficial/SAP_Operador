@@ -205,3 +205,26 @@ class SapHttp(ISapApi):
         if response:
             return response.json()
         return {}
+
+    def getKeywordTypes(self):
+        response = self.httpGet(
+            url="{0}/metadados/tipo_palavra_chave".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}
+
+    def saveEditionMetadata(self, metadados):
+        response = self.httpPostJson(
+            url="{0}/distribuicao/metadados_edicao".format(self.getServer()),
+            postData={'metadados': metadados}
+        )
+        return response.json()['message']
+
+    def getEditionJson(self, produtoUuid):
+        response = self.httpGet(
+            url="{0}/metadados/json_edicao/produto/{1}".format(self.getServer(), produtoUuid)
+        )
+        if response:
+            return response.json()
+        return {}

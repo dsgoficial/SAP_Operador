@@ -208,7 +208,20 @@ class SapActivityLocal:
 
     def getSubphaseId(self):
         return self.getData()['dados']['atividade']['subfase_id']
-    
+
+    def getPhaseTypeId(self):
+        if not self.getData():
+            return None
+        return self.getData()['dados']['atividade'].get('tipo_fase_id')
+
+    def getEditionMetadata(self):
+        if not self.getData():
+            return []
+        return self.getData()['dados']['atividade'].get('metadado_edicao', [])
+
+    def setEditionMetadata(self, metadados):
+        self.getData()['dados']['atividade']['metadado_edicao'] = metadados
+
     def getLayerExpressionField(self):
         return [
             {

@@ -189,3 +189,18 @@ class RemoteSapCtrl(SapCtrl):
 
     def getRemotePluginsPath(self):
         return self.sapApi.getRemotePluginsPath()
+
+    def getKeywordTypes(self):
+        response = self.sapApi.getKeywordTypes()
+        if not ('dados' in response):
+            return []
+        return response['dados']
+
+    def saveEditionMetadata(self, metadados):
+        return self.sapApi.saveEditionMetadata(metadados)
+
+    def getEditionJson(self, produtoUuid):
+        response = self.sapApi.getEditionJson(produtoUuid)
+        if not ('dados' in response):
+            return {}
+        return response['dados']
