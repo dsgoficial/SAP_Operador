@@ -96,6 +96,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.validateUserOperations.stop()
         if hasattr(self, 'canvasMonitoring') and self.canvasMonitoring:
             self.canvasMonitoring.stop()
+        self.stopMicrocontrole()
         if hasattr(self, 'changeStyleWidget') and self.changeStyleWidget and not sip.isdeleted(self.changeStyleWidget):
             self.changeStyleWidget.setEnabled(False)
 
@@ -315,6 +316,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
         self.canvasMonitoring.start()
+        self.startMicrocontrole(loadedLayerIds)
 
         self.loadReviewTool()
 
@@ -461,6 +463,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
         self.canvasMonitoring.start()
+        self.startMicrocontrole(loadedLayerIds)
 
         self.loadReviewTool()
 
@@ -547,6 +550,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if self.productionTools:
             self.productionTools.close()
         self.canvasMonitoring.stop()
+        self.stopMicrocontrole()
 
     def getDSGToolsQAWorkflows(self):
         return self.sapActivity.getWorkflows()

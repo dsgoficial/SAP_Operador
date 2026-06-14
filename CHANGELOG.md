@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.30.0
+
+Melhorias:
+- Captura de microcontrole da produção. Quando a subfase está configurada para monitoramento por feição, o operador acumula por camada as operações de inserção, remoção, atualização de atributo e atualização de geometria (com comprimento e vértices) e envia ao SAP no commit da camada e a cada 30 segundos. Quando configurada para monitoramento por tela, o operador amostra o extent e a escala do canvas a cada 30 segundos e envia em lote. Os envios que falham por falta de rede são bufferizados e reenviados no próximo envio bem-sucedido.
+
 ## 3.29.23
 
 Correção de bug:

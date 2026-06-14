@@ -189,6 +189,20 @@ class SapHttp(ISapApi):
             return response.json()
         return {}
 
+    def saveLayerTrack(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/feicao".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
+    def saveScreenTrack(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/tela".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
     def incorrectEnding(self, description):
         response = self.httpPostJson(
             url="{0}/distribuicao/finalizacao_incorreta".format(self.getServer()),

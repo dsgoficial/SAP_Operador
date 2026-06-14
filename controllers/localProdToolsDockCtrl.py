@@ -257,6 +257,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
         self.canvasMonitoring.start()
+        self.startMicrocontrole(loadedLayerIds)
 
         self.loadReviewTool()
 
@@ -308,6 +309,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
     def createProjectCallback(self):
         self.canvasMonitoring.stop()
+        self.stopMicrocontrole()
 
     def loadReviewTool(self):
         frameQuery = self.sapActivity.getFrameQuery()

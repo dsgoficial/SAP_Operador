@@ -209,6 +209,11 @@ class SapActivityLocal:
     def getSubphaseId(self):
         return self.getData()['dados']['atividade']['subfase_id']
 
+    def getMonitoringTypes(self):
+        if not self.getData():
+            return []
+        return self.getData()['dados']['atividade'].get('monitoramento') or []
+
     def getPhaseTypeId(self):
         if not self.getData():
             return None
