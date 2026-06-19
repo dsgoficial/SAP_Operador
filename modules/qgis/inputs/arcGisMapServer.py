@@ -11,5 +11,5 @@ class ArcGisMapServer(InputLayer):
     def load(self, data):
         path = data['caminho']
         layer = core.QgsRasterLayer(f'url={path}', data['nome'], "arcgismapserver")
-        layer.setCrs( core.QgsCoordinateReferenceSystem( int(data['epsg']) ) )
+        layer.setCrs( core.QgsCoordinateReferenceSystem.fromEpsgId( int(data['epsg']) ) )
         self.addMapLayer( layer, 0 )
