@@ -512,7 +512,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def runRuleStatistics(self, routineData):
         result = super().runRuleStatistics(routineData)
         # Calcula quantas violações de regras tem e armazena em self.total_rule_violations
-        self.total_rule_violations = len(result['[REGRAS] : Atributo incorreto']) + len(result['[REGRAS] : Preencher atributo'])
+        self.total_rule_violations = sum(
+            len(v) for k, v in result.items()
+            if 'atributo incorreto' in k.lower() or 'preencher atributo' in k.lower()
+        )
         return result
 
     def readProjectCallback(self):
