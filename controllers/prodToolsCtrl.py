@@ -241,8 +241,13 @@ class ProdToolsCtrl(QtCore.QObject):
             self.screenMonitoring.start()
 
     def stopMicrocontrole(self):
+        # Isola cada camada: uma falha ao desconectar (ex.: camada ja destruida)
+        # nao pode abortar o loop e deixar a tela e os timers ligados.
         for layerMonitoring in self.layersMonitoring:
-            layerMonitoring.disconnect_all_signals()
+            try:
+                layerMonitoring.disconnect_all_signals()
+            except RuntimeError:
+                pass
         self.layersMonitoring = []
         if self.screenMonitoring:
             self.screenMonitoring.stop()

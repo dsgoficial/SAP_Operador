@@ -1,4 +1,5 @@
 from qgis.core import QgsVectorLayer, QgsWkbTypes, QgsFeatureRequest
+from qgis.PyQt import sip
 
 from SAP_Operador.timers.timer import Timer
 from SAP_Operador.monitoring.buffer import MonitoringBuffer
@@ -176,6 +177,13 @@ class Layer:
         except (RuntimeError, AttributeError):
             pass
         self.timer.stop()
+        # Numa troca de projeto, as camadas do projeto anterior ja foram
+        # destruidas antes do stop: o objeto C++ sumiu (e os sinais ja se
+        # desconectaram junto). Acessar self.layer.<sinal> para montar a tupla
+        # abaixo levantaria "wrapped C/C++ object ... has been deleted" ANTES
+        # do try interno; nada a desconectar nesse caso.
+        if sip.isdeleted(self.layer):
+            return
         for signal, slot in (
             (self.layer.geometryChanged, self.on_geometry_change),
             (self.layer.beforeCommitChanges, self.before_commit_changes),
