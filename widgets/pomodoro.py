@@ -54,28 +54,37 @@ class Pomodoro(QtWidgets.QWidget):
 
     def saveState(self):
         date = self.getCurrentDate()
+        data = self._loadData()
+        data[date] = self.pomodoro
         self.qgis.setSettingsVariable(
-            'productiontools:pomodoro', 
-            json.dumps({
-                date: self.pomodoro
-            })
+            'productiontools:pomodoro',
+            json.dumps(data)
         )
 
     def getCurrentDate(self):
         now = datetime.now()
         return now.strftime("%d-%m-%Y")
 
-    def restoreState(self):
+    def _loadData(self):
         dumpData = self.qgis.getSettingsVariable('productiontools:pomodoro')
         if not dumpData:
-            return
+            return {}
+        try:
+            data = json.loads(dumpData)
+        except (ValueError, TypeError):
+            return {}
+        return data if isinstance(data, dict) else {}
+
+    def restoreState(self):
+        data = self._loadData()
         date = self.getCurrentDate()
-        if not(date in dumpData):
+        if date not in data:
+            self.pomodoro = 0
             return
-        #self.pomodoro = list(dumpData.values())[0]
+        self.pomodoro = data[date]
 
     def getFormatedTime(self):
-        return '{}:{}'.format(int(self.currentTime/60), str(round((float("{:.2f}".format(self.currentTime/60)) % 1) * 60)).zfill(2) )
+        return '{:d}:{:02d}'.format(self.currentTime // 60, self.currentTime % 60)
 
     def setCronText(self, value):
         self.cronLb.setText(
@@ -110,7 +119,7 @@ class Pomodoro(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot(bool)
     def on_startBtn_clicked(self):
-        self.cronTimer.start(self.timeOnSeconds)
+        self.cronTimer.start(1000)
         self.startBtn.setVisible(False)
         self.pauseBtn.setVisible(True)
 
@@ -118,6 +127,8 @@ class Pomodoro(QtWidgets.QWidget):
     def on_restartBtn_clicked(self):
         self.cronTimer.stop()
         self.currentTime = self.timeOnSeconds
+        self.paused = False
+        self.setStatusText('')
         self.setCronText(self.getFormatedTime())
         self.startBtn.setVisible(True)
         self.pauseBtn.setVisible(False)

@@ -13,7 +13,7 @@ class InputRaster(InputLayer):
         defaultBehavior = s.value("Projections/defaultBehavior")
         s.setValue("Projections/defaultBehavior", "useGlobal")
         layer = core.QgsRasterLayer(uri, name)
-        layer.setCrs(core.QgsCoordinateReferenceSystem(int(epsg)))
+        layer.setCrs(core.QgsCoordinateReferenceSystem.fromEpsgId(int(epsg)))
         s.setValue("Projections/defaultBehavior", defaultBehavior)
         if not layer.isValid():
             return False

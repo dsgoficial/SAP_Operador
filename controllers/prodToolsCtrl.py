@@ -7,9 +7,16 @@ from SAP_Operador.factories.GUIFactory import GUIFactory
 from SAP_Operador.factories.spatialVerificationFactory import SpatialVerificationFactory
 from SAP_Operador.widgets.pomodoro import Pomodoro
 from SAP_Operador.monitoring.canvas import Canvas
+from SAP_Operador.monitoring.layer import Layer as LayerMonitoring
+from SAP_Operador.monitoring.screen import Screen as ScreenMonitoring
 
 from qgis.PyQt import QtCore, QtWidgets, sip
 from qgis import core, gui, utils
+
+# Tipos de monitoramento (microcontrole.tipo_monitoramento no backend):
+# 1 = por feicao, 2 = por tela. Chega no campo `monitoramento` da atividade.
+MONITORAMENTO_FEICAO = 1
+MONITORAMENTO_TELA = 2
 
 
 class ProdToolsCtrl(QtCore.QObject):
@@ -59,6 +66,8 @@ class ProdToolsCtrl(QtCore.QObject):
         self.qgis.on('ReadProject', self.readProjectCallback)
         self.qgis.on('NewProject', self.createProjectCallback)
         self.loadedLayerIds = []
+        self.layersMonitoring = []
+        self.screenMonitoring = None
         self.acquisitionMenu = None
         self.validateUserOperations = self.spatialVerificationFactory.createVerification(
             'ValidateUserOperations',
@@ -98,6 +107,7 @@ class ProdToolsCtrl(QtCore.QObject):
         return self.pomodoro
 
     def unload(self):
+        self.stopMicrocontrole()
         self.removeDock()
         self.qgis.off('ReadProject', self.readProjectCallback)
         self.qgis.off('NewProject', self.createProjectCallback)
@@ -168,6 +178,7 @@ class ProdToolsCtrl(QtCore.QObject):
         )
 
     def resetProject(self):
+        self.stopMicrocontrole()
         self.qgis.cleanProject()
         self.reload()
 
@@ -199,6 +210,43 @@ class ProdToolsCtrl(QtCore.QObject):
 
     def getLoadedLayerIds(self):
         return self.loadedLayerIds
+
+    def startMicrocontrole(self, loadedLayerIds):
+        # Garante que nao sobra sinal ligado de uma atividade anterior.
+        self.stopMicrocontrole()
+        if not self.sapActivity:
+            return
+        monitoringTypes = self.sapActivity.getMonitoringTypes()
+        if not monitoringTypes:
+            return
+        # Uma subfase/lote pode ter feicao e/ou tela; arma cada tipo configurado.
+        if MONITORAMENTO_FEICAO in monitoringTypes:
+            for layerId in loadedLayerIds:
+                layer = core.QgsProject.instance().mapLayer(layerId)
+                if not isinstance(layer, core.QgsVectorLayer):
+                    continue
+                self.layersMonitoring.append(
+                    LayerMonitoring(
+                        layer,
+                        self.sapActivity.getId(),
+                        self.sap.sapApi
+                    )
+                )
+        if MONITORAMENTO_TELA in monitoringTypes:
+            self.screenMonitoring = ScreenMonitoring(
+                self.sapActivity.getId(),
+                self.sap.sapApi,
+                self.qgis
+            )
+            self.screenMonitoring.start()
+
+    def stopMicrocontrole(self):
+        for layerMonitoring in self.layersMonitoring:
+            layerMonitoring.disconnect_all_signals()
+        self.layersMonitoring = []
+        if self.screenMonitoring:
+            self.screenMonitoring.stop()
+            self.screenMonitoring = None
 
     def getPathDest(self):
         return QtWidgets.QFileDialog.getExistingDirectory(

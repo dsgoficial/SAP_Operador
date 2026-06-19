@@ -22,18 +22,21 @@ class ConvergencePoint(MapFunction):
                 geometryFeature = feature.geometry()
                 nCoords = geometryFeature.constGet().nCoordinates()
                 selectedPoints = []
-                selectedPointsIndex = []
+                indexesToMove = []
+                indexesToDelete = []
                 for idx in range(nCoords):
                     point = geometryFeature.vertexAt( idx )
                     if not geometryFilterEngine.contains( point ):
                         continue
                     if point in selectedPoints:
-                        geometryFeature.deleteVertex(idx)
+                        indexesToDelete.append(idx)
                         continue
                     selectedPoints.append(point)
-                    selectedPointsIndex.append(idx)
-                for index in selectedPointsIndex:
+                    indexesToMove.append(idx)
+                for index in indexesToMove:
                     geometryFeature.moveVertex( centroid, index)
+                for index in sorted(indexesToDelete, reverse=True):
+                    geometryFeature.deleteVertex(index)
                 if not geometryFeature.isGeosValid():
                     return (False, 'A operação gerou geometrias inválidas. Revise sua seleção e tente novamente.')
                 feature.setGeometry(geometryFeature)

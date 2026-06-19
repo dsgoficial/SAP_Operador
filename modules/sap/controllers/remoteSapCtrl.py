@@ -154,7 +154,7 @@ class RemoteSapCtrl(SapCtrl):
         activeObs = stepTypeId in [2, 4, 5]
         endActivityDialog = self.guiFactory.createEndActivityDialog(self, activeObs, stepTypeId)
         endActivityDialog.setWithoutCorrection(withoutCorrection)
-        return endActivityDialog.exec() == QtWidgets.QDialog.Accepted
+        return endActivityDialog.exec() == QtWidgets.QDialog.DialogCode.Accepted
         
     def reportError(self, errorId, errorDescription, wkt):
         return self.sapApi.reportError(self.activityDataModel.getId(),  errorId, errorDescription, wkt)
@@ -189,3 +189,18 @@ class RemoteSapCtrl(SapCtrl):
 
     def getRemotePluginsPath(self):
         return self.sapApi.getRemotePluginsPath()
+
+    def getKeywordTypes(self):
+        response = self.sapApi.getKeywordTypes()
+        if not ('dados' in response):
+            return []
+        return response['dados']
+
+    def saveEditionMetadata(self, metadados):
+        return self.sapApi.saveEditionMetadata(metadados)
+
+    def getEditionJson(self, produtoUuid):
+        response = self.sapApi.getEditionJson(produtoUuid)
+        if not ('dados' in response):
+            return {}
+        return response['dados']

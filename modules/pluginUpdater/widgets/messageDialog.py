@@ -10,6 +10,10 @@ class MessageDialog(QtWidgets.QDialog):
         #self.setWindowFlag(QtCore.Qt.WindowType.WindowStaysOnTopHint)
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
 
+    def closeEvent(self, event):
+        QtWidgets.QApplication.restoreOverrideCursor()
+        super().closeEvent(event)
+
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),

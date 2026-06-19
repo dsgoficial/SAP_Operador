@@ -96,6 +96,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.validateUserOperations.stop()
         if hasattr(self, 'canvasMonitoring') and self.canvasMonitoring:
             self.canvasMonitoring.stop()
+        self.stopMicrocontrole()
         if hasattr(self, 'changeStyleWidget') and self.changeStyleWidget and not sip.isdeleted(self.changeStyleWidget):
             self.changeStyleWidget.setEnabled(False)
 
@@ -315,6 +316,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
         self.canvasMonitoring.start()
+        self.startMicrocontrole(loadedLayerIds)
 
         self.loadReviewTool()
 
@@ -461,6 +463,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
         self.validateUserOperations.start()
         self.canvasMonitoring.start()
+        self.startMicrocontrole(loadedLayerIds)
 
         self.loadReviewTool()
 
@@ -509,7 +512,10 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
     def runRuleStatistics(self, routineData):
         result = super().runRuleStatistics(routineData)
         # Calcula quantas violações de regras tem e armazena em self.total_rule_violations
-        self.total_rule_violations = len(result['[REGRAS] : Atributo incorreto']) + len(result['[REGRAS] : Preencher atributo'])
+        self.total_rule_violations = sum(
+            len(v) for k, v in result.items()
+            if 'atributo incorreto' in k.lower() or 'preencher atributo' in k.lower()
+        )
         return result
 
     def readProjectCallback(self):
@@ -547,6 +553,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if self.productionTools:
             self.productionTools.close()
         self.canvasMonitoring.stop()
+        self.stopMicrocontrole()
 
     def getDSGToolsQAWorkflows(self):
         return self.sapActivity.getWorkflows()

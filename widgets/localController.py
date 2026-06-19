@@ -38,7 +38,7 @@ class LocalController(Widget):
         self.getController().saveControllerInfo(
             self.userLe.text(),
             self.userIdLe.text(),
-            self.startDateDe.dateTime().toUTC().toString(QtCore.Qt.ISODate),
-            self.endDateDe.dateTime().toUTC().toString(QtCore.Qt.ISODate)#.toSecsSinceEpoch()
+            self.startDateDe.dateTime().toUTC().toString(QtCore.Qt.DateFormat.ISODate),
+            self.endDateDe.dateTime().toUTC().toString(QtCore.Qt.DateFormat.ISODate)#.toSecsSinceEpoch()
         )
         self.showInfo('Aviso', 'Salvo com sucesso!')

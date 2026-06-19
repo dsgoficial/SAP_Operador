@@ -30,8 +30,12 @@ class ProductionToolsDirector:
             {
                 'name': 'Rotinas:',
                 'widget': self.activityWidgetFactory.makeActivityRoutinesWidget(controller=controller)
+            },
+            {
+                'name': 'Metadados de Edição:',
+                'widget': self.activityWidgetFactory.makeEditionMetadataWidget(controller=controller, sap=sap)
             }
-            
+
         ]
         for i, widget in enumerate(reversed(widgets)):
             if not widget['widget'].hasData():

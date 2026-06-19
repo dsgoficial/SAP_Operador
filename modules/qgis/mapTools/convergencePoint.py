@@ -89,6 +89,8 @@ class ConvergencePoint(QgsMapToolIdentify, MapTool):
                 self.startPoint = core.QgsPointXY(event.mapPoint())
                 self.rubberBand = self.getRubberBand()
         if event.button() == Qt.MouseButton.RightButton:
+            if not self.rubberBand:
+                return
             self.execute(self.rubberBand.asGeometry(), self.parameters)
             self.initVariable()
 

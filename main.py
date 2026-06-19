@@ -19,7 +19,6 @@ from .modules.utils.factories.utilsFactory import UtilsFactory
 from .modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from .modules.dsgTools.factories.toolFactory import ToolFactory
 from .modules.database.factories.databaseFactory import DatabaseFactory
-from .modules.pomodoro.pomodoro import Pomodoro
 from .config import Config
 from qgis.utils import iface
 

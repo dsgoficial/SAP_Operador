@@ -6,6 +6,7 @@ from SAP_Operador.factories.activityInputsWidgetBuilder import ActivityInputsWid
 from SAP_Operador.factories.activityInputLinksWidgetBuilder import ActivityInputLinksWidgetBuilder
 from SAP_Operador.factories.activityRoutinesWidgetBuilder import ActivityRoutinesWidgetBuilder
 from SAP_Operador.factories.loadLocalActivityWidgetBuilder import LoadLocalActivityWidgetBuilder
+from SAP_Operador.widgets.editionMetadata import EditionMetadata
 
 class ActivityWidgetFactory(IActivityWidgetFactory):
     
@@ -43,6 +44,9 @@ class ActivityWidgetFactory(IActivityWidgetFactory):
         builder = ActivityRoutinesWidgetBuilder()
         director.constructActivityRoutinesWidget( builder, controller )
         return builder.getResult()
+
+    def makeEditionMetadataWidget(self, controller, sap):
+        return EditionMetadata(controller=controller, sap=sap)
 
     def makeLoadLocalActivityWidget(self, controller):
         director = ActivityWidgetDirector()

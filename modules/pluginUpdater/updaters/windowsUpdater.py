@@ -87,7 +87,7 @@ class WindowsUpdater:
             )
             with open(metadataPath) as mf:
                 cp = ConfigParser()
-                cp.readfp(mf)
+                cp.read_file(mf)
                 pluginVersion = cp.get('general', 'version')
         except:
             pass
@@ -105,7 +105,7 @@ class WindowsUpdater:
             )
             with open(metadataPath) as mf:
                 cp = ConfigParser()
-                cp.readfp(mf)
+                cp.read_file(mf)
                 pluginVersion = cp.get('general', 'version')
         except:
             pass

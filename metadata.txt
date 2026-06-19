@@ -12,7 +12,7 @@ qgisMinimumVersion=4.0
 qgisMaximumVersion=4.99
 supportsQt6=True
 description=Conjunto de ferramentas usadas na produção cartográfica da DSG.
-version=3.29.23
+version=3.30.0
 author=Brazilian Army Geographic Service
 
 # Tags are comma separated with spaces allowed

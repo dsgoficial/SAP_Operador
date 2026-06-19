@@ -18,11 +18,11 @@ class RoutinesDialog(QtWidgets.QDialog):
         self.controller = controller
         self.messageFactory = UtilsFactory().createMessageFactory() if messageFactory is None else messageFactory
     
-    def getController(self, controller):
-        self.controller = controller
-    
-    def setController(self):
+    def getController(self):
         return self.controller
+
+    def setController(self, controller):
+        self.controller = controller
 
     def setCurrentRoutineData(self, data):
         self.currentRoutineData = data
@@ -68,7 +68,7 @@ class RoutinesDialog(QtWidgets.QDialog):
         self.setCurrentRoutineData(self.getRowData(index))
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
-            self.getController().runRoutine(self.getRoutineSelected())
+            self.getController().runRoutine(self.getCurrentRoutineData())
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
         

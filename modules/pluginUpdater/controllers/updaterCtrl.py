@@ -26,6 +26,7 @@ class UpdaterCtrl:
         self.updater = self.getUpdater()
         self.qgis.on('ReadProject', self.checkUpdates)
         self.time = QtCore.QTimer() if time is None else time
+        self.time.setSingleShot(True)
         self.time.timeout.connect(self.update)
 
     def getUpdater(self):

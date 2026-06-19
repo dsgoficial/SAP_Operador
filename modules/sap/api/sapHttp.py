@@ -189,6 +189,20 @@ class SapHttp(ISapApi):
             return response.json()
         return {}
 
+    def saveLayerTrack(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/feicao".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
+    def saveScreenTrack(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/tela".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
     def incorrectEnding(self, description):
         response = self.httpPostJson(
             url="{0}/distribuicao/finalizacao_incorreta".format(self.getServer()),
@@ -201,6 +215,29 @@ class SapHttp(ISapApi):
     def getRemotePluginsPath(self):
         response = self.httpGet(
             url="{0}/distribuicao/plugin_path".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}
+
+    def getKeywordTypes(self):
+        response = self.httpGet(
+            url="{0}/metadados/tipo_palavra_chave".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}
+
+    def saveEditionMetadata(self, metadados):
+        response = self.httpPostJson(
+            url="{0}/distribuicao/metadados_edicao".format(self.getServer()),
+            postData={'metadados': metadados}
+        )
+        return response.json()['message']
+
+    def getEditionJson(self, produtoUuid):
+        response = self.httpGet(
+            url="{0}/metadados/json_edicao/produto/{1}".format(self.getServer(), produtoUuid)
         )
         if response:
             return response.json()

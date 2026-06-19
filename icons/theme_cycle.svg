@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- Map background -->
+  <rect x="2" y="4" width="20" height="16" rx="2" fill="#4a90d9" opacity="0.85"/>
+  <!-- Map lines suggesting terrain/layers -->
+  <path d="M4 10 Q8 7 12 10 Q16 13 20 10" stroke="white" stroke-width="1.2" fill="none" opacity="0.7"/>
+  <path d="M4 14 Q8 11 12 14 Q16 17 20 14" stroke="white" stroke-width="1.2" fill="none" opacity="0.7"/>
+  <!-- Cycle arrow overlay -->
+  <path d="M9 2 A5 5 0 0 1 15 2" stroke="#e8a020" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <polygon points="15,0 15,4 18,2" fill="#e8a020"/>
+</svg>

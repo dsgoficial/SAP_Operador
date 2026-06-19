@@ -20,7 +20,7 @@ class ExpandLine(MapFunction):
         )
         penultimatePoint = featureToExpand.geometry().vertexAt(penultimatePointIdx)
         lastPoint = featureToExpand.geometry().vertexAt(lastPointIdx)
-        angle = math.atan((lastPoint.y() - penultimatePoint.y())/(lastPoint.x() - penultimatePoint.x()))
+        angle = math.atan2(lastPoint.y() - penultimatePoint.y(), lastPoint.x() - penultimatePoint.x())
         coordX = lastPoint.x() + distance * math.cos(angle) 
         coordY = lastPoint.y() + distance * math.sin(angle)
         layer.moveVertex(coordX, coordY, featureToExpandId, lastPointIdx)
