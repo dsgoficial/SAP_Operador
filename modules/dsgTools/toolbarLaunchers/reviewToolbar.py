@@ -19,13 +19,37 @@ class ReviewToolBar:
         if outputLayer is not None and outputLayer.featureCount() > 0:
             self.populateGridLayerWithOutputLayerFeatures(gridLayer, outputLayer)
         reviewToolBar = self.getTool()
+        self.prepareFieldCombos(reviewToolBar, gridLayer)
         reviewToolBar.setState(
             layer=gridLayer,
             rankFieldName=self.RANK_FIELD,
             visitedFieldName=self.VISITED_FIELD,
             zoomType=1,
         )
+        self.ensureFieldSelection(reviewToolBar)
         return reviewToolBar
+
+    def prepareFieldCombos(self, reviewToolBar, gridLayer):
+        # Na primeira carga, o setState do DSGTools chama setField() antes de os
+        # combos de campo terem recebido a camada (a propagacao do layerChanged
+        # do combo de camada nao e sincrona nessa primeira vez), entao a selecao
+        # de 'rank'/'visited' nao "pega" e os combos ficam vazios. Fixar a camada
+        # diretamente nos combos de campo aqui garante que os campos ja estejam
+        # disponiveis quando o setField for chamado.
+        for comboName in ('mMapLayerComboBox', 'rankFieldComboBox', 'visitedFieldComboBox'):
+            combo = getattr(reviewToolBar, comboName, None)
+            if combo is not None:
+                combo.setLayer(gridLayer)
+
+    def ensureFieldSelection(self, reviewToolBar):
+        # Defensivo: se por timing a selecao do setState nao pegou, reaplica os
+        # campos (a camada ja esta definida nos combos neste ponto).
+        rankCombo = getattr(reviewToolBar, 'rankFieldComboBox', None)
+        if rankCombo is not None and not rankCombo.currentField():
+            rankCombo.setField(self.RANK_FIELD)
+        visitedCombo = getattr(reviewToolBar, 'visitedFieldComboBox', None)
+        if visitedCombo is not None and not visitedCombo.currentField():
+            visitedCombo.setField(self.VISITED_FIELD)
 
     def validateGridLayer(self, gridLayer):
         if gridLayer is None:
