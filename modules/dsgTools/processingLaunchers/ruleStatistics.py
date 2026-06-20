@@ -18,7 +18,7 @@ class RuleStatistics(Processing):
                 if ('[regras]' in line.lower() or '[rules]' in line.lower()) and not(line in result):
                     currentRuleKey = line
                     result[line] = []
-                elif 'passaram' in line.lower():
+                elif 'passaram' in line.lower() or 'passed' in line.lower():
                     continue
                 elif currentRuleKey and line:
                     result[currentRuleKey].append(line)
