@@ -7,8 +7,8 @@ class SelectionWidget(QtWidgets.QWidget, TableFunctions):
 
     selectionChange = QtCore.pyqtSignal()
 
-    def __init__(self, 
-            controller, 
+    def __init__(self,
+            controller=None,
             parent=None,
             messageFactory=None,
         ):
