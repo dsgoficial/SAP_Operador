@@ -414,40 +414,6 @@ class QgisApi(IQgisApi):
             if tl.isVisible() and tl.layer().type() == core.QgsMapLayer.LayerType.RasterLayer
         ]
 
-    def pageRaster(self, direction):
-        groupName = 'imagens_dinamicas'
-        root = core.QgsProject.instance().layerTreeRoot()
-        grupo = root.findGroup(groupName)
-        if not grupo:
-            return (False, 'Crie um grupo com o nome "{0}" e coloque as camadas do tipo "Raster" para paginação.'.format(groupName))
-        images = [
-            tLayer for tLayer in grupo.findLayers() 
-            if tLayer.layer().type() == core.QgsMapLayer.LayerType.RasterLayer
-        ]
-        if len(images) == 0:
-            return (False, 'O grupo "{0}" não possue camadas do tipo "Raster"'.format(groupName))
-        visibleImages = [ tLayer for tLayer in images if tLayer.isVisible() ]
-        if len(visibleImages) == 0 or len(visibleImages) > 1:
-            [ tLayer.setVisible(False) for tLayer in visibleImages]             
-            images[0].setVisible(True)
-            return
-        
-        def pageDown(currentPostion, images):
-            return 0 if currentPostion == (len(images)-1) else (currentPostion + 1)
-
-        def pageUp(currentPostion, images):
-            return (len(images)-1) if currentPostion == 0 else (currentPostion - 1)
-        pageFunctions = {
-            'down': pageDown,
-            'up': pageUp
-        }
-        if not(direction in pageFunctions):
-            return (False, 'Direção inválida')
-        currentPostion = images.index(visibleImages[0])
-        nextPosition = pageFunctions[direction](currentPostion, images)
-        images[currentPostion].setVisible(False)
-        images[nextPosition].setVisible(True)
-
     def createNewMapView(self):
         createNewMapView = self.mapFunctionsFactory.getFunction('CreateNewMapView')
         createNewMapView.run()

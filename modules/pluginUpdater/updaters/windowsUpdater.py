@@ -4,6 +4,7 @@ import platform
 import shutil
 import json
 from configparser import ConfigParser
+from modules.pluginUpdater.updaters.pluginCompatibility import PluginCompatibility
 
 class WindowsUpdater:
     
@@ -34,9 +35,12 @@ class WindowsUpdater:
         localPlugins = dict(self.qgis.getPluginPaths())
         updates = []
         qgisPluginsPath = self.qgis.getQgisPluginsDirPath()
+        compatibility = PluginCompatibility(self.qgis.getVersion())
         notDownloaded = list(set(remotePlugins.keys()) - set(localPlugins.keys()))
         for pluginName in notDownloaded:
             if not pluginName:
+                continue
+            if not self.isRemotePluginCompatible(compatibility, pluginName, remotePlugins[pluginName]):
                 continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
@@ -50,11 +54,22 @@ class WindowsUpdater:
             remoteVersion = self.versiontuple(remoteVersion)
             if remoteVersion <= localVersion:
                 continue
+            if not self.isRemotePluginCompatible(compatibility, pluginName, remotePlugins[pluginName]):
+                continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
             )
         self.setUpdates(updates)
         return updates
+
+    def isRemotePluginCompatible(self, compatibility, pluginName, pluginPath):
+        metadataText = ''
+        try:
+            with open(os.path.join(pluginPath, 'metadata.txt'), encoding='utf-8', errors='replace') as mf:
+                metadataText = mf.read()
+        except OSError:
+            pass
+        return compatibility.isCompatible(pluginName, metadataText)
 
     def setRepositoryPluginsPath(self, repoPath):
         self.repository = repoPath

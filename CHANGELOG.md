@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 3.30.1
+
+Melhorias:
+- O atualizador de plugins passa a consultar o metadata.txt de cada plugin do repositório de rede e ignora os que não declaram suporte à versão do QGIS em execução (qgisMinimumVersion/qgisMaximumVersion; sem máximo declarado, vale "<major do mínimo>.99"). Assim, builds para QGIS 3 não são mais instalados nem sobrescrevem plugins no QGIS 4. Cada plugin ignorado é registrado no painel de mensagens do QGIS, aba "SAP Operador".
+- Remoção da ferramenta "Fechar linha", já incorporada ao DSGTools.
+- Remoção de código sem uso: ferramentas "Aparar linha" e "Expandir linha", paginação de rasters (grupo "imagens_dinamicas"), ação vazia "Atualizador de plugins local" do menu e "Reclassify Mode" (desativado desde a 3.29.16; o atalho equivalente do DSGTools continua disponível).
+
+Correção de bug:
+- Versão exibida na tela de login sincronizada com o metadata.txt.
+
 ## 3.30.0
 
 Melhorias:

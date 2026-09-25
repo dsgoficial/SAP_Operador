@@ -3,6 +3,7 @@ import subprocess
 import platform
 import shutil
 import json
+from modules.pluginUpdater.updaters.pluginCompatibility import PluginCompatibility
 
 class LinuxUpdater:
     
@@ -28,8 +29,11 @@ class LinuxUpdater:
         localPlugins = dict(self.qgis.getPluginPaths())
         updates = []
         qgisPluginsPath = self.qgis.getQgisPluginsDirPath()
+        compatibility = PluginCompatibility(self.qgis.getVersion())
         notDownloaded = list(set(remotePlugins.keys()) - set(localPlugins.keys()))
         for pluginName in notDownloaded:
+            if not self.isRemotePluginCompatible(compatibility, pluginName, remotePlugins[pluginName]):
+                continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
             )
@@ -47,11 +51,21 @@ class LinuxUpdater:
             )
             if localHash == remoteHash:
                 continue
+            if not self.isRemotePluginCompatible(compatibility, pluginName, remotePlugins[pluginName]):
+                continue
             updates.append(
                 (remotePlugins[pluginName], os.path.join(qgisPluginsPath, pluginName))
             )
         self.setUpdates(updates)
         return updates
+
+    def isRemotePluginCompatible(self, compatibility, pluginName, pluginPath):
+        metadataText = ''
+        try:
+            metadataText = self.getRemoteFileData(os.path.join(pluginPath, 'metadata.txt'))
+        except Exception:
+            pass
+        return compatibility.isCompatible(pluginName, metadataText)
 
     def getSMBC(self):
         try:

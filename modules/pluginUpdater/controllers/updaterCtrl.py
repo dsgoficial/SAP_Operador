@@ -35,23 +35,6 @@ class UpdaterCtrl:
         if platform.system().lower() == 'linux':
             return self.updaterFactory.create('LinuxUpdater', self.qgis)
 
-    def getUpdaterActions(self):
-        iconRootPath = os.path.join(
-                os.path.dirname(__file__),
-                '..',
-                'icons'
-        )
-        return [
-            {
-                'name': 'Atualizador de plugins local',
-                'iconPath': os.path.join(iconRootPath, 'updater.png'),
-                'callback': self.openSettingsDialog
-            }
-        ]
-        
-    def openSettingsDialog(self):
-        pass
-
     def openMessageDialog(self):
         if self.messageDialog:
             self.messageDialog.close()

@@ -38,7 +38,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             canvasMonitoring=canvasMonitoring,
         )
         self.workflowToolbox = None
-        self.prodToolsSettings.reclassifyMode.connect(self.handleReclassifyMode)
 
         # Inicializa com o total de violação de regras em 1.
         self.total_rule_violations = 1
@@ -557,11 +556,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def getDSGToolsQAWorkflows(self):
         return self.sapActivity.getWorkflows()
-
-    def handleReclassifyMode(self):
-        if not (self.acquisitionMenu and self.acquisitionMenu.menuDock):
-            return
-        self.acquisitionMenu.menuDock.reclassifyCkb.setChecked( not self.acquisitionMenu.menuDock.reclassifyCkb.isChecked() )
 
     def loadReviewTool(self):
         frameQuery = self.sapActivity.getFrameQuery()

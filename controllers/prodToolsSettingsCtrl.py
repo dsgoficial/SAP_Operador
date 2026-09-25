@@ -5,12 +5,9 @@ from SAP_Operador.controllers.prodToolsCtrl import ProdToolsCtrl
 from SAP_Operador.modules.combinationViewer.controllers.combinationViewerCtrl import CombinationViewerCtrl
 from SAP_Operador.modules.rasterMetadata.controllers.rasterMetadataCtrl import RasterMetadataCtrl
 import os
-from qgis.PyQt.QtCore import QThread, pyqtSignal
 
 class ProdToolsSettingsCtrl(ProdToolsCtrl):
 
-    reclassifyMode = pyqtSignal()
-    
     def __init__(
             self,
             qgis,
@@ -43,7 +40,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
 
     def createActionsMenuBar(self):
         menuBarActions = []
-        actions = self.getMenuBarActionSettings() + self.pluginUpdater.getUpdaterActions()
+        actions = self.getMenuBarActionSettings()
         for actionConfig in actions:
             action = self.qgis.createAction(
                 actionConfig['name'],
@@ -138,25 +135,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 '<p style="color:red">{0}</p>'.format(result[1])
             )
 
-    def closeLine(self):
-        #result = self.qgis.closeLine()
-        result = self.qgis.runMapFunctions([{'name': 'CloseLine'}])
-        if not result[0]:
-            self.showErrorMessageBox(
-                self.qgis.getMainWindow(),
-                'Erro',
-                '<p style="color:red">{0}</p>'.format(result[1])
-            )
-
-    def pageRaster(self, direction):
-        result = self.qgis.pageRaster(direction)
-        if not result[0]:
-            self.showErrorMessageBox(
-                self.qgis.getMainWindow(),
-                'Erro',
-                '<p style="color:red">{0}</p>'.format(result[1])
-            )
-
     def checkPluginUpdates(self):
         return self.pluginUpdater.checkUpdates()
     
@@ -171,11 +149,6 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'name': 'Suavizador de linhas',
                 'iconPath':os.path.join(iconRootPath, 'smoothLayer.png'),
                 'callback': self.smoothLine
-            },
-            {
-                'name': 'Fechar linha',
-                'iconPath':os.path.join(iconRootPath, 'closeLine.png'),
-                'callback': self.closeLine
             },
             {
                 'name': 'Criar nova visualização de mapa',
@@ -207,24 +180,7 @@ class ProdToolsSettingsCtrl(ProdToolsCtrl):
                 'iconPath': os.path.join(iconRootPath, 'theme_cycle.svg'),
                 'callback': self.themeCycle.cycle
             },
-            # {
-            #     'name': 'Reclassify Mode',
-            #     'iconPath': '',
-            #     'callback': self.reclassifyMode.emit
-            # },
         ]
-
-        
-        """ {
-            'name': 'Aparar linha',
-            'iconPath':os.path.join(iconRootPath, 'trim.png'),
-            'callback': lambda: self.qgis.activeTool('TrimLineMapTool')
-        },
-        {
-            'name': 'Expandir linha',
-            'iconPath':os.path.join(iconRootPath, 'expand.png'),
-            'callback': lambda: self.qgis.activeTool('ExpandLineMapTool')
-        } """
 
     def getCustomQgisSettings(self):
         return {
