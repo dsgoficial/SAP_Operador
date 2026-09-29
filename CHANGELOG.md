@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.30.2
+
+Correção de bug:
+- Rotinas de modelo QGIS não falham mais com "TypeError: checkParameterValues(): argument 1 has unexpected type 'int'" quando o campo "parametros" do perfil de modelo é um valor JSON escalar (por exemplo "1"). Parâmetros vazios ou nulos são tratados como {}; JSON malformado ou que não seja um objeto exibe mensagem de erro clara.
+
 ## 3.30.1
 
 Melhorias:

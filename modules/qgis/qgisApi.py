@@ -146,13 +146,33 @@ class QgisApi(IQgisApi):
                 return False
         return True
 
+    def _parseModelParameters(self, rawParameters):
+        """Converte os parametros da rotina em dict; o processing do QGIS 4 exige dict."""
+        if isinstance(rawParameters, dict):
+            return rawParameters
+        if rawParameters is None or (isinstance(rawParameters, str) and not rawParameters.strip()):
+            return {}
+        try:
+            parameters = json.loads(rawParameters) if isinstance(rawParameters, (str, bytes)) else rawParameters
+        except ValueError as e:
+            raise Exception("Parametros da rotina invalidos (JSON malformado): {0}".format(e))
+        if parameters in (None, 0, False, "", [], {}):
+            return {}
+        if not isinstance(parameters, dict):
+            raise Exception(
+                "Parametros da rotina invalidos: esperado objeto JSON, recebido {0} ({1!r})".format(
+                    type(parameters).__name__, parameters
+                )
+            )
+        return parameters
+
     def runProcessingModel(self, parametersData):
         self.setActiveGroup("SAIDA_MODEL")
         doc = QDomDocument()
         doc.setContent(parametersData['model_xml'])
         model = core.QgsProcessingModelAlgorithm()
         model.loadVariant(core.QgsXmlUtils.readVariant( doc.firstChildElement() ))
-        parameters = json.loads(parametersData['parametros']) if parametersData['parametros'] else {}
+        parameters = self._parseModelParameters(parametersData.get('parametros'))
         processing.runAndLoadResults(model, parameters)
         return "<p style=\"color:green\">{0}</p>".format('Rotina executada com sucesso!')
 
