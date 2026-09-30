@@ -45,39 +45,61 @@ class CreateNewMapView(MapFunction):
         return themeName
 
     def openMapView(self):
-        for i in range(len(iface.viewMenu().actions())):
-            if iface.viewMenu().actions()[i].objectName() == 'mActionNewMapCanvas':
-                iface.viewMenu().actions()[i].trigger()
+        for action in iface.viewMenu().actions():
+            if action.objectName() == 'mActionNewMapCanvas':
+                action.trigger()
                 return True
         return False
 
-    def triggerTheme(self, ThemeName, mapView):
-        qtoolBtn = mapView.findChildren(QtWidgets.QToolButton)[4]
-        qtoolBtn.showMenu()
-        menuThemes = qtoolBtn.menu()
-        themesActions = menuThemes.actions()
-        [ ta.trigger() for ta in themesActions if ta.text() == ThemeName]
-
-    def getOpenMapView(self):
+    def getMapViewDocks(self):
+        """Docks de "Map View" existentes. QgsMapCanvasDockWidget nao e exposta ao
+        Python, entao identifica pelo nome da classe C++ ou pelo objectName."""
         docks = []
-        for widget in iface.mainWindow().children():
-            if not(type(widget) == QtWidgets.QDockWidget):
-                continue
-            if not(widget.objectName() == 'QgsMapCanvasDockWidgetBase'):
-                continue
-            docks.append(widget)
-        return docks[-1]
+        for widget in iface.mainWindow().findChildren(QtWidgets.QDockWidget):
+            className = widget.metaObject().className()
+            if (
+                className == 'QgsMapCanvasDockWidget'
+                or widget.objectName() == 'QgsMapCanvasDockWidgetBase'
+            ):
+                docks.append(widget)
+        return docks
+
+    def getNewMapView(self, docksBefore):
+        """Retorna o dock criado apos openMapView (ausente em docksBefore)."""
+        newDocks = [d for d in self.getMapViewDocks() if d not in docksBefore]
+        if not newDocks:
+            return None
+        return newDocks[-1]
 
     def settings(self, mapView, themeName):
-        menuSettings = mapView.findChildren(QtWidgets.QToolButton)[5].menu()
-        menuSettings.actions()[0].defaultWidget().children()[1].click()
-        menuSettings.actions()[0].defaultWidget().children()[-3].setChecked(True)
-        menuSettings.actions()[0].defaultWidget().children()[-1].setValue(1)
-        self.triggerTheme(themeName, mapView)
+        canvas = mapView.findChild(gui.QgsMapCanvas)
+        if canvas is None:
+            raise Exception('Canvas do novo mapa nao encontrado')
+        canvas.setTheme(themeName)
+        try:
+            # Sincronizacao de extensao/escala: depende do layout interno do dock
+            menuSettings = mapView.findChildren(QtWidgets.QToolButton)[5].menu()
+            widgets = menuSettings.actions()[0].defaultWidget().children()
+            widgets[1].click()
+            widgets[-3].setChecked(True)
+            widgets[-1].setValue(1)
+        except (IndexError, AttributeError) as e:
+            core.QgsMessageLog.logMessage(
+                'Nao foi possivel sincronizar o novo mapa: {0}'.format(e),
+                'SAP Operador',
+                core.Qgis.MessageLevel.Warning
+            )
 
     def run(self):
+        layers = iface.layerTreeView().selectedLayers()
+        if not layers:
+            return (False, 'Selecione ao menos uma camada')
+        docksBefore = self.getMapViewDocks()
         if not self.openMapView():
             return (False, 'Falha ao criar novo mapa')
+        mapView = self.getNewMapView(docksBefore)
+        if mapView is None:
+            return (False, 'Falha ao localizar o novo mapa')
         themeName = self.createTheme()
-        mapView = self.getOpenMapView()
         self.settings(mapView, themeName)
+        return (True, '')

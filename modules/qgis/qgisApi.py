@@ -436,7 +436,9 @@ class QgisApi(IQgisApi):
 
     def createNewMapView(self):
         createNewMapView = self.mapFunctionsFactory.getFunction('CreateNewMapView')
-        createNewMapView.run()
+        result = createNewMapView.run()
+        if result and not result[0]:
+            iface.messageBar().pushMessage('Aviso', result[1], level=core.Qgis.MessageLevel.Warning)
         
     def loadLayerActions(self, layerIds):
         actions = {
