@@ -1,5 +1,6 @@
 from SAP_Operador.modules.qgis.interfaces.IQgisApi import IQgisApi
 from SAP_Operador.modules.qgis.factories.inputDataFactory import InputDataFactory
+from SAP_Operador.modules.qgis.inputs.hiddenColumns import HiddenColumnsManager, parseDefinitions
 from SAP_Operador.modules.qgis.factories.processingProviderFactory import ProcessingProviderFactory
 from SAP_Operador.modules.qgis.factories.layerActionsFactory import LayerActionsFactory
 from SAP_Operador.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
@@ -33,7 +34,8 @@ class QgisApi(IQgisApi):
         self.mapToolsFactory = MapToolsFactory() if mapToolsFactory is None else mapToolsFactory
         self.layerActionsFactory = LayerActionsFactory() if layerActionsFactory is None else layerActionsFactory
         self.customToolBar = None
-    
+        self.hiddenColumnsManager = HiddenColumnsManager()
+
     def load(self):
         for toolbar in iface.mainWindow().findChildren(QToolBar):
             if toolbar.objectName() == "SAP":
@@ -297,6 +299,8 @@ class QgisApi(IQgisApi):
         for layer in core.QgsProject.instance().mapLayers().values():
             #lyr.styleManager().styles()
             layer.styleManager().setCurrentStyle(styleName)
+        # a troca de estilo restaura o formulário salvo no estilo; reaplica o estado das colunas ocultas
+        self.hiddenColumnsManager.refresh()
 
     def loadMapLayerStyles(self, loadedLayerIds, layerStyles, defaultStyle):
         for layerId in loadedLayerIds:
@@ -396,6 +400,7 @@ class QgisApi(IQgisApi):
             return False
 
     def cleanProject(self):
+        self.hiddenColumnsManager.clear()
         core.QgsProject.instance().removeAllMapLayers()
         core.QgsProject.instance().layerTreeRoot().removeAllChildren()
         self.canvasRefresh()
@@ -463,6 +468,22 @@ class QgisApi(IQgisApi):
             for fieldIdx in layer.primaryKeyAttributes():
                 editFormConfig.setReadOnly(fieldIdx, option)
             layer.setEditFormConfig(editFormConfig)
+
+    def setHiddenColumns(self, layerIds, hiddenColumnsItems):
+        definitions = parseDefinitions(hiddenColumnsItems)
+        if not definitions:
+            return
+        for layer in self.getLayerFromIds(layerIds):
+            self.hiddenColumnsManager.apply(layer, definitions)
+
+    def hasHiddenColumns(self, hiddenColumnsItems):
+        return bool(parseDefinitions(hiddenColumnsItems))
+
+    def setHiddenColumnsVisible(self, visible):
+        self.hiddenColumnsManager.setVisible(visible)
+
+    def areHiddenColumnsVisible(self):
+        return self.hiddenColumnsManager.visible
 
     def setFieldsReadOnly(self, layerIds, fields, option):
         layers = core.QgsProject.instance().mapLayers()

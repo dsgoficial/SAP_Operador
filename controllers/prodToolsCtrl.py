@@ -129,6 +129,15 @@ class ProdToolsCtrl(QtCore.QObject):
     def changeMapLayerStyle(self, styleName):
         self.qgis.changeMapLayerStyles(styleName)
 
+    def hasHiddenColumns(self):
+        return self.qgis.hasHiddenColumns(self.sapActivity.getHiddenColumns())
+
+    def areHiddenColumnsVisible(self):
+        return self.qgis.areHiddenColumnsVisible()
+
+    def setHiddenColumnsVisible(self, visible):
+        self.qgis.setHiddenColumnsVisible(visible)
+
     def removeDock(self):
         if self.productionTools:
             self.qgis.removeDockWidget(self.productionTools)

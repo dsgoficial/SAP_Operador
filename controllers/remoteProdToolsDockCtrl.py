@@ -276,6 +276,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.loadLayerActions(loadedLayerIds)
 
         self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
+        self.qgis.setHiddenColumns( loadedLayerIds, self.sapActivity.getHiddenColumns() )
 
         if self.sapActivity.getStepTypeId() == 3:
             mapLayerIdNote = {}
@@ -423,6 +424,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.loadLayerActions(loadedLayerIds)
 
         self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
+        self.qgis.setHiddenColumns( loadedLayerIds, self.sapActivity.getHiddenColumns() )
 
         if self.sapActivity.getStepTypeId() == 3:
             mapLayerIdNote = {}

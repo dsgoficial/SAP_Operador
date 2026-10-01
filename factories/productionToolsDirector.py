@@ -32,6 +32,10 @@ class ProductionToolsDirector:
                 'widget': self.activityWidgetFactory.makeActivityRoutinesWidget(controller=controller)
             },
             {
+                'name': 'Colunas Ocultas:',
+                'widget': self.activityWidgetFactory.makeHiddenColumnsToggleWidget(controller=controller)
+            },
+            {
                 'name': 'Metadados de Edição:',
                 'widget': self.activityWidgetFactory.makeEditionMetadataWidget(controller=controller, sap=sap)
             }
@@ -76,8 +80,12 @@ class ProductionToolsDirector:
             {
                 'name': 'Rotinas:',
                 'widget': self.activityWidgetFactory.makeActivityRoutinesWidget(controller=controller)
+            },
+            {
+                'name': 'Colunas Ocultas:',
+                'widget': self.activityWidgetFactory.makeHiddenColumnsToggleWidget(controller=controller)
             }
-            
+
         ]
         for i, widget in enumerate(reversed(widgets)):
             if not widget['widget'].hasData():

@@ -17,6 +17,9 @@ class SapActivityLocal:
     def getThemes(self):
         return self.getData()['dados']['atividade']['temas']
 
+    def getHiddenColumns(self):
+        return self.getData()['dados']['atividade'].get('colunas_ocultas', [])
+
     def getNotes(self):
         notes = []
         activityData = self.getData()['dados']['atividade']

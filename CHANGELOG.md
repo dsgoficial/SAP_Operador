@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 3.31.0
+
+Melhorias:
+- Colunas ocultas por atividade. O SAP passa a enviar, na atividade, a lista de colunas que o projeto oculta por subfase e lote (configurada no SAP_Gerente). Ao carregar as camadas, o operador oculta essas colunas na tabela de atributos e no formulário de edição; nada é definido no plugin. Colunas que não existem na camada são ignoradas e registradas no painel de mensagens do QGIS, aba "SAP_Operador".
+- Nova caixa "Exibir colunas ocultas" no painel do plugin (aparece só quando a atividade tem configuração). Marcada, reexibe as colunas na tabela e no formulário, com o estado original (inclusive listas de valores); desmarcada, volta a ocultá-las. Começa desmarcada a cada atividade.
+- A troca de estilo do mapa reaplica o estado das colunas ocultas, pois o QGIS restaura o formulário salvo no estilo.
+
+Requisito:
+- Servidor SAP 2.3.6 ou superior. Em servidores anteriores o plugin funciona normalmente, sem colunas ocultas.
+
 ## 3.30.2
 
 Correção de bug:

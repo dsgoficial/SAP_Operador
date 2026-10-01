@@ -7,6 +7,7 @@ from SAP_Operador.factories.activityInputLinksWidgetBuilder import ActivityInput
 from SAP_Operador.factories.activityRoutinesWidgetBuilder import ActivityRoutinesWidgetBuilder
 from SAP_Operador.factories.loadLocalActivityWidgetBuilder import LoadLocalActivityWidgetBuilder
 from SAP_Operador.widgets.editionMetadata import EditionMetadata
+from SAP_Operador.widgets.hiddenColumnsToggle import HiddenColumnsToggle
 
 class ActivityWidgetFactory(IActivityWidgetFactory):
     
@@ -47,6 +48,9 @@ class ActivityWidgetFactory(IActivityWidgetFactory):
 
     def makeEditionMetadataWidget(self, controller, sap):
         return EditionMetadata(controller=controller, sap=sap)
+
+    def makeHiddenColumnsToggleWidget(self, controller):
+        return HiddenColumnsToggle(controller=controller)
 
     def makeLoadLocalActivityWidget(self, controller):
         director = ActivityWidgetDirector()

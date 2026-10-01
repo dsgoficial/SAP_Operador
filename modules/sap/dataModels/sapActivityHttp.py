@@ -23,6 +23,9 @@ class SapActivityHttp:
             fixThemes.append(fixedTheme)
         return fixThemes
 
+    def getHiddenColumns(self):
+        return self.getData()['dados']['atividade'].get('colunas_ocultas', [])
+
     def getNotes(self):
         notes = []
         activityData = self.getData()['dados']['atividade']
