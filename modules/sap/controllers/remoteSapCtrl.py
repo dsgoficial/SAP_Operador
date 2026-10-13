@@ -199,8 +199,8 @@ class RemoteSapCtrl(SapCtrl):
     def saveEditionMetadata(self, metadados):
         return self.sapApi.saveEditionMetadata(metadados)
 
-    def getEditionJson(self, produtoUuid):
-        response = self.sapApi.getEditionJson(produtoUuid)
+    def getEditionJson(self, versaoUuid):
+        response = self.sapApi.getEditionJson(versaoUuid)
         if not ('dados' in response):
             return {}
         return response['dados']

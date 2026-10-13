@@ -2,4 +2,4 @@
 class Config:
 
     NAME = 'SAP Operador'
-    VERSION = '3.31.0'
+    VERSION = '4.0.0'

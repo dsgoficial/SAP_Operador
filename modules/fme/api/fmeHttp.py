@@ -21,7 +21,9 @@ class FmeHttp(IFmeApi):
     def getSapRoutines(self, fmeConfig):
         routineSap = []
         for config in fmeConfig:
-            server = u"{0}:{1}/api/rotinas".format( config['servidor'], config['porta'] )
+            # O pacote do SAP 3.0 traz o gerenciador FME como `url`
+            # (qgis.gerenciador_fme.url), e nao como servidor e porta.
+            server = u"{0}/api/rotinas".format( config['url'].rstrip('/') )
             cat = u"?ids={0}".format( config['rotina'] )
             url = u"{0}{1}".format( server, cat )
             response = self.httpGet(url)
@@ -32,7 +34,7 @@ class FmeHttp(IFmeApi):
                 routine.update({
                     'description': '{0}: \n{1}'.format(routine['rotina'], routine['descricao']),
                     'routineType': 'fme',
-                    'server': '{}:{}'.format( config['servidor'], config['porta'] )
+                    'server': config['url'].rstrip('/')
                 })
             routineSap += routines
         return routineSap

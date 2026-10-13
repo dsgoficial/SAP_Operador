@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 4.0.0
+
+4.0.0: contrato do SAP 3.0, só QGIS 4.
+
+Requisito:
+- Servidor SAP 3.x. O plugin recusa servidor 2.x no login ("Versão do servidor SAP incompatível"), e o SAP 3.0 recusa plugin antigo: os dois sobem juntos, sem compatibilidade com o SAP 2.3.x.
+- Perfil de operador no módulo de produção do SAP 3.0. Sem ele o servidor responde 403, e o plugin mostra a mensagem do servidor.
+
+Mudanças de contrato:
+- Metadado de edição por EDIÇÃO, e não por folha: a tela "Editar metadados" grava por `versao_id` (era `produto_id`), e "Baixar JSON" pede `/metadados/json_edicao/produto/{uuid}` com o `uuid_versao` (era `produto_uuid`, que o SAP 3.0 não manda, e todas as folhas saíam "sem uuid, ignorado"). A lista mostra a versão ao lado da folha, e o arquivo baixado leva a versão no nome.
+- Escala: o pacote da atividade do SAP 3.0 não traz `denominador_escala`, porque a escala é da folha. O painel mostra "Escala: -", as variáveis de projeto `escala` e `productiontools_scale` deixam de ser definidas (antes o carregamento de camadas falhava ao converter "-" em número) e a grade de revisão usa a das escalas menores que 1:10.000.
+- Tipo de produto lido de `subtipo_produto` (era `tipo_produto`), que no SAP 3.0 vem da linha de produção.
+- Usuário da atividade lido de `usuario_uuid` (era `usuario_id`).
+- Acesso ao banco de produção (dado PostGIS com controle de permissão): quando o SAP 3.0 não consegue conceder o acesso, `login_info` chega como `{erro}`, e o plugin mostra essa frase em vez de falhar com KeyError. Sem `login_info`, avisa que o SAP não enviou o acesso.
+- Rotinas FME: o gerenciador vem como `url` (era `servidor` e `porta`, que o SAP já não mandava).
+- Sessão: o token vencido responde 401 no SAP 3.0, e é no 401 que o plugin refaz o login sozinho. O 403 (falta de perfil) e o 404 (atividade ou versão não encontrada) mostram a mensagem do servidor, em vez de "Token expirado" e "Servidor não encontrado".
+
 ## 3.31.0
 
 Melhorias:

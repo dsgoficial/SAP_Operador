@@ -181,10 +181,17 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.resetProject()
 
+    def setScaleVariables(self):
+        # O SAP 3.0 não manda escala no pacote: sem ela, as variáveis de projeto
+        # não são definidas, em vez de o carregamento falhar no int('-').
+        scaleDenominator = self.sapActivity.getScaleDenominator()
+        if scaleDenominator is None:
+            return
+        self.qgis.setProjectVariable('escala', scaleDenominator, encrypt=False)
+        self.qgis.setProjectVariable('productiontools_scale', scaleDenominator, encrypt=False)
+
     def loadActivityLayers(self):
-        scale = self.sapActivity.getScale()
-        self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
-        self.qgis.setProjectVariable('productiontools_scale', int(scale.split(':')[-1]), encrypt=False)
+        self.setScaleVariables()
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({
             'dbName' : self.sapActivity.getDatabaseName(),
@@ -330,9 +337,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self.showInfoMessageBox(None, 'Aviso', 'Sem camadas a serem carregadas!')
             return
         layerNames = [ l for l in self.getActivityLayerNames() if l in names]
-        scale = self.sapActivity.getScale()
-        self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
-        self.qgis.setProjectVariable('productiontools_scale', int(scale.split(':')[-1]), encrypt=False)
+        self.setScaleVariables()
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({
             'dbName' : self.sapActivity.getDatabaseName(),
@@ -616,11 +621,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
         # Set up grid creation parameters
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
-        scale = self.sapActivity.getScale()
+        scaleDenominator = self.sapActivity.getScaleDenominator()
         frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
 
-        # Determine grid size based on scale
-        if int(scale.split(':')[-1]) <= 10000:
+        # Determine grid size based on scale. Sem escala no pacote (SAP 3.0),
+        # vale a grade das escalas menores que 1:10.000.
+        if scaleDenominator is not None and scaleDenominator <= 10000:
             param = {
                 'input': frameLyr,
                 'x_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2),

@@ -10,8 +10,8 @@ class EditionMetadata(Widget):
     """Secao do dock so visivel em atividade da fase de Edicao (tipo_fase_id = 4).
 
     Dois botoes: editar o metadado por folha (nome do produto e palavras-chave,
-    gravado no SAP na hora) e baixar o JSON de edicao de cada folha (rota publica
-    do SAP por uuid do produto)."""
+    gravado no SAP na hora) e baixar o JSON de edicao de cada folha (rota do SAP
+    3.0 por uuid da VERSAO, `uuid_versao`, e nao do produto)."""
 
     def __init__(self, controller=None, sap=None):
         super(EditionMetadata, self).__init__(controller)
@@ -67,11 +67,11 @@ class EditionMetadata(Widget):
         self.showInfoMessageBox('Sucesso', message)
 
     def _mergeSaved(self, produtos, metadados):
-        byId = {m['produto_id']: m for m in metadados}
+        byId = {m['versao_id']: m for m in metadados}
         merged = []
         for p in produtos:
             novo = dict(p)
-            saved = byId.get(p['produto_id'])
+            saved = byId.get(p['versao_id'])
             if saved:
                 novo['nome_produto'] = saved['nome_produto']
                 novo['palavras_chave'] = saved['palavras_chave']
@@ -95,7 +95,7 @@ class EditionMetadata(Widget):
         resultados = []
         try:
             for p in produtos:
-                uuid = p.get('produto_uuid')
+                uuid = p.get('uuid_versao')
                 label = self._produtoLabel(p)
                 if not uuid:
                     resultados.append('{0}: sem uuid, ignorado'.format(label))
@@ -123,8 +123,10 @@ class EditionMetadata(Widget):
         self.showInfoMessageBox('Baixar JSON', '\n'.join(resultados))
 
     def _produtoLabel(self, p):
-        return p.get('mi') or p.get('inom') or p.get('nome_produto') or str(p.get('produto_id'))
+        return p.get('mi') or p.get('inom') or p.get('nome_produto') or str(p.get('versao_id'))
 
     def _produtoFileName(self, p):
-        name = p.get('mi') or p.get('inom') or p.get('nome_produto') or str(p.get('produto_id'))
+        name = p.get('mi') or p.get('inom') or p.get('nome_produto') or str(p.get('versao_id'))
+        if p.get('versao'):
+            name = '{0}_{1}'.format(name, p['versao'])
         return name.replace(' ', '_').replace('/', '_')

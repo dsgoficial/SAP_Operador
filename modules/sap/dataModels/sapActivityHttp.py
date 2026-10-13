@@ -11,9 +11,6 @@ class SapActivityHttp:
     def getData(self):
         return self.data
 
-    def getScale(self):
-        return self.getData()['dados']['atividade']['denominador_escala']
-
     def getThemes(self):
         themes = self.getData()['dados']['atividade']['temas']
         fixThemes = []
@@ -225,7 +222,7 @@ class SapActivityHttp:
                 'atributos': [
                     {
                         'nome': 'ultimo_usuario',
-                        'valor': self.getUserId()
+                        'valor': self.getUserUuid()
                     }
                 ]
             }
@@ -309,21 +306,26 @@ class SapActivityHttp:
             })
         return inputs
 
+    def getProductionLoginInfo(self):
+        # No SAP 3.0 o acesso ao banco de produção (tipo 2) chega de três jeitos:
+        # ausente (não há permissão a conceder), {login, senha} ou {erro}, este
+        # quando havia permissão a conceder e o servidor não conseguiu.
+        loginInfo = self.getData()['dados'].get('login_info')
+        if not loginInfo:
+            raise Exception('O SAP não enviou o acesso ao banco de produção desta atividade.')
+        if 'erro' in loginInfo:
+            raise Exception(loginInfo['erro'])
+        return loginInfo
+
     def getDatabasePassword(self):
-        """ if 'login_info' in self.getData()['dados']:
-            return self.getData()['dados']['login_info']['senha']
-        return self.getData()['senha'] """
         if self.getTypeProductionData() == 2:
-            return self.getData()['dados']['login_info']['senha']
+            return self.getProductionLoginInfo()['senha']
         elif self.getTypeProductionData() == 3:
             return self.getData()['senha']
 
     def getDatabaseUserName(self):
-        """ if 'login_info' in self.getData()['dados']:
-            return self.getData()['dados']['login_info']['login']
-        return self.getData()['login'] """
         if self.getTypeProductionData() == 2:
-            return self.getData()['dados']['login_info']['login']
+            return self.getProductionLoginInfo()['login']
         elif self.getTypeProductionData() == 3:
             return self.getData()['login']
 
@@ -394,8 +396,8 @@ class SapActivityHttp:
             for d in self.getData()['dados']['atividade']['linhagem']
         ]
 
-    def getUserId(self):
-        return self.getData()['dados']['usuario_id']
+    def getUserUuid(self):
+        return self.getData()['dados']['usuario_uuid']
 
     def getLayerFilter(self, layer):
         layerSchema = layer["schema"]
@@ -434,13 +436,22 @@ class SapActivityHttp:
         return self.getData()['dados']['atividade']['bloco'] if 'bloco' in self.getData()['dados']['atividade'] else '-'
 
     def getProductType(self):
-        return self.getData()['dados']['atividade']['tipo_produto'] if 'tipo_produto' in self.getData()['dados']['atividade'] else '-'
+        return self.getData()['dados']['atividade']['subtipo_produto'] if 'subtipo_produto' in self.getData()['dados']['atividade'] else '-'
 
     def getLot(self):
         return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
 
     def getScale(self):
-        return '1:{}'.format(self.getData()['dados']['atividade']['denominador_escala']) if 'denominador_escala' in self.getData()['dados']['atividade'] else '-'
+        # O SAP 3.0 não manda escala no pacote da atividade: a escala é da FOLHA
+        # (acervo.produto), e um lote atravessa escalas. Sem ela, '-'.
+        return '-'
+
+    def getScaleDenominator(self):
+        scale = self.getScale()
+        try:
+            return int(scale.split(':')[-1])
+        except ValueError:
+            return None
 
     def getShortcuts(self):
         return self.getData()['dados']['atividade']['atalhos']

@@ -68,8 +68,17 @@ Usar scripts em `.dev/` para criar symlink do repositório para o diretório de 
 
 ### Branch atual
 
-- `qgis4` — migração para QGIS 4 / PyQt6
-- `master` — branch principal
+- `sap3`: versão 4.x, fala SÓ com o servidor SAP 3.0, só QGIS 4
+- `qgis4`: versão 3.x, migração para QGIS 4 / PyQt6, servidor SAP 2.3.x
+- `master`: branch principal
+
+### Contrato com o servidor (branch `sap3`)
+
+- O servidor é o SAP 3.0 (repositório `controle_acervo`), e ele é a fonte da verdade do contrato: rotas em `server/src/{login,distribuicao,metadado,microcontrole}/*_route.js`, corpos nos `*_schema.js` (Joi) e o pacote da atividade em `distribuicao_ctrl.js` (`getDadosAtividade`).
+- O plugin e o servidor sobem em LOCKSTEP, sem compatibilidade com o SAP 2.3.x. `validVersion` (`modules/sap/api/sapHttp.py`) aceita só major `3`, e o servidor barra no login do cliente `sap_fp` o plugin abaixo da versão mínima de `qgis.plugin`.
+- Chave desconhecida no corpo: `microcontrole` e `metadados` recusam com 400; `distribuicao` e `login` descartam a chave e avisam em `avisos`. Nos dois casos o campo não chega ao banco, então nome de campo se copia do schema, nunca da memória.
+- Nomes do 3.0 que o plugin usa: `versao_id` e `uuid_versao` no metadado de edição (o que se publica é a EDIÇÃO, `acervo.versao`), `usuario_uuid`, `subtipo_produto`, `atalhos`, `fme[].url`. O pacote não traz `denominador_escala`: a escala é da folha.
+- Token vencido é 401 (o plugin refaz o login); 403 é falta de perfil de operador no módulo de produção.
 
 ### Testes
 

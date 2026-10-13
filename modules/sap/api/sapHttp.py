@@ -47,7 +47,9 @@ class SapHttp(ISapApi):
         kwargs['headers'] = headers
         kwargs['timeout'] = TIMEOUT
         response = getattr(self._session, method)(url, **kwargs)
-        if response.status_code == 403 and not self._isReAuthenticating and self._reAuth():
+        # No SAP 3.0 o token vencido responde 401; o 403 é falta de perfil, e
+        # refazer o login não o resolve.
+        if response.status_code == 401 and not self._isReAuthenticating and self._reAuth():
             kwargs['headers']['authorization'] = self.getToken()
             response = getattr(self._session, method)(url, **kwargs)
         self.checkError(response)
@@ -96,12 +98,12 @@ class SapHttp(ISapApi):
         )
         responseJson = response.json()
         if not self.validVersion(responseJson):
-            raise Exception("Versão do servidor sap errada")
+            raise Exception("Versão do servidor SAP incompatível: este plugin exige o SAP 3.x.")
         self.setToken(responseJson['dados']['token'])
         return responseJson
 
     def validVersion(self, responseJson):
-        return ('version' in responseJson and responseJson['version'].split('.')[0] == '2')
+        return ('version' in responseJson and responseJson['version'].split('.')[0] == '3')
 
     def httpPostJson(self, url, postData):
         headers = {
@@ -113,17 +115,28 @@ class SapHttp(ISapApi):
             headers
         )
 
+    def _serverMessage(self, response):
+        try:
+            return response.json()['message']
+        except Exception:
+            return None
+
     def checkError(self, response):
-        if response.status_code == 404:
-            raise Exception('Servidor não encontrado!')
         if response.status_code == 413:
             raise Exception('Request Entity Too Large!')
         if response.status_code == 504:
             raise Exception('Tempo excedido!')
-        if response.status_code == 403:
-            raise Exception('Token expirado, faça o login novamente!')
-        if not response.ok:
-            raise Exception(response.json()['message'])
+        if response.status_code == 401:
+            raise Exception('Sessão expirada, faça o login novamente!')
+        if response.ok:
+            return
+        # O SAP 3.0 responde 404 com mensagem própria (atividade ou versão não
+        # encontrada) e 403 quando falta o perfil de operador no módulo de
+        # produção: a frase do servidor diz o que houve.
+        message = self._serverMessage(response)
+        if response.status_code == 404 and not message:
+            raise Exception('Servidor não encontrado!')
+        raise Exception(message or 'Erro {0} no servidor SAP.'.format(response.status_code))
 
     def httpPutJson(self, url, postData):
         headers = {
@@ -235,9 +248,11 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    def getEditionJson(self, produtoUuid):
+    def getEditionJson(self, versaoUuid):
+        # No SAP 3.0 o parâmetro da rota é o uuid da VERSÃO (acervo.versao.uuid_versao):
+        # o que se publica é a edição, e não a folha.
         response = self.httpGet(
-            url="{0}/metadados/json_edicao/produto/{1}".format(self.getServer(), produtoUuid)
+            url="{0}/metadados/json_edicao/produto/{1}".format(self.getServer(), versaoUuid)
         )
         if response:
             return response.json()

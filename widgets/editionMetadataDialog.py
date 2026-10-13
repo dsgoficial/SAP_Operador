@@ -4,9 +4,11 @@ from qgis.PyQt import QtWidgets, QtCore
 class EditionMetadataDialog(QtWidgets.QDialog):
     """Edita, por folha, o nome do produto e as palavras-chave (nome + tipo).
 
-    Recebe a lista de produtos da atividade (cada um com produto_id, mi, inom,
-    nome_produto e palavras_chave) e a lista de tipos de palavra-chave do SAP.
-    Mantem as edicoes de todas as folhas em memoria; Salvar devolve todas, e
+    Recebe a lista de versoes da atividade (metadado_edicao do SAP 3.0, cada uma
+    com versao_id, uuid_versao, versao, mi, inom, nome_produto e palavras_chave)
+    e a lista de tipos de palavra-chave do SAP. A chave e o versao_id: o que se
+    publica e a EDICAO (acervo.versao), e o produto_id do pacote e a folha.
+    Mantem as edicoes de todas as versoes em memoria; Salvar devolve todas, e
     Cancelar descarta tudo.
     """
 
@@ -16,7 +18,7 @@ class EditionMetadataDialog(QtWidgets.QDialog):
         self.keywordTypes = keywordTypes if keywordTypes else []
         self.state = {}
         for p in produtos:
-            self.state[p['produto_id']] = {
+            self.state[p['versao_id']] = {
                 'nome_produto': p.get('nome_produto') or '',
                 'palavras_chave': [dict(k) for k in (p.get('palavras_chave') or [])],
             }
@@ -33,7 +35,7 @@ class EditionMetadataDialog(QtWidgets.QDialog):
         formLayout = QtWidgets.QFormLayout()
         self.produtoCombo = QtWidgets.QComboBox(self)
         for p in self.produtos:
-            self.produtoCombo.addItem(self._produtoLabel(p), p['produto_id'])
+            self.produtoCombo.addItem(self._produtoLabel(p), p['versao_id'])
         self.produtoCombo.currentIndexChanged.connect(self.onProdutoChanged)
         formLayout.addRow('Folha:', self.produtoCombo)
 
@@ -73,13 +75,16 @@ class EditionMetadataDialog(QtWidgets.QDialog):
         layout.addWidget(self.buttonBox)
 
     def _produtoLabel(self, p):
-        return p.get('mi') or p.get('inom') or p.get('nome_produto') or str(p.get('produto_id'))
+        label = p.get('mi') or p.get('inom') or p.get('nome_produto') or str(p.get('versao_id'))
+        if p.get('versao'):
+            label = '{0} (versão {1})'.format(label, p['versao'])
+        return label
 
     def _typeCode(self, t):
-        return t.get('code', t.get('id'))
+        return t.get('code')
 
     def _typeName(self, t):
-        return t.get('nome', t.get('descricao', ''))
+        return t.get('nome', '')
 
     def _makeTypeCombo(self, selectedCode=None):
         combo = QtWidgets.QComboBox()
@@ -135,12 +140,12 @@ class EditionMetadataDialog(QtWidgets.QDialog):
     def onAccept(self):
         self._flushCurrent()
         for p in self.produtos:
-            st = self.state[p['produto_id']]
+            st = self.state[p['versao_id']]
             if not st['nome_produto']:
                 QtWidgets.QMessageBox.warning(
                     self, 'Atenção', 'Informe o nome do produto para todas as folhas.'
                 )
-                idx = self.produtoCombo.findData(p['produto_id'])
+                idx = self.produtoCombo.findData(p['versao_id'])
                 if idx >= 0:
                     self.produtoCombo.setCurrentIndex(idx)
                 return
@@ -149,9 +154,9 @@ class EditionMetadataDialog(QtWidgets.QDialog):
     def getMetadados(self):
         return [
             {
-                'produto_id': pid,
+                'versao_id': versaoId,
                 'nome_produto': st['nome_produto'],
                 'palavras_chave': st['palavras_chave'],
             }
-            for pid, st in self.state.items()
+            for versaoId, st in self.state.items()
         ]
