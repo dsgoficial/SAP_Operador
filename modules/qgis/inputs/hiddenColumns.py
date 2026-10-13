@@ -61,7 +61,8 @@ class HiddenColumnsManager:
 
     def getTableName(self, layer):
         try:
-            return layer.dataProvider().uri().table() or layer.name()
+            from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada
+            return tabelaDaCamada(layer)[1] or layer.name()
         except Exception:
             return layer.name()
 

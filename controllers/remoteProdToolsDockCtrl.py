@@ -7,6 +7,9 @@ import os
 import json
 from qgis.PyQt import sip
 
+from SAP_Operador.modules.versionamento import camadas
+from SAP_Operador.modules.versionamento.regras import aplicarRegrasDeFormatacao
+
 
 class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
@@ -134,6 +137,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.productionTools
 
     def showEndActivityDialog(self):
+        if self.isVersionedActivity():
+            failed = self.saveVersionedLayers()
+            if failed:
+                self.showErrorMessageBox(
+                    self.productionTools,
+                    'Aviso',
+                    'Salvamento recusado antes de finalizar: {0}'.format('<br>'.join(failed))
+                )
+                return
         if self.qgis.hasModifiedLayers():
             self.showInfoMessageBox(
                 self.productionTools,
@@ -192,153 +204,55 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.qgis.setProjectVariable('productiontools_scale', scaleDenominator, encrypt=False)
 
     def loadActivityLayers(self):
-        self.setScaleVariables()
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        result = loadLayersFromPostgis.run({
-            'dbName' : self.sapActivity.getDatabaseName(),
-            'dbHost' : self.sapActivity.getDatabaseServer(),
-            'layerNames' : self.getActivityLayerNames(),
-            'dbPassword' : self.sapActivity.getDatabasePassword(),
-            'dbPort' : self.sapActivity.getDatabasePort(),
-            'dbUser' : self.sapActivity.getDatabaseUserName()
-        })
-        loadedLayerIds = result['OUTPUT']
-
-        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
-
-        groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
-        groupLayers.run({'layerIds': loadedLayerIds})
-
-        defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
-        if defaultStyle:
-            self.qgis.loadMapLayerStyles(
-                loadedLayerIds,
-                self.sapActivity.getLayerStyles(),
-                defaultStyle
-            )
-            #self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
-
-        """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
-        matchAndApplyQmlStylesToLayers.run({
-            'layersQml': self.sapActivity.getLayersQml(styleName),
-            'layerIds': loadedLayerIds
-        }) """
-
-        assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
-        database = self.getActivityDatabase()
-        assignValueMapToLayers.run({
-            'valueMaps': {
-                    layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
-                    for layer in self.sapActivity.getLayers()
-            },
-            'layerIds': loadedLayerIds
-        })
-
-        assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
-        assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
-
-        alias = self.sapActivity.getLayerALiases()
-        if alias:
-            assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
-            assignAliasesToLayers.run({
-                'aliases': alias,
-                'layerIds': loadedLayerIds
-            })
-
-        assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
-        assignActionsToLayers.run({
-            'actions': self.sapActivity.getLayerActions(),
-            'layerIds': loadedLayerIds
-        })
-        rules = self.sapActivity.getRules()
-        if rules:
-            assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
-            assignFormatRulesToLayers.run({
-                'rules': rules,
-                'layerIds': loadedLayerIds
-            })
-        else:
-            # Caso não seja carregada nenhuma regra, o total de violações de regras é tornado 0.
-            self.total_rule_violations = 0
-
-        """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
-        assignConditionalStyleToLayers.run({
-            'conditionals': self.sapActivity.getLayerConditionalStyle(),
-            'layerIds': loadedLayerIds
-        }) """
-
-        # setRemoveDuplicateNodePropertyOnLayers = self.processingFactoryDsgTools.createProcessing('SetRemoveDuplicateNodePropertyOnLayers', self)
-        # setRemoveDuplicateNodePropertyOnLayers.run({'layerIds': loadedLayerIds})
-
-        frameQuery = self.sapActivity.getFrameQuery()
-        if not self.frameLoaded( frameQuery ):
-            self.qgis.loadInputData({
-                'query': self.sapActivity.getFrameQuery(),
-                'epsg': self.sapActivity.getEPSG(),
-                'nome': 'moldura',
-                'tipo_insumo_id': 100,
-                'qml': self.sapActivity.getFrameQml()
-            })
-
-        self.qgis.loadLayerActions(loadedLayerIds)
-
-        self.qgis.setPrimaryKeyReadOnly( loadedLayerIds, True )
-        self.qgis.setHiddenColumns( loadedLayerIds, self.sapActivity.getHiddenColumns() )
-
-        if self.sapActivity.getStepTypeId() == 3:
-            mapLayerIdNote = {}
-            noteLayers = self.sapActivity.getNoteLayers()
-            for layerNote in noteLayers:
-                layerId = next(filter(lambda layerId: layerNote['nome'] in layerId, loadedLayerIds) , None)
-                mapLayerIdNote[layerId] = layerNote
-            noteLayerIds = mapLayerIdNote.keys()
-            loadedNotelayers = self.qgis.getLayerFromIds(noteLayerIds)
-            for layer in loadedNotelayers:
-                note = mapLayerIdNote[layer.id()]
-                self.qgis.setFieldsReadOnly(
-                    [layer.id()],
-                    [
-                        n
-                        for n in layer.fields().names()
-                        if not(n == note['atributo_justificativa_apontamento'] or n == note['atributo_situacao_correcao'])
-                    ],
-                    True
-                )
-
-        if self.sapActivity.getStepTypeId() == 2:
-            self.qgis.loadDefaultFieldValue(
-                loadedLayerIds,
-                [
-                    {
-                        'name': 'subfase_id',
-                        'value': self.sapActivity.getSubphaseId()
-                    }
-                ]
-            )
-            self.qgis.setFieldsReadOnly( loadedLayerIds, ['subfase_id'], True )
-
-        self.prodToolsSettings.initSaveTimer()
-
-        self.validateUserOperations.setWorkspaceWkt( self.sapActivity.getFrameWkt() )
-        self.validateUserOperations.setTraceableLayerIds( loadedLayerIds )
-        self.validateUserOperations.start()
-        self.canvasMonitoring.start()
-        self.startMicrocontrole(loadedLayerIds)
-
-        self.loadReviewTool()
-
-        loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
-        for theme in self.sapActivity.getThemes():
-            loadThemes.run({'themes': theme['definicao_tema']})
-        self.sortLayersOnMolduraGroup()
+        self._loadAndConfigureLayers(self.getActivityLayerNames())
 
     def loadActivityLayersByNames(self, names):
         if len(names) == 0:
             self.showInfoMessageBox(None, 'Aviso', 'Sem camadas a serem carregadas!')
             return
         layerNames = [ l for l in self.getActivityLayerNames() if l in names]
-        self.setScaleVariables()
+        self._loadAndConfigureLayers(layerNames)
+
+    def isVersionedActivity(self):
+        return bool(self.sapActivity) and self.sapActivity.isVersioned()
+
+    def getVersioningServiceBase(self):
+        # Registra (ou renova) a conexão do provedor com o repasse do SAP, com o
+        # token do SAP lido a cada pedido e o novo login num 401.
+        sapApi = self.sap.sapApi
+        camadas.conectar(sapApi.getServer(), sapApi.getToken, sapApi._reAuth)
+        return camadas.base(self.sapActivity.getVersioning(), sapApi.getServer())
+
+    def _loadVersionedLayers(self, layerNames):
+        # Tipo 4: as classes abrem pelo provedor dsgversioning, do clone que o
+        # SAP criou para a atividade (já recortado pela unidade de trabalho).
+        serviceBase = self.getVersioningServiceBase()
+        layers = [ l for l in self.sapActivity.getLayers() if l['nome'] in layerNames ]
+        loadedLayerIds, missing = camadas.abrirCamadas(serviceBase, self.sapActivity.getVersioning(), layers)
+        loadedLayers = core.QgsProject.instance().mapLayers()
+        gaps = []
+        for layerData in layers:
+            layer = next(
+                (loadedLayers[i] for i in loadedLayerIds if camadas.tabelaDaCamada(loadedLayers[i]) == (layerData['schema'], layerData['nome'])),
+                None
+            )
+            if layer is None or not layerData.get('filter'):
+                continue
+            if not camadas.aplicarFiltro(layer, layerData['filter']):
+                gaps.append(layerData['nome'])
+        self.qgis.groupLayers(loadedLayerIds, self.sapActivity.getLayersGroupName())
+        self.versioningGaps = {'missing': missing, 'unfiltered': gaps}
+        if missing:
+            self.showErrorMessageBox(
+                None,
+                'Aviso',
+                'Camadas não carregadas pelo versionamento: {0}'.format(
+                    '; '.join('{0} ({1})'.format(name, reason) for name, reason in missing)
+                )
+            )
+        return loadedLayerIds
+
+    def _loadPostgisLayers(self, layerNames):
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({
             'dbName' : self.sapActivity.getDatabaseName(),
@@ -355,6 +269,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
         groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
+        return loadedLayerIds
+
+    def _loadAndConfigureLayers(self, layerNames):
+        self.setScaleVariables()
+        versioned = self.isVersionedActivity()
+        if versioned:
+            loadedLayerIds = self._loadVersionedLayers(layerNames)
+        else:
+            loadedLayerIds = self._loadPostgisLayers(layerNames)
 
         defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
         if defaultStyle:
@@ -363,7 +286,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 self.sapActivity.getLayerStyles(),
                 defaultStyle
             )
-            # self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
+            #self.changeStyleWidget.loadStyles(self.getActivityStyles(), defaultStyle)
 
         """ matchAndApplyQmlStylesToLayers = self.processingFactoryDsgTools.createProcessing('MatchAndApplyQmlStylesToLayers', self)
         matchAndApplyQmlStylesToLayers.run({
@@ -371,15 +294,18 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) """
 
-        assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
-        database = self.getActivityDatabase()
-        assignValueMapToLayers.run({
-            'valueMaps': {
-                    layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
-                    for layer in self.sapActivity.getLayers()
-            },
-            'layerIds': loadedLayerIds
-        })
+        if not versioned:
+            assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
+            database = self.getActivityDatabase()
+            assignValueMapToLayers.run({
+                'valueMaps': {
+                        layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
+                        for layer in self.sapActivity.getLayers()
+                },
+                'layerIds': loadedLayerIds
+            })
+        # No versionado os domínios vêm do modelo do repositório: o provedor já
+        # entrega cada campo de domínio com o editor ValueMap dos rótulos.
 
         assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
@@ -398,7 +324,12 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         })
         rules = self.sapActivity.getRules()
-        if rules:
+        if rules and versioned:
+            # O algoritmo do DsgTools descarta provedor diferente de postgres: as
+            # regras de formatação da camada versionada se aplicam aqui, com a
+            # mesma semântica.
+            aplicarRegrasDeFormatacao(self.qgis.getLayerFromIds(loadedLayerIds), rules[0]['regra'])
+        elif rules:
             assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
             assignFormatRulesToLayers.run({
                 'rules': rules,
@@ -525,6 +456,22 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         )
         return result
 
+    def reconnectVersionedLayers(self):
+        # Projeto reaberto: as camadas do provedor abrem antes do login e ficam
+        # inválidas (o token não vai para o projeto). Com o login refeito, a
+        # conexão se registra e cada camada inválida reabre pela mesma fonte.
+        activity = self.sap.getActivityDataModel()
+        if not (activity and activity.getData() and activity.isVersioned()):
+            return []
+        sapApi = self.sap.sapApi
+        camadas.conectar(sapApi.getServer(), sapApi.getToken, sapApi._reAuth)
+        reopened = []
+        for layer in self.qgis.getLoadedVectorLayers():
+            if camadas.ehVersionada(layer) and not layer.isValid():
+                layer.setDataSource(layer.source(), layer.name(), layer.providerType())
+                reopened.append(layer.id())
+        return reopened
+
     def readProjectCallback(self):
         if self.productionTools:
             self.productionTools.close()
@@ -542,6 +489,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
 
         if self.sap.isValidActivity():
+            self.reconnectVersionedLayers()
             self.prodToolsSettings.initSaveTimer()
             self.canvasMonitoring.start()
             return
@@ -575,6 +523,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
+        if self.isVersionedActivity():
+            self._loadVersionedReviewTool()
+            return
         candidateLayerList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
         if not candidateLayerList:
             loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
@@ -610,7 +561,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 {
                     'filter': filter_expr,
                     'nome': 'aux_grid_revisao_a',
-                    'schema': gridLayer.dataProvider().uri().schema()
+                    'schema': camadas.tabelaDaCamada(gridLayer)[0]
                 }
             ]
         })
@@ -652,6 +603,71 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
 
+    def _loadVersionedReviewTool(self):
+        # A grade de revisão só existe no versionado se o repositório da
+        # atividade tiver a classe aux_grid_revisao_a (lacuna registrada: o
+        # filtro por unidade de trabalho e etapa depende de setSubsetString,
+        # que o provedor não aceita, e a grade nova é gravada pelo provedor).
+        gridLayer = next(
+            (l for l in self.qgis.getLoadedVectorLayers() if camadas.ehVersionada(l) and camadas.tabelaDaCamada(l)[1] == 'aux_grid_revisao_a'),
+            None
+        )
+        if gridLayer is None:
+            versioning = self.sapActivity.getVersioning()
+            gridData = next((d for d in versioning.get('datasets') or [] if d.get('nome') == 'aux_grid_revisao_a'), None)
+            if gridData is None:
+                core.QgsMessageLog.logMessage(
+                    'Lacuna: o repositório da atividade não tem aux_grid_revisao_a; a ferramenta de revisão não foi carregada.',
+                    camadas.LOG_TAG, core.Qgis.MessageLevel.Warning
+                )
+                return
+            loadedLayerIds, _ = camadas.abrirCamadas(
+                self.getVersioningServiceBase(), versioning, [{'schema': gridData.get('schema'), 'nome': 'aux_grid_revisao_a'}]
+            )
+            if not loadedLayerIds:
+                return
+            gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+            self.qgis.groupLayers(loadedLayerIds, self.sapActivity.getLayersGroupName())
+        fields = [field.name() for field in gridLayer.fields()]
+        if 'unidade_trabalho_id' in fields and 'etapa_id' in fields:
+            filter_expr = f'unidade_trabalho_id = {self.sapActivity.getWorkUnitId()} AND etapa_id = {self.sapActivity.getStepId()}'
+        else:
+            filter_expr = f'atividade_id = {self.sapActivity.getId()}'
+        camadas.aplicarFiltro(gridLayer, filter_expr)
+        reviewToolBar = self.toolFactoryDsgTools.getTool('ReviewToolBar', self)
+        if gridLayer.featureCount() != 0:
+            reviewToolBar.run(gridLayer)
+            return
+        core.QgsMessageLog.logMessage(
+            'Lacuna: grade de revisão vazia no versionado; a criação da grade pelo DsgTools não foi ligada ao provedor.',
+            camadas.LOG_TAG, core.Qgis.MessageLevel.Warning
+        )
+
+    def showVersioningPanel(self):
+        if not self.isVersionedActivity():
+            return
+        from SAP_Operador.modules.versionamento.painel import VersioningPanel
+        self.versioningPanel = VersioningPanel(
+            self.qgis.getMainWindow(),
+            utils.iface,
+            self.getVersioningServiceBase(),
+            self.sapActivity.getVersioning()
+        )
+        self.versioningPanel.show()
+        return self.versioningPanel
+
+    def saveVersionedLayers(self):
+        # Finalização do versionado: salva tudo antes de chamar o finaliza. As
+        # camadas do provedor gravam no clone pelo serviço; outras camadas
+        # modificadas continuam cobradas pelo aviso de sempre.
+        failed = []
+        for layer in self.qgis.getLoadedVectorLayers():
+            if not (camadas.ehVersionada(layer) and layer.isEditable() and layer.isModified()):
+                continue
+            if not layer.commitChanges(False):
+                failed.append('{0}: {1}'.format(layer.name(), ' '.join(layer.commitErrors())))
+        return failed
+
     def loadDsgToolsworkflowToolbox(self):
         if self.workflowToolbox is not None:
             return
@@ -664,7 +680,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         myClone = mylayer.clone()
         parent = mylayer.parent()
 
-        group = root.findGroup(self.sapActivity.getDatabaseName())
+        group = root.findGroup(self.sapActivity.getLayersGroupName())
         group.insertChildNode(positionToInsert, myClone)
 
         parent.removeChildNode(mylayer)

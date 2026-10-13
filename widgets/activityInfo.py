@@ -18,6 +18,10 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         self.endActivityButton.clicked.connect(self.finish)
         self.reportErrorButton = QtWidgets.QPushButton('Reportar problema', self)
         self.reportErrorButton.clicked.connect(self.reportError)
+        self.versioningButton = QtWidgets.QPushButton('Versionamento', self)
+        self.versioningButton.setObjectName('versioningButton')
+        self.versioningButton.clicked.connect(self.showVersioning)
+        self.versioningButton.setVisible(False)
         self.qgis = QgisApi()
 
     def finish(self, b):
@@ -28,6 +32,12 @@ class ActivityInfo(Widget, IActivityInfoWidget):
     def reportError(self):
         try:
             self.getController().showReportErrorDialog()
+        except Exception as e:
+            self.showErrorMessageBox('Aviso', str(e))
+
+    def showVersioning(self):
+        try:
+            self.getController().showVersioningPanel()
         except Exception as e:
             self.showErrorMessageBox('Aviso', str(e))
 
@@ -87,6 +97,10 @@ class ActivityInfo(Widget, IActivityInfoWidget):
         )
         layout.addWidget(self.endActivityButton)
         layout.addWidget(self.reportErrorButton)
+        isVersioned = getattr(self.getController(), 'isVersionedActivity', None)
+        if callable(isVersioned) and isVersioned():
+            self.versioningButton.setVisible(True)
+            layout.addWidget(self.versioningButton)
         self.layout.addLayout(layout)
 
     

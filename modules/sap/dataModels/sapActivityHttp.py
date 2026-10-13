@@ -57,6 +57,29 @@ class SapActivityHttp:
     def getTypeProductionData(self):
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
 
+    def getVersioning(self):
+        # Tipo 4 do SAP 3.0 (base versionada): o pacote traz
+        # dados.versionamento = {repo_id, servico, papel, datasets} e não traz
+        # login_info nem configuracao_producao. Suposição registrada: aceita
+        # também o bloco dentro de dados.atividade.
+        if not self.getData():
+            return None
+        dados = self.getData().get('dados') or {}
+        versioning = dados.get('versionamento') or (dados.get('atividade') or {}).get('versionamento')
+        if not (isinstance(versioning, dict) and versioning.get('repo_id')):
+            return None
+        return versioning
+
+    def isVersioned(self):
+        return self.getVersioning() is not None
+
+    def getLayersGroupName(self):
+        # Grupo raiz das camadas da atividade: o nome do banco no PostGIS; no
+        # versionado não há banco, e o grupo leva o papel do repositório.
+        if self.isVersioned():
+            return 'versionamento_{0}'.format(self.getVersioning().get('papel') or 'atividade')
+        return self.getDatabaseName()
+
     def getStepTypeId(self):
         return self.getData()['dados']['atividade']['tipo_etapa_id']
 
@@ -402,7 +425,14 @@ class SapActivityHttp:
     def getLayerFilter(self, layer):
         layerSchema = layer["schema"]
         layerName = layer["nome"]
-        
+        if self.isVersioned():
+            # O clone já vem recortado pela unidade de trabalho: sem o filtro
+            # SQL. Nas camadas de apontamento, o filtro de subfase vira
+            # expressão QGIS sobre o atributo.
+            if 'camada_apontamento' in layer and layer['camada_apontamento']:
+                return """"{0}" = '{1}'""".format(layer["atributo_filtro_subfase"], self.getSubphaseId())
+            return ''
+
         #if layerName == u"aux_moldura_a":
         #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
         filterDefault = """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(

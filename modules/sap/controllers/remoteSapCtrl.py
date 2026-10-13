@@ -3,6 +3,7 @@ from SAP_Operador.modules.sap.factories.sapApiHttpSingleton import SapApiHttpSin
 from SAP_Operador.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Operador.modules.sap.factories.guiFactory import GUIFactory
 from SAP_Operador.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Operador.modules.sap.api.sapHttp import VersioningConflict
 from qgis.PyQt import QtCore, uic, QtWidgets
 
 class RemoteSapCtrl(SapCtrl):
@@ -128,7 +129,38 @@ class RemoteSapCtrl(SapCtrl):
         return response
 
     def endActivity(self, data):
-        return self.sapApi.endActivity(data)
+        # Versionado: um 409 com sessao_id abre a tela de conflitos; resolvidos,
+        # "Finalizar de novo" chama o finaliza outra vez. Fechar a tela mantém a
+        # atividade em execução.
+        while True:
+            try:
+                return self.sapApi.endActivity(data)
+            except VersioningConflict as conflict:
+                if not self.resolveVersioningConflict(conflict.answer):
+                    raise Exception(
+                        'A atividade continua em execução: há conflitos de integração a resolver antes de finalizar.'
+                    )
+
+    def resolveVersioningConflict(self, answer, parent=None):
+        """Abre a tela de conflitos da sessão do 409; True quando o operador pede para finalizar de novo."""
+        from SAP_Operador.modules.versionamento import camadas
+        from SAP_Operador.modules.versionamento.painel import (
+            ConflictDialog, ConflictPayload, SessionResolver, connection_for, session_repository
+        )
+        payload = ConflictPayload(answer)
+        versioning = self.activityDataModel.getVersioning()
+        if not (payload.valid and versioning):
+            return False
+        camadas.conectar(self.sapApi.getServer(), self.sapApi.getToken, self.sapApi._reAuth)
+        serviceBase = camadas.base(versioning, self.sapApi.getServer())
+        client = connection_for(serviceBase).client
+        repo = session_repository(client, versioning['repo_id'], payload)
+        self.conflictDialog = ConflictDialog(
+            parent or self.qgis.getMainWindow(),
+            SessionResolver(client, repo, payload.session),
+            payload
+        )
+        return self.conflictDialog.exec() == QtWidgets.QDialog.DialogCode.Accepted
 
     def getErrorsTypes(self):
         response = self.sapApi.getErrorsTypes()

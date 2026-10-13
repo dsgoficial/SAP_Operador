@@ -5,6 +5,7 @@ from SAP_Operador.modules.qgis.factories.processingProviderFactory import Proces
 from SAP_Operador.modules.qgis.factories.layerActionsFactory import LayerActionsFactory
 from SAP_Operador.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
 from SAP_Operador.modules.qgis.factories.mapToolsFactory import MapToolsFactory
+from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada, ehVersionada
 
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtWidgets import QMenu, QToolBar
@@ -196,33 +197,49 @@ class QgisApi(IQgisApi):
         layersUri = []
         loadedLayers = core.QgsProject.instance().mapLayers().values()
         for layer in loadedLayers:
-            if not(
-                    layer.dataProvider().uri().schema() == layerSchema
-                    and
-                    layer.dataProvider().uri().table() == layerName
-                ):
+            if not( tabelaDaCamada(layer) == (layerSchema, layerName) ):
                 continue
+            if ehVersionada(layer):
+                return layer.id()
             return layer.dataProvider().uri().uri()
 
     def getLayerFromTable(self, layerSchema, layerName):
         loadedLayers = core.QgsProject.instance().mapLayers().values()
         for layer in loadedLayers:
-            if not(
-                    layer.dataProvider().uri().schema() == layerSchema
-                    and
-                    layer.dataProvider().uri().table() == layerName
-                ):
+            if not( tabelaDaCamada(layer) == (layerSchema, layerName) ):
                 continue
             return layer
 
     def getLayerFromName(self, layerName):
         loadedLayers = core.QgsProject.instance().mapLayers().values()
         for layer in loadedLayers:
-            if not(
-                    layer.dataProvider().uri().table() == layerName
-                ):
+            if not( tabelaDaCamada(layer)[1] == layerName ):
                 continue
             return layer
+
+    def groupLayers(self, layerIds, rootName):
+        # Agrupa como o dsgtools:grouplayers (raiz, geometria, categoria pelo
+        # prefixo do nome), com a raiz nomeada por quem chama: o algoritmo tira
+        # a raiz do nome do banco, que a camada versionada não tem.
+        root = core.QgsProject.instance().layerTreeRoot()
+        rootGroup = root.findGroup(rootName) or root.insertGroup(0, rootName)
+        names = {
+            core.Qgis.GeometryType.Point: 'Ponto',
+            core.Qgis.GeometryType.Line: 'Linha',
+            core.Qgis.GeometryType.Polygon: 'Área',
+        }
+        layers = sorted(self.getLayerFromIds(layerIds), key=lambda l: (int(l.geometryType().value), l.name()))
+        for layer in layers:
+            node = root.findLayer(layer.id())
+            if node is None:
+                continue
+            geometryName = names.get(layer.geometryType(), 'Sem geometria')
+            geometryGroup = rootGroup.findGroup(geometryName) or rootGroup.addGroup(geometryName)
+            category = layer.name().split('_')[0]
+            categoryGroup = geometryGroup.findGroup(category) or geometryGroup.addGroup(category)
+            categoryGroup.addChildNode(node.clone())
+            node.parent().removeChildNode(node)
+        return rootGroup
 
     def addMenuBar(self, name):
         menu = QMenu(iface.mainWindow())
@@ -305,7 +322,7 @@ class QgisApi(IQgisApi):
     def loadMapLayerStyles(self, loadedLayerIds, layerStyles, defaultStyle):
         for layerId in loadedLayerIds:
             layer = core.QgsProject.instance().mapLayers()[layerId]
-            layerName = layer.dataProvider().uri().table()
+            layerName = tabelaDaCamada(layer)[1]
             layerSettings = [ item for item in layerStyles if item['layerName'] == layerName ]
             if not layerSettings:
                 continue
@@ -338,6 +355,8 @@ class QgisApi(IQgisApi):
         loadedLayers = core.QgsProject.instance().mapLayers()
         if not(layerId in loadedLayers):
             return
+        if ehVersionada(loadedLayers[layerId]):
+            return layerId
         return loadedLayers[layerId].dataProvider().uri().uri()
 
     def getLayerFromIds(self, layerIds):
@@ -576,11 +595,7 @@ class QgisApi(IQgisApi):
     def zoomToFeature(self, layerId, layerSchema, layerName):
         loadedLayers = core.QgsProject.instance().mapLayers().values()
         for layer in loadedLayers:
-            if not(
-                    layer.dataProvider().uri().schema() == layerSchema
-                    and
-                    layer.dataProvider().uri().table() == layerName
-                ):
+            if not( tabelaDaCamada(layer) == (layerSchema, layerName) ):
                 continue
             layer.select(int(layerId))
             iface.actionZoomToSelected().trigger()
@@ -643,10 +658,7 @@ class QgisApi(IQgisApi):
             root = core.QgsProject().instance().layerTreeRoot().clone()
             for rLayer in root.findLayers():
                 rLayer.setItemVisibilityChecked(False)
-                rLayerName = '{}.{}'.format(
-                    rLayer.layer().dataProvider().uri().schema(),
-                    rLayer.layer().dataProvider().uri().table()
-                )
+                rLayerName = '{}.{}'.format(*tabelaDaCamada(rLayer.layer()))
                 if not(rLayerName in themeLayers):
                     continue
                 rLayer.setItemVisibilityChecked(True)

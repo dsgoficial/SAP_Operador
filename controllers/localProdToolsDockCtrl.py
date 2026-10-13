@@ -8,6 +8,7 @@ import os
 import json
 
 from SAP_Operador.postgresql import Postgresql
+from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada
 import psycopg2
 
 
@@ -356,7 +357,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
                 {
                     'filter': filter_expr,
                     'nome': 'aux_grid_revisao_a',
-                    'schema': gridLayer.dataProvider().uri().schema()
+                    'schema': tabelaDaCamada(gridLayer)[0]
                 }
             ]
         })

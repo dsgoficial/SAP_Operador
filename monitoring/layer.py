@@ -3,6 +3,7 @@ from qgis.PyQt import sip
 
 from SAP_Operador.timers.timer import Timer
 from SAP_Operador.monitoring.buffer import MonitoringBuffer
+from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada
 
 BUFFER_KEY = 'productiontools:monitoring:feicao:buffer'
 FLUSH_INTERVAL = 30 * 1000
@@ -25,7 +26,7 @@ class Layer:
         self.activityId = activityId
         self.sap = sap
         # Nome da tabela e fixo para a camada; resolve uma vez (nao por flush).
-        self.table = layer.dataProvider().uri().table()
+        self.table = tabelaDaCamada(layer)[1]
         self.buffer = MonitoringBuffer(BUFFER_KEY)
         self.changed_ids = set()
         self.updated_length = {}

@@ -4,6 +4,15 @@ from SAP_Operador.modules.sap.interfaces.ISapApi import ISapApi
 
 TIMEOUT = 60 * 3
 
+
+class VersioningConflict(Exception):
+    """409 do `finaliza` de atividade versionada: o merge do clone tem
+    conflitos. `answer` é o JSON inteiro da resposta (o contrato diz
+    `{ sessao_id, conflitos }`; o envelope do SAP o põe em `dados`)."""
+    def __init__(self, message, answer):
+        super().__init__(message)
+        self.answer = answer
+
 class SapHttp(ISapApi):
 
     def __init__(self):
@@ -130,6 +139,18 @@ class SapHttp(ISapApi):
             raise Exception('Sessão expirada, faça o login novamente!')
         if response.ok:
             return
+        if response.status_code == 409:
+            try:
+                answer = response.json()
+            except Exception:
+                answer = None
+            if isinstance(answer, dict) and (
+                    answer.get('sessao_id') or (isinstance(answer.get('dados'), dict) and answer['dados'].get('sessao_id'))
+                ):
+                raise VersioningConflict(
+                    answer.get('message') or 'A integração da atividade tem conflitos a resolver.',
+                    answer
+                )
         # O SAP 3.0 responde 404 com mensagem própria (atividade ou versão não
         # encontrada) e 403 quando falta o perfil de operador no módulo de
         # produção: a frase do servidor diz o que houve.

@@ -48,6 +48,10 @@ class SapActivityLocal:
     def getTypeProductionData(self):
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
 
+    def isVersioned(self):
+        # A atividade local fala só com o PostgreSQL: nunca é versionada.
+        return False
+
     def getStepTypeId(self):
         return self.getData()['dados']['atividade']['tipo_etapa_id']
 

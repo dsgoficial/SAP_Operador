@@ -316,9 +316,26 @@ class ProdToolsCtrl(QtCore.QObject):
         }
         rountineFunctions[routineData['routineType']](routineData)
 
-    def runFMESAP(self, routineData):
-        runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
-        output = runFMESAP.run({
+    def getFmeParameters(self, routineData):
+        if getattr(self.sapActivity, 'isVersioned', lambda: False)():
+            # Lacuna registrada: no versionado não há banco nem credencial a
+            # passar à rotina; as rotinas FME precisarão gravar pelo serviço.
+            core.QgsMessageLog.logMessage(
+                'Lacuna: rotina FME em atividade versionada roda sem credencial de banco; ela precisará gravar pelo serviço.',
+                'SAP Versionamento',
+                core.Qgis.MessageLevel.Warning
+            )
+            return {
+                'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
+                'fmeRoutine': routineData,
+                'dbName': '',
+                'dbPort': '',
+                'dbHost': '',
+                'dbUser': '',
+                'dbPassword': '',
+                'sapSubfase': self.sapActivity.getSubphaseId()
+            }
+        return {
             'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
             'fmeRoutine': routineData,
             'dbName': self.sapActivity.getDatabaseName(),
@@ -327,7 +344,11 @@ class ProdToolsCtrl(QtCore.QObject):
             'dbUser': self.sapActivity.getDatabaseUserName(),
             'dbPassword': self.sapActivity.getDatabasePassword(),
             'sapSubfase': self.sapActivity.getSubphaseId()
-        })
+        }
+
+    def runFMESAP(self, routineData):
+        runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
+        output = runFMESAP.run(self.getFmeParameters(routineData))
         html = "<p>[rotina nome] : {0}</p>".format(routineData['rotina'])
         html += "<p>[status de execução] : {0}</p>".format(output['result']['dados']['status'])
         for flags in output['result']['dados']['sumario']:

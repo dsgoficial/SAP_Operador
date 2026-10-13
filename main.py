@@ -20,6 +20,7 @@ from .modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFact
 from .modules.dsgTools.factories.toolFactory import ToolFactory
 from .modules.database.factories.databaseFactory import DatabaseFactory
 from .config import Config
+from .modules import versionamento
 from qgis.utils import iface
 
 class Main:
@@ -90,6 +91,8 @@ class Main:
 
     def initGui(self):
         self.qgisCtrl.load()
+        # Provedor dsgversioning (tipo 4, base versionada), registrado uma vez.
+        versionamento.registrar(iface)
         self.prodToolsSettingsCtrl.load()
         self.widget = self.remoteProdToolsDockCtrl.loadChangeStyleWidget()
         self.action = self.qgisCtrl.createAction(
@@ -114,6 +117,7 @@ class Main:
         
         
     def unload(self):
+        versionamento.desregistrar()
         self.remoteProdToolsDockCtrl.unload()
         self.localProdToolsDockCtrl.unload()
         self.prodToolsSettingsCtrl.unload()
