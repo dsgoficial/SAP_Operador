@@ -182,8 +182,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         self.resetProject()
 
     def setScaleVariables(self):
-        # O SAP 3.0 não manda escala no pacote: sem ela, as variáveis de projeto
-        # não são definidas, em vez de o carregamento falhar no int('-').
+        # O SAP 3.0 manda denominador_escala null quando as folhas da unidade de
+        # trabalho têm escalas diferentes ou nenhuma: sem ela, as variáveis de
+        # projeto não são definidas, em vez de o carregamento falhar no int('-').
         scaleDenominator = self.sapActivity.getScaleDenominator()
         if scaleDenominator is None:
             return
@@ -624,8 +625,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         scaleDenominator = self.sapActivity.getScaleDenominator()
         frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
 
-        # Determine grid size based on scale. Sem escala no pacote (SAP 3.0),
-        # vale a grade das escalas menores que 1:10.000.
+        # Determine grid size based on scale. Sem escala (denominador_escala null
+        # no SAP 3.0), vale a grade das escalas menores que 1:10.000.
         if scaleDenominator is not None and scaleDenominator <= 10000:
             param = {
                 'input': frameLyr,

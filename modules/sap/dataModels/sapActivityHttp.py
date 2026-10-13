@@ -441,17 +441,18 @@ class SapActivityHttp:
     def getLot(self):
         return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
 
-    def getScale(self):
-        # O SAP 3.0 não manda escala no pacote da atividade: a escala é da FOLHA
-        # (acervo.produto), e um lote atravessa escalas. Sem ela, '-'.
-        return '-'
-
     def getScaleDenominator(self):
-        scale = self.getScale()
-        try:
-            return int(scale.split(':')[-1])
-        except ValueError:
+        # No SAP 3.0 a escala é da FOLHA: o servidor a deriva das folhas ligadas à
+        # unidade de trabalho e manda null quando elas têm escalas diferentes ou
+        # nenhuma. Sem escala, None.
+        denominator = self.getData()['dados']['atividade'].get('denominador_escala')
+        if isinstance(denominator, bool) or not isinstance(denominator, int):
             return None
+        return denominator
+
+    def getScale(self):
+        denominator = self.getScaleDenominator()
+        return '1:{}'.format(denominator) if denominator is not None else '-'
 
     def getShortcuts(self):
         return self.getData()['dados']['atividade']['atalhos']

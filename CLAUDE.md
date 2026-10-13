@@ -77,7 +77,7 @@ Usar scripts em `.dev/` para criar symlink do repositório para o diretório de 
 - O servidor é o SAP 3.0 (repositório `controle_acervo`), e ele é a fonte da verdade do contrato: rotas em `server/src/{login,distribuicao,metadado,microcontrole}/*_route.js`, corpos nos `*_schema.js` (Joi) e o pacote da atividade em `distribuicao_ctrl.js` (`getDadosAtividade`).
 - O plugin e o servidor sobem em LOCKSTEP, sem compatibilidade com o SAP 2.3.x. `validVersion` (`modules/sap/api/sapHttp.py`) aceita só major `3`, e o servidor barra no login do cliente `sap_fp` o plugin abaixo da versão mínima de `qgis.plugin`.
 - Chave desconhecida no corpo: `microcontrole` e `metadados` recusam com 400; `distribuicao` e `login` descartam a chave e avisam em `avisos`. Nos dois casos o campo não chega ao banco, então nome de campo se copia do schema, nunca da memória.
-- Nomes do 3.0 que o plugin usa: `versao_id` e `uuid_versao` no metadado de edição (o que se publica é a EDIÇÃO, `acervo.versao`), `usuario_uuid`, `subtipo_produto`, `atalhos`, `fme[].url`. O pacote não traz `denominador_escala`: a escala é da folha.
+- Nomes do 3.0 que o plugin usa: `versao_id` e `uuid_versao` no metadado de edição (o que se publica é a EDIÇÃO, `acervo.versao`), `usuario_uuid`, `subtipo_produto`, `atalhos`, `fme[].url`. `denominador_escala` é derivado das folhas da unidade de trabalho e vem null quando elas têm escalas diferentes ou nenhuma: o plugin tolera o null.
 - Token vencido é 401 (o plugin refaz o login); 403 é falta de perfil de operador no módulo de produção.
 
 ### Testes
