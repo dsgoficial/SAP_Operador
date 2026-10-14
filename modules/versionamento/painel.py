@@ -138,8 +138,9 @@ class ConflictPayload:
             return None
         self.session=pick('sessao_id','session_id')
         self.conflicts=pick('conflitos','conflicts') or []
-        # Suposição: o SAP pode dizer em que repositório a sessão vive; sem isso,
-        # é o pai do repositório do pacote (o push grava a sessão no destino).
+        # O SAP diz em `repo_id` onde a sessão mora (controle_acervo,
+        # server/src/versionamento/ciclo_atividade.js): o clone no pull, o pai
+        # no merge. Sem ele, é o pai do repositório do pacote.
         self.repo=pick('repo_id_sessao','repositorio_sessao','repo_id')
         self.message=answer.get('message') or answer.get('error') or ''
 
@@ -148,9 +149,10 @@ class ConflictPayload:
 
 
 def session_repository(client,packageRepo,payload=None):
-    """Repositório onde vive a sessão do merge do repositório do pacote: o
-    informado no 409 ou o pai (`parent_id` do status do serviço)."""
-    if payload is not None and payload.repo and payload.repo!=packageRepo:
+    """Repositório onde vive a sessão do conflito: o `repo_id` do 409, que pode
+    ser o próprio repositório do pacote (a sessão do pull mora no clone), ou,
+    sem ele, o pai (`parent_id` do status do serviço), onde mora a do merge."""
+    if payload is not None and payload.repo:
         return payload.repo
     status=client.request('/repos/'+packageRepo+'/status')
     parent=status.get('parent_id')

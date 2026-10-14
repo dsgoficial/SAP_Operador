@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 4.1.0
+
+Melhorias:
+- Modo local da base versionada (dado de produção do tipo 4). O pacote local que o SAP Gerente grava em `public.sap_local` traz, em `versionamento`, o nome do GeoPackage de campo (`arquivo`) e o `sha256` dele. Ao carregar as camadas, o plugin procura o arquivo na pasta usada da última vez nesta atividade e na pasta do projeto, e, sem ele, pede ao operador que o escolha (uma vez; a pasta fica lembrada). Antes da primeira abertura o SHA-256 do arquivo tem de ser o do pacote; a conferência fica registrada ao lado do arquivo (`<arquivo>.sap-conferido.json`), porque o QGIS muda os bytes do GeoPackage ao abri-lo, e daí em diante vale a identidade do repositório (`repo_id`). Arquivo que não confere, de outro repositório ou de clone encerrado é recusado com o motivo, e nada é carregado.
+- As camadas do modo local da base versionada abrem direto do GeoPackage, pelo provedor `ogr` e sem rede, e são reconhecidas pela tabela do pacote (schema e nome) também quando o projeto é reaberto. Valem nelas os estilos, os apelidos, as ações, as regras de formatação, o filtro de subfase das camadas de apontamento, os temas, os menus de aquisição, a estatística de regras, a grade de revisão e os domínios do modelo do clone no formulário.
+- Edição no GeoPackage de campo: a feição nova recebe a identidade (`dsg_id`) no formulário, e a identidade copiada ou inválida é trocada antes de gravar; a edição é capturada pelo próprio arquivo e registrada no servidor quando o SAP Gerente devolve o arquivo. A permissão da etapa gravada no clone vale na hora: classe sem permissão abre só para leitura, campo fora da permissão fica só leitura no formulário, e inserir, excluir, mexer na geometria ou num campo que a etapa não libera é desfeito com aviso, em vez de o servidor recusar o arquivo na volta.
+- Filtro de subfase nas camadas de apontamento da atividade versionada. O provedor do versionamento passa a aceitar filtro de camada (a expressão do QGIS é avaliada sobre o cache local, e a leitura pelo canal binário não muda), e o endereço da camada guarda o filtro, como o PostGIS.
+
+Correção de bug:
+- Conflito na finalização da atividade versionada: a sessão é lida no repositório que o SAP informa no 409 (`repo_id`), inclusive quando é o próprio clone da atividade (sessão do pull); antes o plugin ia sempre ao repositório pai.
+- Modo local: o painel não abria ("makeActivityDataWidget() missing 1 required positional argument: 'sap'", desde a 3.x) e o botão "Carregar camadas" não achava o modelo da atividade nem o carregamento por nomes. Também no modo local: temas e apelidos passam ao DsgTools no formato que ele lê, a escala nula do SAP 3.0 não interrompe mais o carregamento, a grade de revisão recebe a unidade de trabalho, a etapa e a atividade, e o pacote sem senha (o SAP Gerente não a grava mais) usa o banco do login do operador.
+- `modules/database/postgres.py`: `getFilterValues` usava `currentDomain` antes de atribuí-lo (precedência do `:=`); a função não tem chamador.
+
 ## 4.0.0
 
 4.0.0: contrato do SAP 3.0, só QGIS 4.

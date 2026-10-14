@@ -1,5 +1,6 @@
 """Versionamento do SAP 3.0 no QGIS: o provedor `dsgversioning` do plugin
-antigo (cache local e canal DSGP/1), falando com o repasse do SAP.
+antigo (cache local e canal DSGP/1), falando com o repasse do SAP, e, no modo
+local do tipo 4, o GeoPackage de campo aberto pelo `ogr` (`campo.py`).
 
 Este diretório só usa import relativo e é copiado igual (mesmo SHA-256) para
 o SAP Gerente (contrato-sap.md, seção 7). O plugin chama `registrar(iface)` ao
@@ -11,10 +12,13 @@ _state={'reports':None,'hooked':False}
 
 
 def _attach(layers):
-    from . import provider
+    from . import campo,provider
     from qgis.core import QgsVectorLayer
     for layer in layers:
-        if isinstance(layer,QgsVectorLayer): provider.attach_layer(layer)
+        if not isinstance(layer,QgsVectorLayer): continue
+        provider.attach_layer(layer)
+        # Camada do GeoPackage de campo de um projeto reaberto: identidade nova e permissão da etapa.
+        campo.ligarCamada(layer)
 
 
 def registrar(iface=None):

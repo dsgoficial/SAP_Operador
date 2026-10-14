@@ -67,7 +67,7 @@ class ProductionToolsDirector:
             },
             {
                 'name': 'Dados:',
-                'widget': self.activityWidgetFactory.makeActivityDataWidget(controller=controller)
+                'widget': self.activityWidgetFactory.makeActivityDataWidget(controller=controller, sap=controller.sap)
             },
             {
                 'name': 'Insumos:',

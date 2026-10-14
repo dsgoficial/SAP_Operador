@@ -5,7 +5,7 @@ from SAP_Operador.modules.qgis.factories.processingProviderFactory import Proces
 from SAP_Operador.modules.qgis.factories.layerActionsFactory import LayerActionsFactory
 from SAP_Operador.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
 from SAP_Operador.modules.qgis.factories.mapToolsFactory import MapToolsFactory
-from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada, ehVersionada
+from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada, ehDoVersionamento
 
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtWidgets import QMenu, QToolBar
@@ -199,7 +199,7 @@ class QgisApi(IQgisApi):
         for layer in loadedLayers:
             if not( tabelaDaCamada(layer) == (layerSchema, layerName) ):
                 continue
-            if ehVersionada(layer):
+            if ehDoVersionamento(layer):
                 return layer.id()
             return layer.dataProvider().uri().uri()
 
@@ -355,7 +355,7 @@ class QgisApi(IQgisApi):
         loadedLayers = core.QgsProject.instance().mapLayers()
         if not(layerId in loadedLayers):
             return
-        if ehVersionada(loadedLayers[layerId]):
+        if ehDoVersionamento(loadedLayers[layerId]):
             return layerId
         return loadedLayers[layerId].dataProvider().uri().uri()
 

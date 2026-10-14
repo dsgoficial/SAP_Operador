@@ -179,7 +179,7 @@ def main():
 
 
 def versionado(ctrl,sap,estado,layers,iface,project):
-    from qgis.core import QgsFeature,QgsGeometry,Qgis,QgsVectorLayer
+    from qgis.core import QgsFeature,QgsFeatureRequest,QgsGeometry,Qgis,QgsVectorLayer
     from qgis.PyQt import QtWidgets
     import servidor_falso
     from SAP_Operador.modules.versionamento import camadas, painel, provider as versioning, feature_page
@@ -224,8 +224,28 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     check('estatística de regras do DsgTools acha a camada versionada','cobter_massa_dagua_a' in flat,statistics)
     log['estatistica']=statistics
     gaps=getattr(ctrl,'versioningGaps',{})
-    check('filtro de subfase: lacuna registrada (provedor sem setSubsetString)','aux_revisao_p' in gaps.get('unfiltered',[]) and revisao.subsetString()=='',gaps)
     check('subfase vira expressão QGIS',[l['filter'] for l in ctrl.sapActivity.getLayers() if l['nome']=='aux_revisao_p']==['"subfase_id" = \'7\''])
+    subfase='"subfase_id" = \'7\''
+    check('filtro de subfase aplicado pelo provedor (setSubsetString)',not gaps.get('unfiltered') and revisao.subsetString()==subfase,
+          (gaps,revisao.subsetString()))
+    check('filtro de subfase: só o apontamento da subfase',[f['descricao'] for f in revisao.getFeatures()]==['da subfase'] and revisao.featureCount()==1,
+          ([f['descricao'] for f in revisao.getFeatures()],revisao.featureCount()))
+    others=[row[0] for row in revisao.dataProvider()._cache.db.execute('SELECT f.fid FROM features f WHERE f.subfase_id=8')]
+    check('filtro de subfase: feição de outra subfase não sai nem pelo fid',
+          len(others)==1 and not list(revisao.getFeatures(QgsFeatureRequest(others[0]))) and
+          [f['descricao'] for f in revisao.dataProvider().getFeatures(QgsFeatureRequest().setFlags(Qgis.FeatureRequestFlag.NoGeometry)
+                                                                      .setSubsetOfAttributes(['descricao'],revisao.fields()))]==['da subfase'],others)
+    pages=[p for p in estado.pedidos if p['path'].endswith('/features') and p['query'].get('dataset')=='aux_revisao_p']
+    check('filtro de subfase: leitura pela página DSGP/1, sem filtro no pedido ao serviço',
+          pages and all(p['query'].get('format')=='dsgp1' for p in pages) and
+          not any(k in p['query'] for p in pages for k in ('sql','filter','subset','where')),[p['query'] for p in pages])
+    reopened=QgsVectorLayer(revisao.source(),'reaberta','dsgversioning')
+    check('filtro de subfase: o endereço guarda o filtro (projeto reaberto)',
+          'sql=' in revisao.source() and reopened.subsetString()==subfase and reopened.featureCount()==1 and
+          camadas.tabelaDaCamada(reopened)==('edgv','aux_revisao_p'),(revisao.source(),reopened.subsetString()))
+    del reopened
+    check('filtro inválido recusado, o anterior fica',not revisao.setSubsetString('"campo_que_nao_existe" = 1') and
+          not revisao.setSubsetString('"subfase_id" = ') and revisao.subsetString()==subfase)
     # Endereço antigo (urlencode): o provedor ainda lê, e é ele que o DsgTools não casaria.
     from urllib.parse import urlencode
     oldUri=urlencode({'service':versioning.parse_uri(cobter.source())['service'],'repo':estado.atividade,'dataset':'cobter_massa_dagua_a'})
@@ -314,11 +334,23 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     message=sap.endActivity({'atividade_id':101,'sem_correcao':False})
     check('finaliza: 409, tela de conflito e segunda chamada',len(estado.finalizacoes)==2 and 'finalizada' in message,(len(estado.finalizacoes),message))
     sessionCalls=[p['path'] for p in estado.pedidos if '/sessions/' in p['path']]
-    check('sessão lida no repositório pai (status.parent_id)',sessionCalls and all('/repos/'+estado.bloco+'/' in p for p in sessionCalls),sessionCalls)
+    check('sessão do merge lida no repositório que o 409 diz (o pai)',sessionCalls and all('/repos/'+estado.bloco+'/' in p for p in sessionCalls),sessionCalls)
     decision=estado.decisoes[-1]
     check('resolvido com o meu (origem)',decision['result']['properties']['nome']=='Lago A da atividade' and decision['delete'] is False
           and 'actor' not in decision and decision['reason']=='o meu vale',decision)
     check('sem conflito pendente depois',chosen.get('pendentes')==0)
+    # Conflito do PULL: a sessão mora no próprio clone, e o 409 diz o repo_id dele.
+    before=len(estado.pedidos); estado.sessao_repo=estado.atividade; estado.items[0]['status']='conflict'
+    painel.ConflictDialog.exec=run
+    message=sap.endActivity({'atividade_id':101,'sem_correcao':False})
+    pullCalls=[p['path'] for p in estado.pedidos[before:] if '/sessions/' in p['path']]
+    check('sessão do pull lida no próprio clone (repo_id do 409 igual ao do pacote)',
+          pullCalls and all('/repos/'+estado.atividade+'/' in p for p in pullCalls) and 'finalizada' in message and estado.items[0]['status']=='resolved',
+          (pullCalls,message))
+    estado.sessao_repo=estado.bloco
+    from SAP_Operador.modules.versionamento.painel import ConflictPayload
+    check('sem repo_id no 409, a sessão é a do pai (status.parent_id)',
+          painel.session_repository(client,estado.atividade,ConflictPayload({'dados':{'sessao_id':estado.sessao}}))==estado.bloco)
     # Fechar a tela sem resolver mantém a atividade e diz por quê.
     estado.items[0]['status']='conflict'
     painel.ConflictDialog.exec=lambda dialog:QtWidgets.QDialog.DialogCode.Rejected

@@ -15,7 +15,15 @@ class SapActivityLocal:
         return self.getData()['dados']['atividade']['denominador_escala']
 
     def getThemes(self):
-        return self.getData()['dados']['atividade']['temas']
+        # Como no pacote remoto (SapActivityHttp): `definicao_tema` chega em
+        # texto JSON e o carregamento de temas espera a lista.
+        fixThemes = []
+        for theme in self.getData()['dados']['atividade']['temas']:
+            fixedTheme = dict(theme)
+            if isinstance(fixedTheme.get('definicao_tema'), str):
+                fixedTheme['definicao_tema'] = json.loads(fixedTheme['definicao_tema'])
+            fixThemes.append(fixedTheme)
+        return fixThemes
 
     def getHiddenColumns(self):
         return self.getData()['dados']['atividade'].get('colunas_ocultas', [])
@@ -45,12 +53,40 @@ class SapActivityLocal:
     def getId(self):
         return self.getData()['dados']['atividade']['id']
 
+    def getWorkUnitId(self):
+        return self.getData()['dados']['atividade']['unidade_trabalho_id']
+
+    def getStepId(self):
+        return self.getData()['dados']['atividade']['etapa_id']
+
     def getTypeProductionData(self):
         return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
 
+    def getVersioning(self):
+        # Modo local do tipo 4 (contrato-sap.md, 9.4): o pacote que o SAP
+        # Gerente grava em public.sap_local traz versionamento = {repo_id,
+        # papel, datasets, arquivo, sha256}; as camadas abrem do GeoPackage de
+        # campo `arquivo`, sem rede. O servidor põe a seção em
+        # dados.atividade.versionamento, e o contrato (seção 5) a descreve em
+        # dados.versionamento: vale a que vier, nessa ordem, como no Gerente.
+        # Outras chaves da seção (enviado_sha256, do Gerente) são ignoradas.
+        if not self.getData():
+            return None
+        dados = self.getData().get('dados') or {}
+        versioning = (dados.get('atividade') or {}).get('versionamento') or dados.get('versionamento')
+        if not (isinstance(versioning, dict) and versioning.get('repo_id')):
+            return None
+        return versioning
+
     def isVersioned(self):
-        # A atividade local fala só com o PostgreSQL: nunca é versionada.
-        return False
+        return self.getVersioning() is not None
+
+    def getLayersGroupName(self):
+        # Grupo raiz das camadas da atividade: no versionado leva o papel do
+        # repositório, como no remoto (SapActivityHttp).
+        if self.isVersioned():
+            return 'versionamento_{0}'.format(self.getVersioning().get('papel') or 'atividade')
+        return self.getDatabaseName()
 
     def getStepTypeId(self):
         return self.getData()['dados']['atividade']['tipo_etapa_id']
@@ -62,6 +98,16 @@ class SapActivityLocal:
             formatedMenu['menuName'] = data['nome']
             formatedMenus.append( formatedMenu )
         return formatedMenus
+
+    def getWorkflows(self):
+        # Como no remoto (SapActivityHttp): os workflows de validação do DsgTools.
+        workflowDictList = []
+        for data in self.getData()['dados']['atividade'].get('workflow_dsgtools') or []:
+            workflowString = data.get('workflow_json', None)
+            if workflowString is None:
+                continue
+            workflowDictList.append(json.loads(workflowString))
+        return workflowDictList
 
     def getActivityGroupName(self):
         """ return "{}_{}".format(
@@ -186,7 +232,10 @@ class SapActivityLocal:
         return styles
 
     def getLayerALiases(self):
-        return self.getData()['dados']['atividade']['alias']
+        # Como no pacote remoto (SapActivityHttp): o texto JSON da primeira
+        # definição, que o algoritmo de apelidos lê.
+        data = self.getData()['dados']['atividade']['alias']
+        return data[0]['definicao_alias'] if len(data) > 0 else None
 
     def getLayerActions(self):
         return [
@@ -364,7 +413,14 @@ class SapActivityLocal:
     def getLayerFilter(self, layer):
         layerSchema = layer["schema"]
         layerName = layer["nome"]
-        
+        if self.isVersioned():
+            # O GeoPackage de campo é o clone da atividade, já recortado pela
+            # unidade de trabalho: sem o filtro SQL. Nas camadas de
+            # apontamento, o filtro de subfase, como no remoto.
+            if 'camada_apontamento' in layer and layer['camada_apontamento']:
+                return """"{0}" = '{1}'""".format(layer["atributo_filtro_subfase"], self.getSubphaseId())
+            return ''
+
         #if layerName == u"aux_moldura_a":
         #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
         filterDefault = """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
@@ -403,8 +459,17 @@ class SapActivityLocal:
     def getLot(self):
         return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'
 
+    def getScaleDenominator(self):
+        # Como no remoto: o SAP 3.0 manda null quando as folhas da unidade de
+        # trabalho têm escalas diferentes ou nenhuma.
+        denominator = self.getData()['dados']['atividade'].get('denominador_escala')
+        if isinstance(denominator, bool) or not isinstance(denominator, int):
+            return None
+        return denominator
+
     def getScale(self):
-        return '1:{}'.format(self.getData()['dados']['atividade']['denominador_escala']) if 'denominador_escala' in self.getData()['dados']['atividade'] else '-'
+        denominator = self.getScaleDenominator()
+        return '1:{}'.format(denominator) if denominator is not None else '-'
 
     def getShortcuts(self):
         return self.getData()['dados']['atividade']['atalhos']

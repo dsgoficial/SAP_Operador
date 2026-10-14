@@ -33,7 +33,7 @@ class Postgres:
         domains = self.getLayerDomains(layerName, layerSchema)
         for field in fields:
             if not(
-                    currentDomain := next(filter(lambda d: d['field'] == field, domains) , None)
+                    (currentDomain := next(filter(lambda d: d['field'] == field, domains) , None))
                     and 
                     (currentDomain['field'] in tablesWithFilter)
                 ):

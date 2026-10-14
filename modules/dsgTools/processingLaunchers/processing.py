@@ -2,7 +2,7 @@ from SAP_Operador.modules.dsgTools.interfaces.IProcessing import IProcessing
 from qgis import core, gui
 from qgis.utils import iface
 import processing
-from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada, ehVersionada
+from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada, ehDoVersionamento
 
 class Processing(IProcessing):
     
@@ -13,8 +13,9 @@ class Processing(IProcessing):
         loadedLayers = core.QgsProject.instance().mapLayers()
         if not(layerId in loadedLayers):
             return
-        if ehVersionada(loadedLayers[layerId]):
-            # O processing acha a camada pelo id; o uri() remontado não é a fonte dela.
+        if ehDoVersionamento(loadedLayers[layerId]):
+            # O processing acha a camada pelo id; o uri() remontado não é a fonte
+            # dela (provedor do versionamento ou GeoPackage de campo).
             return layerId
         return loadedLayers[layerId].dataProvider().uri().uri()
            
@@ -25,7 +26,7 @@ class Processing(IProcessing):
         for layer in loadedLayers:
             if not( tabelaDaCamada(layer) == (layerSchema, layerName) ):
                 continue
-            if ehVersionada(layer):
+            if ehDoVersionamento(layer):
                 return layer.id()
             return layer.dataProvider().uri().uri()
 

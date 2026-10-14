@@ -8,7 +8,10 @@ import os
 import json
 
 from SAP_Operador.postgresql import Postgresql
+from SAP_Operador.modules.versionamento import camadas, campo
 from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada
+from SAP_Operador.modules.versionamento.regras import aplicarRegrasDeFormatacao, estatisticaDeRegras
+from qgis.PyQt import QtWidgets
 import psycopg2
 
 
@@ -83,7 +86,13 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             ''',
             ()
         )
-        activityData = json.loads(result[0][0])
+        # json_atividade em texto, ou já lido pelo psycopg2 numa coluna json.
+        activityData = result[0][0]
+        if isinstance(activityData, (str, bytes)):
+            activityData = json.loads(activityData)
+        # O SAP Gerente grava o pacote sem segredo (sem `user`, `password` e a
+        # senha de `local_db`): o banco local vem do login do operador.
+        activityData.setdefault('local_db', {})
         activityData['local_db']['password'] = dbpassword
         activityData['local_db']['username'] = dbusername
         activityData['local_db']['host'] = dbhost
@@ -129,15 +138,102 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             return
         #self.resetProject()
 
+    def isFieldActivity(self):
+        # Modo local do tipo 4 (contrato-sap.md, 9.4): as camadas abrem do
+        # GeoPackage de campo, pelo ogr, sem rede.
+        return bool(self.sapActivity) and self.sapActivity.isVersioned()
+
+    def setScaleVariables(self):
+        # Como no remoto: sem escala (denominador_escala null no SAP 3.0), as
+        # variáveis de projeto não são definidas.
+        scaleDenominator = self.sapActivity.getScaleDenominator()
+        if scaleDenominator is None:
+            return
+        self.qgis.setProjectVariable('escala', scaleDenominator, encrypt=False)
+        self.qgis.setProjectVariable('productiontools_scale', scaleDenominator, encrypt=False)
+
     def loadActivityLayers(self):
-        scale = self.sapActivity.getScale()
-        self.qgis.setProjectVariable('escala', int(scale.split(':')[-1]), encrypt=False)
-        self.qgis.setProjectVariable('productiontools_scale', int(scale.split(':')[-1]), encrypt=False)
+        self._loadAndConfigureLayers(self.getActivityLayerNames())
+
+    def loadActivityLayersByNames(self, names):
+        # Botão "Carregar camadas" do quadro Dados (widgets/activityData.py).
+        if len(names) == 0:
+            self.showInfoMessageBox(None, 'Aviso', 'Sem camadas a serem carregadas!')
+            return
+        layerNames = [ l for l in self.getActivityLayerNames() if l in names]
+        self._loadAndConfigureLayers(layerNames)
+
+    def getFieldFileSettingsKey(self):
+        return 'productiontools:campo:{0}'.format(self.sapActivity.getVersioning()['repo_id'])
+
+    def getFieldFile(self):
+        # O pacote local mora no banco (public.sap_local) e traz só o nome do
+        # GeoPackage de campo: vale a pasta usada da última vez nesta
+        # atividade, depois a pasta do projeto, e por fim a que o operador
+        # escolher (lembrada para as próximas vezes).
+        name = campo.nomeDoArquivo(self.sapActivity.getVersioning())
+        folders = [self.qgis.getSettingsVariable(self.getFieldFileSettingsKey()), core.QgsProject.instance().homePath()]
+        path = campo.localizarArquivo(name, folders)
+        if path is not None:
+            return path
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self.qgis.getMainWindow(),
+            'Selecione o GeoPackage de campo da atividade ({0})'.format(name),
+            next((folder for folder in folders if folder), ''),
+            'GeoPackage de campo ({0})'.format(name)
+        )
+        if not path:
+            return None
+        if os.path.basename(path) != name:
+            raise campo.CampoError(
+                'O arquivo escolhido ({0}) não é o GeoPackage de campo do pacote ({1}).'.format(os.path.basename(path), name)
+            )
+        return path
+
+    def _loadFieldLayers(self, layerNames):
+        versioning = self.sapActivity.getVersioning()
+        try:
+            path = self.getFieldFile()
+            if path is None:
+                self.showInfoMessageBox(None, 'Aviso', 'Sem o GeoPackage de campo, as camadas da atividade não foram carregadas.')
+                return None
+            checked = campo.conferirArquivo(path, versioning)
+        except campo.CampoError as e:
+            self.showErrorMessageBox(None, 'Aviso', str(e))
+            return None
+        self.qgis.setSettingsVariable(self.getFieldFileSettingsKey(), os.path.dirname(path))
+        self.fieldFile = path
+        layers = [ l for l in self.sapActivity.getLayers() if l['nome'] in layerNames ]
+        loadedLayerIds, missing = campo.abrirCamadas(path, versioning, layers, checked['repositorio'])
+        loadedLayers = core.QgsProject.instance().mapLayers()
+        gaps = []
+        for layerData in layers:
+            layer = next(
+                (loadedLayers[i] for i in loadedLayerIds if camadas.tabelaDaCamada(loadedLayers[i]) == (layerData['schema'], layerData['nome'])),
+                None
+            )
+            if layer is None or not layerData.get('filter'):
+                continue
+            if not camadas.aplicarFiltro(layer, layerData['filter']):
+                gaps.append(layerData['nome'])
+        self.qgis.groupLayers(loadedLayerIds, self.sapActivity.getLayersGroupName())
+        self.fieldGaps = {'missing': missing, 'unfiltered': gaps, 'estado': checked['estado']}
+        if missing:
+            self.showErrorMessageBox(
+                None,
+                'Aviso',
+                'Camadas não carregadas do GeoPackage de campo: {0}'.format(
+                    '; '.join('{0} ({1})'.format(name, reason) for name, reason in missing)
+                )
+            )
+        return loadedLayerIds
+
+    def _loadPostgisLayers(self, layerNames):
         loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
         result = loadLayersFromPostgis.run({
             'dbName' : self.sapActivity.getDatabaseName(),
             'dbHost' : self.sapActivity.getDatabaseServer(),
-            'layerNames' : self.getActivityLayerNames(),
+            'layerNames' : layerNames,
             'dbPassword' : self.sapActivity.getDatabasePassword(),
             'dbPort' : self.sapActivity.getDatabasePort(),
             'dbUser' : self.sapActivity.getDatabaseUserName()
@@ -149,6 +245,17 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
         groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
         groupLayers.run({'layerIds': loadedLayerIds})
+        return loadedLayerIds
+
+    def _loadAndConfigureLayers(self, layerNames):
+        self.setScaleVariables()
+        field = self.isFieldActivity()
+        if field:
+            loadedLayerIds = self._loadFieldLayers(layerNames)
+            if loadedLayerIds is None:
+                return
+        else:
+            loadedLayerIds = self._loadPostgisLayers(layerNames)
 
         defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
         if defaultStyle:
@@ -165,32 +272,47 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) """
 
-        assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
-        database = self.getActivityDatabase()
-        assignValueMapToLayers.run({
-            'valueMaps': {
-                    layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
-                    for layer in self.sapActivity.getLayers()
-            },
-            'layerIds': loadedLayerIds
-        })
+        if not field:
+            assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
+            database = self.getActivityDatabase()
+            assignValueMapToLayers.run({
+                'valueMaps': {
+                        layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
+                        for layer in self.sapActivity.getLayers()
+                },
+                'layerIds': loadedLayerIds
+            })
+        # No campo os domínios vêm do modelo gravado no GeoPackage do clone:
+        # campo.abrirCamadas já põe o editor ValueMap dos rótulos.
 
         assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
 
-        assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
-        assignAliasesToLayers.run({
-            'aliases': self.sapActivity.getLayerALiases(),
-            'layerIds': loadedLayerIds
-        })
+        alias = self.sapActivity.getLayerALiases()
+        if field:
+            # Os algoritmos de apelidos e ações do DsgTools acham a camada pela
+            # tabela do endereço, que a camada ogr do arquivo não tem: a mesma
+            # semântica, com a camada achada por tabelaDaCamada.
+            campo.aplicarApelidos(self.qgis.getLayerFromIds(loadedLayerIds), alias)
+            campo.aplicarAcoes(self.qgis.getLayerFromIds(loadedLayerIds), self.sapActivity.getLayerActions())
+        else:
+            if alias:
+                assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
+                assignAliasesToLayers.run({
+                    'aliases': alias,
+                    'layerIds': loadedLayerIds
+                })
 
-        assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
-        assignActionsToLayers.run({
-            'actions': self.sapActivity.getLayerActions(),
-            'layerIds': loadedLayerIds
-        })
+            assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
+            assignActionsToLayers.run({
+                'actions': self.sapActivity.getLayerActions(),
+                'layerIds': loadedLayerIds
+            })
         rules = self.sapActivity.getRules()
-        if rules:
+        if rules and field:
+            # O algoritmo do DsgTools descarta provedor diferente de postgres.
+            aplicarRegrasDeFormatacao(self.qgis.getLayerFromIds(loadedLayerIds), rules[0]['regra'])
+        elif rules:
             assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
             assignFormatRulesToLayers.run({
                 'rules': rules,
@@ -263,10 +385,50 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
         self.loadReviewTool()
 
-        loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
-        for theme in self.sapActivity.getThemes():
-            loadThemes.run({'themes': theme['definicao_tema']})
+        if field:
+            # O LoadThemes do DsgTools casa por uri().schema()/table().
+            for theme in self.sapActivity.getThemes():
+                self.qgis.loadThemes(theme['definicao_tema'])
+        else:
+            loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
+            for theme in self.sapActivity.getThemes():
+                loadThemes.run({'themes': theme['definicao_tema']})
         self.sortLayersOnMolduraGroup()
+
+    def getDSGToolsQAWorkflows(self):
+        # O quadro Dados do painel pergunta pelos workflows também no modo local.
+        return self.sapActivity.getWorkflows()
+
+    def loadDsgToolsworkflowToolbox(self):
+        if getattr(self, 'workflowToolbox', None) is not None:
+            return
+        self.workflowToolbox = self.toolFactoryDsgTools.getTool('WorkflowToolBox', self)
+        self.workflowToolbox.run(self.getDSGToolsQAWorkflows())
+
+    def getSapMenus(self):
+        menus = self.sapActivity.getMenus()
+        if not self.isFieldActivity():
+            return menus
+        # O menu de aquisição do DsgTools acha a camada ogr pela tabela do
+        # arquivo (f_<hash> no GeoPackage de campo), não pelo nome da camada.
+        return campo.traduzirMenus(menus, self.qgis.getLoadedVectorLayers())
+
+    def runRuleStatistics(self, routineData):
+        if not self.isFieldActivity():
+            return super().runRuleStatistics(routineData)
+        # O dsgtools:rulestatistics acha a camada pela tabela do endereço.
+        result = estatisticaDeRegras(
+            routineData['ruleStatistics'],
+            [ l for l in self.qgis.getLoadedVectorLayers() if camadas.ehDeCampo(l) ]
+        )
+        self.htmlMessageDlg = self.messageFactory.createMessage('RuleMessageDialog')
+        self.htmlMessageDlg.show(
+            self.qgis.getMainWindow(),
+            'Aviso',
+            result,
+            self.qgis
+        )
+        return result
 
     def sortLayersOnMolduraGroup(self):
         utils.iface.mapCanvas().freeze(True)
@@ -323,23 +485,28 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        gridCandidateList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
-        if not gridCandidateList:
-            result = loadLayersFromPostgis.run({
-                'dbName': self.sapActivity.getDatabaseName(),
-                'dbHost': self.sapActivity.getDatabaseServer(),
-                'layerNames': ['aux_grid_revisao_a'],
-                'dbPassword': self.sapActivity.getDatabasePassword(),
-                'dbPort': self.sapActivity.getDatabasePort(),
-                'dbUser': self.sapActivity.getDatabaseUserName()
-            })
-            loadedLayerIds = result['OUTPUT']
-            if not loadedLayerIds:
+        if self.isFieldActivity():
+            gridLayer = self._loadFieldReviewGrid()
+            if gridLayer is None:
                 return
-            gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
         else:
-            gridLayer = gridCandidateList[0]
+            loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
+            gridCandidateList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
+            if not gridCandidateList:
+                result = loadLayersFromPostgis.run({
+                    'dbName': self.sapActivity.getDatabaseName(),
+                    'dbHost': self.sapActivity.getDatabaseServer(),
+                    'layerNames': ['aux_grid_revisao_a'],
+                    'dbPassword': self.sapActivity.getDatabasePassword(),
+                    'dbPort': self.sapActivity.getDatabasePort(),
+                    'dbUser': self.sapActivity.getDatabaseUserName()
+                })
+                loadedLayerIds = result['OUTPUT']
+                if not loadedLayerIds:
+                    return
+                gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
+            else:
+                gridLayer = gridCandidateList[0]
 
         # Check for field existence and build appropriate filter
         fields = [field.name() for field in gridLayer.fields()]
@@ -351,16 +518,19 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             # Fall back to old atividade_id filter
             filter_expr = f'atividade_id = {self.sapActivity.getId()}'
 
-        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run({
-            'layers': [
-                {
-                    'filter': filter_expr,
-                    'nome': 'aux_grid_revisao_a',
-                    'schema': tabelaDaCamada(gridLayer)[0]
-                }
-            ]
-        })
+        if self.isFieldActivity():
+            camadas.aplicarFiltro(gridLayer, filter_expr)
+        else:
+            assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
+            assingFilterToLayers.run({
+                'layers': [
+                    {
+                        'filter': filter_expr,
+                        'nome': 'aux_grid_revisao_a',
+                        'schema': tabelaDaCamada(gridLayer)[0]
+                    }
+                ]
+            })
 
         self.moveLayerToGroup(gridLayer.id())
 
@@ -370,11 +540,12 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             return
 
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
-        scale = self.sapActivity.getScale()
+        scaleDenominator = self.sapActivity.getScaleDenominator()
         frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
 
-        # Determine grid size based on scale
-        if int(scale.split(':')[-1]) <= 10000:
+        # Determine grid size based on scale. Sem escala (denominador_escala null
+        # no SAP 3.0), vale a grade das escalas menores que 1:10.000, como no remoto.
+        if scaleDenominator is not None and scaleDenominator <= 10000:
             param = {
                 'input': frameLyr,
                 'x_grid_size': (0.001) if frameLyr.crs().isGeographic() else (1e2),
@@ -387,18 +558,41 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
                 'y_grid_size': (0.008) if frameLyr.crs().isGeographic() else (800)
             }
 
-        # Add appropriate IDs based on field existence
-        if has_new_fields:
-            param.update({
-                'unit_work_id': self.sapActivity.getWorkUnitId(),
-                'step_id': self.sapActivity.getStepId()
-            })
-        else:
-            param['related_task_id'] = self.sapActivity.getId()
+        # O lançador do CreateReviewGrid pede os três identificadores, como no remoto.
+        param.update({
+            'related_task_id': self.sapActivity.getId(),
+            'unit_work_id': self.sapActivity.getWorkUnitId(),
+            'step_id': self.sapActivity.getStepId()
+        })
 
         result = createReviewGrid.run(param)
         outputLayer = result['OUTPUT']
         reviewToolBar.run(gridLayer, outputLayer=outputLayer)
+
+    def _loadFieldReviewGrid(self):
+        # A grade de revisão do campo é a classe aux_grid_revisao_a do
+        # GeoPackage, quando o clone a tem. A grade nova gravada no arquivo
+        # recebe a identidade de cada célula antes de gravar (campo.GuardaDeCampo).
+        gridLayer = next(
+            (l for l in self.qgis.getLoadedVectorLayers() if camadas.ehDeCampo(l) and camadas.tabelaDaCamada(l)[1] == 'aux_grid_revisao_a'),
+            None
+        )
+        if gridLayer is not None:
+            return gridLayer
+        versioning = self.sapActivity.getVersioning()
+        gridData = next((d for d in versioning.get('datasets') or [] if d.get('nome') == 'aux_grid_revisao_a'), None)
+        if gridData is None or not getattr(self, 'fieldFile', None):
+            core.QgsMessageLog.logMessage(
+                'Lacuna: o GeoPackage de campo não tem aux_grid_revisao_a; a ferramenta de revisão não foi carregada.',
+                camadas.LOG_TAG, core.Qgis.MessageLevel.Warning
+            )
+            return None
+        loadedLayerIds, _ = campo.abrirCamadas(
+            self.fieldFile, versioning, [{'schema': gridData.get('schema'), 'nome': 'aux_grid_revisao_a'}]
+        )
+        if not loadedLayerIds:
+            return None
+        return core.QgsProject.instance().mapLayer(loadedLayerIds[0])
 
     def moveLayerToGroup(self, loadedLayerId, positionToInsert=0):
         utils.iface.mapCanvas().freeze(True)

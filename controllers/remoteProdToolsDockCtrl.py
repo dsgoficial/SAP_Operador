@@ -605,9 +605,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
 
     def _loadVersionedReviewTool(self):
         # A grade de revisão só existe no versionado se o repositório da
-        # atividade tiver a classe aux_grid_revisao_a (lacuna registrada: o
-        # filtro por unidade de trabalho e etapa depende de setSubsetString,
-        # que o provedor não aceita, e a grade nova é gravada pelo provedor).
+        # atividade tiver a classe aux_grid_revisao_a; o filtro por unidade de
+        # trabalho e etapa vai pelo setSubsetString do provedor (lacuna
+        # registrada: a grade nova não é gravada pelo provedor).
         gridLayer = next(
             (l for l in self.qgis.getLoadedVectorLayers() if camadas.ehVersionada(l) and camadas.tabelaDaCamada(l)[1] == 'aux_grid_revisao_a'),
             None

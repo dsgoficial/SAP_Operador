@@ -27,6 +27,14 @@ stable. Loading is serialized by a lock because iterators run on render
 threads. The cache is a read copy at one generation: edits go to the service
 when the edit buffer is saved and never stay only here.
 
+Layer filter (setSubsetString, SAP Operador 4.1.0). The SAP Operador filters
+the review layers by subphase with a QGIS expression. The service filters by
+rectangle and identity only, so the reading is the same with or without a
+filter (regions, DSGP/1 pages, the cache) and the expression is evaluated
+over what the cache returns (SubsetIterator); the count of what passes it is
+kept per generation. The filter goes in the `sql` key of the address, as
+PostGIS keeps it, so a saved project reopens the layer filtered.
+
 Saving (D026: a save is one service write). The beforeCommitChanges hook
 plans the whole edit buffer (changed attributes and geometries, added and
 deleted features), validates it locally (identity, types, geometry type, Z,
@@ -70,7 +78,8 @@ import weakref
 
 from qgis.PyQt.QtCore import QObject,pyqtSignal
 from qgis.core import (Qgis,QgsAbstractFeatureIterator,QgsAbstractFeatureSource,QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,QgsCsException,QgsDataProvider,QgsDataSourceUri,QgsEditorWidgetSetup,QgsError,QgsFeatureIterator,QgsFeatureRequest,
+    QgsCoordinateTransform,QgsCsException,QgsDataProvider,QgsDataSourceUri,QgsEditorWidgetSetup,QgsError,QgsExpression,
+    QgsExpressionContext,QgsExpressionContextUtils,QgsFeatureIterator,QgsFeatureRequest,
     QgsField,QgsFieldConstraints,QgsFields,QgsGeometry,QgsMessageLog,QgsProviderMetadata,QgsProviderRegistry,
     QgsRectangle,QgsVectorDataProvider)
 from qgis.PyQt.QtCore import QMetaType
@@ -183,13 +192,15 @@ def connection_for(url):
     with _connections_lock: return _connections.get(check_url(url))
 
 
-def make_uri(service,repo,dataset,schema='',table=None):
+def make_uri(service,repo,dataset,schema='',table=None,subset=''):
     """Address of a layer in the key='value' form QgsDataSourceUri reads:
     `service`, `repo` and `dataset` for the provider, `schema` and `table`
     (the layer of the SAP package) for whoever matches layers by
-    `dataProvider().uri().schema()/table()`."""
+    `dataProvider().uri().schema()/table()`, and the layer filter
+    (setSubsetString) in `sql`, as PostGIS keeps it, so a saved project
+    reopens the layer filtered."""
     uri=QgsDataSourceUri()
-    uri.setDataSource(str(schema or ''),str(table or dataset),'')
+    uri.setDataSource(str(schema or ''),str(table or dataset),'',str(subset or ''))
     uri.setParam('service',check_url(service))
     uri.setParam('repo',str(repo))
     uri.setParam('dataset',str(dataset))
@@ -203,7 +214,8 @@ def parse_uri(uri):
     if ' ' in text:
         source=QgsDataSourceUri(text)
         parts={'service':source.service() or source.param('service'),'repo':source.param('repo'),
-               'dataset':source.param('dataset'),'schema':source.schema(),'table':source.table()}
+               'dataset':source.param('dataset'),'schema':source.schema(),'table':source.table(),
+               'subset':source.sql()}
     else:
         parts=dict(parse_qsl(text,keep_blank_values=True))
     missing=[key for key in ('service','repo','dataset') if not parts.get(key)]
@@ -211,6 +223,7 @@ def parse_uri(uri):
         raise ValueError('Endereço de camada do versionamento incompleto: falta '+', '.join(missing)+'.')
     parts['service']=check_url(parts['service'])
     parts.setdefault('schema','')
+    parts['subset']=str(parts.get('subset') or '').strip()
     if not parts.get('table'): parts['table']=parts['dataset']
     return parts
 
@@ -567,13 +580,84 @@ class FeatureSource(QgsAbstractFeatureSource):
         self.specs=list(provider._specs)
         self.crs=QgsCoordinateReferenceSystem(provider._crs)
         self.native_cache=provider._cache if getattr(provider._cache,'native',False) else None
+        self.subset=provider._subset
 
     def getFeatures(self,request=QgsFeatureRequest()):
+        if self.subset:
+            return QgsFeatureIterator(SubsetIterator(self,request))
+        return self.read(request)
+
+    def read(self,request):
+        """Iterator over the cache, loading from the service what `request` needs."""
         if self.native_cache:
             preparation=FeatureIterator(self,request,prepare_only=True)
             if preparation._closed:return QgsFeatureIterator()
             return self.native_cache.get_features(request)
         return QgsFeatureIterator(FeatureIterator(self,request))
+
+
+def subset_expression(text,fields):
+    """(QgsExpression, referenced field indexes or None for all) of a layer
+    filter; ValueError when it does not parse or names a missing field."""
+    expression=QgsExpression(text)
+    if expression.hasParserError():
+        raise ValueError('Filtro da camada inválido ('+expression.parserErrorString()+'): '+text)
+    indexes=set()
+    for name in expression.referencedColumns():
+        if name==QgsFeatureRequest.ALL_ATTRIBUTES: return expression,None
+        index=fields.lookupField(name)
+        if index<0: raise ValueError('Filtro da camada cita o campo '+name+', que a classe não tem: '+text)
+        indexes.add(index)
+    return expression,indexes
+
+
+def _truthy(value):
+    """Value of a filter as QGIS reads a condition: NULL and zero are false."""
+    if value is None: return False
+    if isinstance(value,(bool,int,float)): return bool(value)
+    try: return float(str(value))!=0
+    except ValueError: return False
+
+
+class SubsetIterator(QgsAbstractFeatureIterator):
+    """The layer filter (setSubsetString), evaluated here on what the cache
+    returns: the service filters only by rectangle and identity, so the
+    reading (regions, DSGP/1 pages, local cache) is the same with or without
+    the filter, and the filter only drops features from the answer."""
+
+    def __init__(self,source,request):
+        super().__init__(request)
+        self._expression,indexes=subset_expression(source.subset,source.fields)
+        self._context=QgsExpressionContext()
+        self._context.appendScope(QgsExpressionContextUtils.globalScope())
+        self._context.setFields(source.fields)
+        self._expression.prepare(self._context)
+        inner=QgsFeatureRequest(request)
+        # The limit counts what passes the filter: it is applied here.
+        inner.setLimit(-1)
+        flags=inner.flags()
+        if flags&Qgis.FeatureRequestFlag.SubsetOfAttributes:
+            if indexes is None:
+                inner.setFlags(flags&~Qgis.FeatureRequestFlag.SubsetOfAttributes)
+            else:
+                inner.setSubsetOfAttributes(sorted(set(request.subsetOfAttributes())|indexes))
+        if self._expression.needsGeometry() and inner.flags()&Qgis.FeatureRequestFlag.NoGeometry:
+            inner.setFlags(inner.flags()&~Qgis.FeatureRequestFlag.NoGeometry)
+        self._inner=source.read(inner)
+
+    def fetchFeature(self,feature):
+        while self._inner.nextFeature(feature):
+            self._context.setFeature(feature)
+            if _truthy(self._expression.evaluate(self._context)):
+                return True
+        feature.setValid(False)
+        return False
+
+    def rewind(self):
+        return self._inner.rewind()
+
+    def close(self):
+        return self._inner.close()
 
 
 class FeatureIterator(QgsAbstractFeatureIterator):
@@ -786,9 +870,15 @@ class DsgVersioningProvider(QgsVectorDataProvider):
         # whether the buffer is checked against them before a save (a test
         # turns it off to see the refusal of the service).
         self.rules=None; self.model_check=True; self._violations=[]
+        # Layer filter (setSubsetString), evaluated over the cache; the count
+        # of what passes it is kept for the generation it was counted at.
+        self._subset=''; self._counted=None
         try:
             self._parts=parse_uri(uri)
             self._open()
+            if self._parts['subset']:
+                subset_expression(self._parts['subset'],self._fields)
+                self._subset=self._parts['subset']
             self._valid=True
             # QgsVectorLayer.reload() reaches QgsDataProvider::reloadData, which
             # does not dispatch reloadProviderData to Python but emits
@@ -897,11 +987,43 @@ class DsgVersioningProvider(QgsVectorDataProvider):
     def fields(self): return QgsFields(self._fields)
     def featureCount(self):
         if not self._cache: return 0
+        if self._subset: return self._subset_count()
         return self._cache.count() if self._loader.full else self._count
     def dataSourceUri(self,expandAuthConfig=False): return self._uri
     def storageType(self): return 'Versionamento do SAP (clone da atividade no servidor)'
-    def supportsSubsetString(self): return False
-    def subsetString(self): return ''
+    def supportsSubsetString(self): return True
+    def subsetString(self): return self._subset
+
+    def setSubsetString(self,subset,updateFeatureCount=True):
+        """Filter of the layer, a QGIS expression over its fields (the SAP
+        Operador filters the review layers by subphase). The service filters
+        by rectangle and identity only: the reading stays the same and the
+        expression is evaluated over what the cache returns (SubsetIterator).
+        Refused, keeping the current filter, when it does not parse or names
+        a missing field."""
+        text=str(subset or '').strip()
+        if text:
+            try: subset_expression(text,self._fields)
+            except ValueError as error:
+                self.pushError(str(error)); return False
+        self._subset=text; self._counted=None
+        parts=self._parts
+        self._uri=make_uri(parts['service'],parts['repo'],parts['dataset'],parts['schema'],parts['table'],text)
+        self._parts=dict(parts,subset=text)
+        return True
+
+    def _subset_count(self):
+        """Features that pass the filter: the class is read whole (once per
+        generation) and the filter counted over the cache."""
+        loader=self._loader
+        def state(): return (self._subset,loader.generation,loader.resets,loader.full)
+        if self._counted is not None and self._counted[0]==state():
+            return self._counted[1]
+        request=QgsFeatureRequest().setFlags(Qgis.FeatureRequestFlag.NoGeometry).setNoAttributes()
+        found=0
+        for _ in FeatureSource(self).getFeatures(request): found+=1
+        self._counted=(state(),found)
+        return found
     def pkAttributeIndexes(self): return [self._id_index]
     def featureSource(self): return FeatureSource(self)
 

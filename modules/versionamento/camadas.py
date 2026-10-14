@@ -3,12 +3,33 @@
 Sem import do pacote do plugin (só relativo): este diretório é copiado igual
 para o SAP Gerente (contrato-sap.md, seção 7).
 """
+import json
+
 from qgis.core import Qgis,QgsMessageLog,QgsProject,QgsVectorLayer
 
 from . import provider as versioning
 from .client import service_base
 
 LOG_TAG=versioning.LOG_TAG
+# Camada `ogr` aberta do GeoPackage de campo (campo.abrirCamadas): o par
+# (schema, nome) do pacote, o dataset e o repositório, em JSON. Propriedade
+# da camada, gravada no projeto: vale também quando o projeto é reaberto.
+PROPRIEDADE_CAMPO='sap_versionamento/campo'
+
+
+def dadosDeCampo(layer):
+    """{schema, nome, dataset, repo_id} de uma camada do GeoPackage de campo, ou None."""
+    try:
+        if layer.providerType()!='ogr': return None
+        value=layer.customProperty(PROPRIEDADE_CAMPO)
+    except (AttributeError,RuntimeError):
+        return None
+    if not value: return None
+    try:
+        data=json.loads(value) if isinstance(value,str) else dict(value)
+    except (ValueError,TypeError):
+        return None
+    return data if isinstance(data,dict) and data.get('nome') else None
 
 
 def tabelaDaCamada(layer):
@@ -18,8 +39,13 @@ def tabelaDaCamada(layer):
     endereço do versionamento leva `schema` e `table` da camada do pacote
     (provider.make_uri). Uma camada do versionamento com o endereço antigo
     (service=...&repo=...&dataset=...) responde ('', dataset), porque o
-    dataset é nomeado pela tabela (contrato-sap.md, seção 6). (None, None)
-    quando a camada não tem provedor."""
+    dataset é nomeado pela tabela (contrato-sap.md, seção 6). A camada `ogr`
+    do GeoPackage de campo (modo local do tipo 4, seção 9.4), cuja tabela no
+    arquivo é a `f_<hash>` da classe, responde o par do `datasets` do pacote,
+    guardado nela ao abrir. (None, None) quando a camada não tem provedor."""
+    campo=dadosDeCampo(layer)
+    if campo is not None:
+        return campo.get('schema') or '',campo['nome']
     try:
         source=layer.dataProvider()
     except (AttributeError,RuntimeError):
@@ -37,10 +63,22 @@ def tabelaDaCamada(layer):
 
 
 def ehVersionada(layer):
+    """Camada do provedor `dsgversioning` (clone no servidor, pelo repasse do SAP)."""
     try:
         return layer.providerType()==versioning.PROVIDER_KEY
     except (AttributeError,RuntimeError):
         return False
+
+
+def ehDeCampo(layer):
+    """Camada `ogr` do GeoPackage de campo (modo local do tipo 4)."""
+    return dadosDeCampo(layer) is not None
+
+
+def ehDoVersionamento(layer):
+    """Camada de um clone do versionamento, no servidor ou no GeoPackage de campo:
+    o processing a acha pelo id, não pelo `uri()` remontado."""
+    return ehVersionada(layer) or ehDeCampo(layer)
 
 
 def conectar(sapServer,token,reauth=None):
@@ -94,8 +132,9 @@ def abrirCamadas(serviceBase,versionamento,camadas,addToProject=True):
 
 
 def aplicarFiltro(layer,expression):
-    """Filtro de camada por expressão; False quando o provedor não aceita
-    (o `dsgversioning` não implementa subset: lacuna registrada no log)."""
+    """Filtro de camada por expressão (o `dsgversioning` avalia a expressão
+    QGIS sobre o cache; o `ogr` do GeoPackage de campo, em SQL); False, com
+    a lacuna registrada no log, quando o provedor recusa o filtro."""
     if not expression:
         return True
     if layer.setSubsetString(expression):

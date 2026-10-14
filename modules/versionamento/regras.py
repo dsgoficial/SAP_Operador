@@ -7,6 +7,11 @@ limpa estilos condicionais e o campo virtual `attribute_error_description`,
 casa cada regra pelas `camadas` (nome `schema.tabela`, com curinga `*` do
 fnmatch), põe um estilo condicional por regra no campo `atributo` (ordenado
 pelo `rank` do `grupo_estilo`) e cria o campo virtual com o CASE das regras.
+
+A estatística de regras (`dsgtools:rulestatistics`) acha a camada pela tabela
+do endereço, que a camada `ogr` do GeoPackage de campo não tem: para ela vale
+`estatisticaDeRegras`, com a mesma semântica e a saída que o SAP Operador lê do
+algoritmo.
 """
 import fnmatch
 import json
@@ -15,7 +20,8 @@ from operator import itemgetter
 
 from qgis.PyQt.QtCore import QMetaType
 from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsConditionalStyle,QgsExpression,QgsField
+from qgis.core import (QgsConditionalStyle,QgsExpression,QgsExpressionContext,QgsExpressionContextUtils,QgsFeatureRequest,
+    QgsField)
 
 from .camadas import tabelaDaCamada
 
@@ -100,3 +106,25 @@ def aplicarRegrasDeFormatacao(layers,rulesText,cleanBefore=True):
             layer.conditionalStyles().setFieldStyles(field.name(),[_style(item) for item in rules[key][field.name()]])
         _virtualField(layer,rules)
     return rules
+
+
+def estatisticaDeRegras(rulesText,layers):
+    """Como `dsgtools:rulestatistics`, lido como o SAP Operador lê a saída dele
+    (`processingLaunchers/ruleStatistics.py`): `{'[RULES] : <tipo_estilo>':
+    [camadas com feição que cumpre a condição de erro]}`. A regra vale nas
+    camadas que casam com `camadas` (schema.tabela, curinga do fnmatch) e que
+    têm o campo `atributo` na tabela de atributos."""
+    data=json.loads(rulesText) if isinstance(rulesText,str) else rulesText
+    named={}
+    for layer in layers: named.setdefault(_key(layer),layer)
+    result={}
+    for rule in data.get('regras') or []:
+        failed=result.setdefault('[RULES] : '+rule['tipo_estilo'],[])
+        for name in sorted(_layerNames(rule['camadas'],list(named))):
+            layer=named[name]
+            if rule['atributo'] not in [column.name for column in layer.attributeTableConfig().columns()]: continue
+            context=QgsExpressionContext(QgsExpressionContextUtils.globalProjectLayerScopes(layer))
+            request=QgsFeatureRequest(QgsExpression(rule['regra'])).setExpressionContext(context).setLimit(1)
+            if any(True for _ in layer.getFeatures(request)) and layer.name() not in failed:
+                failed.append(layer.name())
+    return {key:sorted(value) for key,value in sorted(result.items())}

@@ -26,5 +26,10 @@ class LocalSapCtrl(SapCtrl):
     def getActivity(self, activityData):
         self.activityDataModel.setData( activityData ) 
         return self.activityDataModel
+
+    def getActivityDataModel(self):
+        # O quadro "Dados" do painel (widgets/activityData.py) lê as camadas
+        # da atividade por aqui, no modo remoto e no local.
+        return self.activityDataModel
         
 

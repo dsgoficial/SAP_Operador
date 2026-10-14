@@ -12,9 +12,10 @@ A página DSGP/1 é montada por `encode_page`, conferida pelo decodificador do
 próprio plugin (`modules/versionamento/feature_page.py`) em `checar_codificador`.
 
 Suposições do contrato que este servidor encena (contrato-sap.md):
-- o 409 do `finaliza` vem no envelope do SAP: `{message, dados: {sessao_id, conflitos}}`;
-- a sessão do merge vive no repositório PAI do clone (o destino do push), e o
-  repasse deixa o operador ler e resolver nela;
+- o 409 do `finaliza` vem no envelope do SAP: `{message, dados: {sessao_id, repo_id, conflitos}}`,
+  com `repo_id` onde a sessão mora: o PAI no merge, o próprio clone no pull
+  (`server/src/versionamento/ciclo_atividade.js`); o servidor só responde a
+  sessão nesse repositório, e o repasse deixa o operador ler e resolver nela;
 - o SAP põe `X-Dsg-Actor`; o plugin não manda `actor` no corpo.
 """
 import copy
@@ -102,6 +103,9 @@ class Estado:
         self.lock=threading.RLock()
         self.pedidos=[]
         self.bloco=_id(); self.atividade=_id(); self.sessao='sessao-'+uuid.uuid4().hex[:8]
+        # Onde a sessão do conflito mora, como o SAP diz no `repo_id` do 409
+        # (ciclo_atividade.js): o pai no merge, o próprio clone no pull.
+        self.sessao_repo=self.bloco
         self.generation=10
         self.specs={
             'cobter_massa_dagua_a':{'name':'cobter_massa_dagua_a','geometry_type':'Polygon','srid':4674,'z':False,'fields':[
@@ -289,7 +293,8 @@ class Handler(BaseHTTPRequestHandler):
                 pending=[i for i in estado.items if i['status']=='conflict']
                 if estado.modo=='versionado' and pending:
                     return self._send(409,{'version':'3.32.0','success':False,'message':'A integração da atividade tem conflitos.',
-                                           'dados':{'sessao_id':estado.sessao,'conflitos':[{'dataset':i['dataset'],'id':i['feature_id']} for i in pending]}})
+                                           'dados':{'sessao_id':estado.sessao,'repo_id':estado.sessao_repo,
+                                                    'conflitos':[{'dataset':i['dataset'],'id':i['feature_id']} for i in pending]}})
                 return self._send(200,{'version':'3.32.0','success':True,'message':'Atividade finalizada com sucesso.'})
             if path.startswith('/api/microcontrole/'):
                 estado.microcontrole.append(body)
@@ -340,7 +345,7 @@ class Handler(BaseHTTPRequestHandler):
                          'actor':USER,'at':'2026-10-13T12:00:00Z','reason':found['reason']}] if found else []
             return self._send(200,{'predecessors':[],'successors':successors})
         if key==('POST','lineage') and len(rest)==2: return self._send(*estado.lineage_op(rest[1],body))
-        if rest[0]=='sessions' and len(rest)>=2 and rest[1]==estado.sessao:
+        if rest[0]=='sessions' and len(rest)>=2 and rest[1]==estado.sessao and repo==estado.sessao_repo:
             if method=='GET' and len(rest)==2:
                 return self._send(200,{'id':estado.sessao,'mode':'push','state':'prepared','target_id':estado.bloco})
             if method=='GET' and rest[2:]==['items']:
