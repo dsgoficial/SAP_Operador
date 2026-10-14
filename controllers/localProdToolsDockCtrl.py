@@ -71,11 +71,14 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         if self.productionTools is None:
             return
         self.removeDock()
-        self.sapActivity = self.sap.getActivity()
+        # No modo local o pacote é o de public.sap_local, já lido no
+        # loadDockWidget (com o banco do login do operador): o painel se refaz
+        # com ele, e é o painel do modo local.
         if self.sapActivity is None:
             return
+        self.sapActivity = self.sap.getActivity(self.sapActivity.getData())
         self.loadShortcuts()
-        self.productionTools = self.guiFactory.makeRemoteProductionToolsDock(self, self.productionTools)
+        self.productionTools = self.guiFactory.makeLocalProductionToolsDock(self, self.productionTools)
         self.qgis.addDockWidget(self.productionTools, side='left')
 
     def loadDockWidget(self, dbusername, dbpassword, dbhost, dbport, dbname):

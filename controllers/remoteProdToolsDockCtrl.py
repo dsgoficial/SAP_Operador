@@ -570,8 +570,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if gridLayer.featureCount() != 0:
             reviewToolBar.run(gridLayer)
             return
+        reviewToolBar.run(gridLayer, outputLayer=self._createReviewGrid())
 
-        # Set up grid creation parameters
+    def _createReviewGrid(self):
+        # A grade nova sobre a moldura da unidade de trabalho; quem a grava na
+        # camada é o ReviewToolBar (no versionado, pelo provedor).
         createReviewGrid = self.processingFactoryDsgTools.createProcessing('CreateReviewGrid', self)
         scaleDenominator = self.sapActivity.getScaleDenominator()
         frameLyr = core.QgsProject.instance().mapLayersByName('moldura')[0]
@@ -598,16 +601,26 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         })
 
         result = createReviewGrid.run(param)
+        return result['OUTPUT']
 
-
-        outputLayer = result['OUTPUT']
-        reviewToolBar.run(gridLayer, outputLayer=outputLayer)
+    def _warnReviewGrid(self, text):
+        # Aviso sem caixa modal: a ferramenta de revisão carrega junto com as
+        # camadas, também nas atividades que não revisam.
+        self.reviewGridGap = text
+        core.QgsMessageLog.logMessage(text, camadas.LOG_TAG, core.Qgis.MessageLevel.Warning)
+        try:
+            utils.iface.messageBar().pushMessage('SAP Operador', text, level=core.Qgis.MessageLevel.Warning, duration=10)
+        except Exception:
+            pass
 
     def _loadVersionedReviewTool(self):
-        # A grade de revisão só existe no versionado se o repositório da
-        # atividade tiver a classe aux_grid_revisao_a; o filtro por unidade de
-        # trabalho e etapa vai pelo setSubsetString do provedor (lacuna
-        # registrada: a grade nova não é gravada pelo provedor).
+        # A grade de revisão do versionado mora na classe aux_grid_revisao_a do
+        # repositório da atividade (o clone que o SAP criou, com as camadas da
+        # subfase): ela abre pelo provedor, filtrada por unidade de trabalho e
+        # etapa, e a grade nova é gravada pelo provedor, pelas rotas do SAP,
+        # com a cobrança do modelo e da permissão da etapa. Na finalização ela
+        # sobe ao bloco com o resto do clone, como a do banco no tipo 2.
+        self.reviewGridGap = None
         gridLayer = next(
             (l for l in self.qgis.getLoadedVectorLayers() if camadas.ehVersionada(l) and camadas.tabelaDaCamada(l)[1] == 'aux_grid_revisao_a'),
             None
@@ -616,15 +629,21 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             versioning = self.sapActivity.getVersioning()
             gridData = next((d for d in versioning.get('datasets') or [] if d.get('nome') == 'aux_grid_revisao_a'), None)
             if gridData is None:
-                core.QgsMessageLog.logMessage(
-                    'Lacuna: o repositório da atividade não tem aux_grid_revisao_a; a ferramenta de revisão não foi carregada.',
-                    camadas.LOG_TAG, core.Qgis.MessageLevel.Warning
+                self._warnReviewGrid(
+                    'Ferramenta de revisão não carregada: o repositório desta atividade não tem a classe '
+                    'aux_grid_revisao_a, onde a grade de revisão da base versionada é gravada. Para revisar com '
+                    'a grade, a camada aux_grid_revisao_a precisa estar entre as camadas da subfase.'
                 )
                 return
-            loadedLayerIds, _ = camadas.abrirCamadas(
+            loadedLayerIds, missing = camadas.abrirCamadas(
                 self.getVersioningServiceBase(), versioning, [{'schema': gridData.get('schema'), 'nome': 'aux_grid_revisao_a'}]
             )
             if not loadedLayerIds:
+                self._warnReviewGrid(
+                    'Ferramenta de revisão não carregada: a grade de revisão não abriu pelo versionamento ({0}).'.format(
+                        '; '.join(reason for _, reason in missing) or 'camada inválida'
+                    )
+                )
                 return
             gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
             self.qgis.groupLayers(loadedLayerIds, self.sapActivity.getLayersGroupName())
@@ -638,10 +657,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         if gridLayer.featureCount() != 0:
             reviewToolBar.run(gridLayer)
             return
-        core.QgsMessageLog.logMessage(
-            'Lacuna: grade de revisão vazia no versionado; a criação da grade pelo DsgTools não foi ligada ao provedor.',
-            camadas.LOG_TAG, core.Qgis.MessageLevel.Warning
-        )
+        reviewToolBar.run(gridLayer, outputLayer=self._createReviewGrid())
 
     def showVersioningPanel(self):
         if not self.isVersionedActivity():

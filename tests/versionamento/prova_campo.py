@@ -19,10 +19,14 @@ Cenários:
   painel, carrega as camadas pelo botão do quadro Dados, confere SHA-256,
   `ogr`, tabelaDaCamada, estilos, apelidos, ações, domínios do modelo,
   regras de formatação, filtro de subfase, temas, menus, estatística de
-  regras, grade de revisão, edição capturada pelos gatilhos, identidade
-  nova, permissão da etapa, projeto reaberto e as recusas do arquivo.
+  regras, grade de revisão, valores padrão do modelo do clone no formulário,
+  edição capturada pelos gatilhos, identidade nova, permissão da etapa,
+  projeto reaberto e as recusas do arquivo.
 - `local2`: atividade do tipo 2 no modo local (PostGIS fictício, processing
-  gravado): o painel monta e as camadas carregam pelo botão.
+  gravado): o painel monta e as camadas carregam pelo botão; o painel se
+  refaz (`reload`) como painel do modo local, o usuário da atividade é o
+  `usuario_uuid` do SAP 3.0 e o modelo da atividade local não tem método
+  repetido (morto).
 
 Sem o terceiro argumento, o plugin é o deste repositório. Para reprovar o
 estado anterior, extraia a revisão (`git archive <rev>`) numa pasta chamada
@@ -54,7 +58,11 @@ SENHA_LOCAL='senha-do-login-local'
 DOMINIO={'format':'dsg-model/1','name':'edgv-teste','version':'1',
          'domains':[{'name':'tipo_massa_dagua','values':[{'code':1,'label':'Lago (1)'},{'code':2,'label':'Represa (2)'}]}],
          'classes':[{'name':'cobter_massa_dagua_a','identity':{'field':'dsg_id','kind':'uuid'},
-                     'fields':[{'name':'tipo_massa_dagua','domain':'tipo_massa_dagua'},{'name':'nome','max_length':80}]}]}
+                     # Valor padrão literal (entra no formulário) e por expressão
+                     # (ignorado, como no provedor remoto), na forma do dsg-model/1.
+                     'fields':[{'name':'tipo_massa_dagua','domain':'tipo_massa_dagua'},
+                               {'name':'nome','max_length':80,'default':{'expression':"'sem nome'"}},
+                               {'name':'subfase_id','default':{'value':7}}]}]}
 
 
 def check(name,condition,detail=None):
@@ -361,6 +369,26 @@ def campoProva(pacote,versionamento,trabalho,pasta,project,iface,escolhas,repo,c
           (grid.subsetString() if grid else None,grid.providerType() if grid else None,'dsgtools:createreviewgridalgorithm' in algs,log.get('ferramentas')))
     log['estatistica']=statistics
 
+    # Valores padrão do modelo do clone no formulário ------------------------------
+    subfaseIndex=cobter.fields().indexOf('subfase_id'); nomeIndex=cobter.fields().indexOf('nome')
+    padrao=QgsVectorLayerUtils.createFeature(cobter,QgsGeometry.fromWkt('POLYGON((-50.94 -30,-50.93 -30,-50.93 -29.99,-50.94 -29.99,-50.94 -30))'))
+    check('valor padrão literal do modelo do clone no formulário (o padrão por expressão fica de fora, como no remoto)',
+          cobter.defaultValueDefinition(subfaseIndex).expression()=='7' and padrao['subfase_id']==7 and
+          not cobter.defaultValueDefinition(nomeIndex).expression() and padrao['nome'] in (None,'') and
+          'uuid' in cobter.defaultValueDefinition(cobter.fields().indexOf('dsg_id')).expression(),
+          (cobter.defaultValueDefinition(subfaseIndex).expression(),cobter.defaultValueDefinition(nomeIndex).expression(),
+           padrao['subfase_id'],padrao['nome']))
+    from SAP_Operador.modules.versionamento import campo as campoPadrao
+    from SAP_Operador.modules.versionamento import model as modelPadrao
+    esperado={'quando':("date","'2026-10-14'"),'ativo':('boolean','TRUE'),'peso':('real','1.5'),'rotulo':('text',"'d''água'")}
+    regras=modelPadrao.class_rules(campoPadrao._modeloDaApi(json.dumps({'format':'dsg-model/1','name':'m','version':'1','domains':[],
+        'classes':[{'name':'c','fields':[{'name':'quando','default':{'value':'2026-10-14'}},{'name':'ativo','default':{'value':True}},
+                                         {'name':'peso','default':{'value':1.5}},{'name':'rotulo','default':{'value':"d'água"}}]}]})),
+        {'c':[]},{'name':'c','fields':[{'name':nome,'kind':tipo} for nome,(tipo,_) in esperado.items()]})
+    obtido={nome:campoPadrao.padraoDoModelo({'name':nome,'kind':tipo},regras) for nome,(tipo,_) in esperado.items()}
+    check('valor padrão de cada tipo do modelo vira expressão literal do QGIS',
+          obtido=={nome:expressao for nome,(_,expressao) in esperado.items()},obtido)
+
     # Edição direta: gatilhos de captura e identidade nova ------------------------------
     pending=campo_falso.pendentes(trabalho)
     index=cobter.fields().indexOf('dsg_id')
@@ -370,6 +398,7 @@ def campoProva(pacote,versionamento,trabalho,pasta,project,iface,escolhas,repo,c
     novo=QgsVectorLayerUtils.createFeature(cobter,QgsGeometry.fromWkt('POLYGON((-50.94 -30,-50.93 -30,-50.93 -29.99,-50.94 -29.99,-50.94 -30))'),
                                            {cobter.fields().indexOf('nome'):'Lago novo',tipo:1})
     novoId=novo['dsg_id']
+    check('feição nova do formulário com o padrão do modelo',novo['subfase_id']==7,novo['subfase_id'])
     copia=QgsFeature(novo); copia.setAttribute(index,ids['a']); copia.setAttribute(cobter.fields().indexOf('nome'),'Lago colado')
     copia.setGeometry(QgsGeometry.fromWkt('POLYGON((-50.92 -30,-50.91 -30,-50.91 -29.99,-50.92 -29.99,-50.92 -30))'))
     menu=QgsFeature(novo); menu.setAttribute(index,"'lower(substr(uuid(),2,36))'"); menu.setAttribute(cobter.fields().indexOf('nome'),'Lago do menu')
@@ -504,7 +533,48 @@ def local2(pacoteRemoto,project,iface):
     check('apelidos como o texto da definição',aliases and json.loads(aliases[0]['TEXT'])[0]['camadaNome']=='cobter_massa_dagua_a',aliases)
     check('grade de revisão pedida ao banco local',
           sum(1 for p in log['processing'] if p['alg']=='dsgtools:loadlayersfrompostgisalgorithm')==2,algs)
+    defeitosDoModoLocal(ctrl,dock,pacote)
     check('nenhum pedido de rede',not log['rede'],log['rede'])
+
+
+def defeitosDoModoLocal(ctrl,dock,pacote):
+    """Defeitos do modo local achados na onda 2 (contrato-sap.md, 10.4)."""
+    import ast
+    import inspect
+    from SAP_Operador.modules.sap.dataModels import sapActivityLocal
+    # 1. reload refaz o painel do modo local com o pacote já lido (antes:
+    # getActivity() sem o pacote e makeRemoteProductionToolsDock(self, painel),
+    # com o painel no lugar do `sap`).
+    chamadas=[]
+    factory=ctrl.guiFactory
+    for nome in ('makeLocalProductionToolsDock','makeRemoteProductionToolsDock'):
+        original=getattr(factory,nome)
+        def espiao(*args,_nome=nome,_original=original,**kwargs):
+            chamadas.append((_nome,args[1:] if args and args[0] is ctrl else args))
+            return _original(*args,**kwargs)
+        setattr(factory,nome,espiao)
+    try:
+        ctrl.reload(); erro=None
+    except Exception as e:
+        erro=''.join(traceback.format_exception(type(e),e,e.__traceback__))[-800:]
+    check('reload refaz o painel do modo local com o pacote lido',
+          erro is None and [c[0] for c in chamadas]==['makeLocalProductionToolsDock'] and chamadas[0][1]==(dock,) and
+          ctrl.productionTools is dock and ctrl.sapActivity.getId()==pacote['dados']['atividade']['id'],
+          (erro,[(n,[type(a).__name__ for a in a_]) for n,a_ in chamadas]))
+    # 2. O usuário da atividade do SAP 3.0 é usuario_uuid (o pacote não tem usuario_id).
+    try:
+        valor=ctrl.sapActivity.getLayerDefaultFieldValue()[0]['atributos'][0]['valor']; erro=None
+    except Exception as e:
+        valor=None; erro=type(e).__name__+': '+str(e)
+    check('usuário da atividade local lido de usuario_uuid',
+          valor==pacote['dados']['usuario_uuid'] and 'usuario_id' not in pacote['dados'],(valor,erro))
+    # 3. Método morto: getScale definido duas vezes, e só o segundo vale.
+    arvore=ast.parse(inspect.getsource(sapActivityLocal))
+    classe=next(n for n in arvore.body if isinstance(n,ast.ClassDef) and n.name=='SapActivityLocal')
+    nomes=[n.name for n in classe.body if isinstance(n,ast.FunctionDef)]
+    repetidos=sorted({n for n in nomes if nomes.count(n)>1})
+    check('SapActivityLocal sem método repetido (morto)',not repetidos and ctrl.sapActivity.getScale()=='1:25000',
+          (repetidos,ctrl.sapActivity.getScale()))
 
 
 if __name__=='__main__':

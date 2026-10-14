@@ -14,9 +14,11 @@ Cenários:
   `uri().schema()/table()`, domínios do modelo, estilos, apelidos, ações,
   regras de formatação, temas e estatística de regras (algoritmos reais do
   DsgTools, sem mudança neles), o filtro de subfase, a leitura pela página
-  DSGP/1, edita e salva, recebe recusa por campo (`permission`), desfaz,
-  divide, funde, lê o histórico e finaliza com 409, resolve o conflito na tela
-  e finaliza de novo.
+  DSGP/1, a grade de revisão gravada pelo provedor (com a recusa da etapa
+  mostrada antes), as rotinas FME (a que pede o banco da atividade é recusada
+  sem ir ao FME), edita e salva, recebe recusa por campo (`permission`),
+  desfaz, divide, funde, lê o histórico e finaliza com 409, resolve o
+  conflito na tela e finaliza de novo.
 - `tipo2`: carrega uma atividade do tipo 2 (PostGIS fictício) com o
   `processing.run` gravado; a saída é o rastro das chamadas, que tem de ser
   IGUAL ao do HEAD (compare os dois JSON).
@@ -113,6 +115,9 @@ def main():
         log['processing'].append(entry)
         if algorithmId=='dsgtools:loadlayersfrompostgisalgorithm':
             return fakePostgis(parameters)
+        if algorithmId=='dsgtools:runremotefme':
+            # Sem servidor do FME: o rastro é a prova; a rotina não roda.
+            return {'result':{'dados':{'status':'Executada (falso)','sumario':[]}}}
         if SCENARIO=='tipo2' and algorithmId=='dsgtools:grouplayers':
             # Sem banco as camadas são inválidas e o processing as recusa: o
             # grupo raiz com o nome do banco, de que o resto depende, nasce aqui.
@@ -147,9 +152,22 @@ def main():
         def getAttributeValueMap(self,name,schema):
             return {'tipo_massa_dagua':{'Lago (1)':1}} if name=='cobter_massa_dagua_a' else {}
 
+    from SAP_Operador.modules.dsgTools.toolbarLaunchers.reviewToolbar import ReviewToolBar
+
+    class ReviewToolBarDaProva(ReviewToolBar):
+        # O ReviewToolBar do plugin (grava a grade nova na camada); só a barra
+        # do DsgTools, que pede a interface, é trocada por um registro.
+        def getTool(self):
+            class Barra:
+                def setState(self,**kwargs):
+                    log.setdefault('revisao',[]).append({k:(v.name() if hasattr(v,'name') else v) for k,v in kwargs.items()})
+            return Barra()
+
     class Tools:
         def getTool(self,name,controller):
             log.setdefault('ferramentas',[]).append(name)
+            if name=='ReviewToolBar' and SCENARIO=='versionado':
+                return ReviewToolBarDaProva(controller)
             return Recorder(name)
 
     qgisApi=QgisApi(); qgisApi.load=lambda:None
@@ -168,6 +186,9 @@ def main():
     check('login',ctrl.authUser(servidor_falso.USER,'senha-de-teste',url))
     ctrl.sapActivity=sap.getActivity()
     check('pacote lido',ctrl.sapActivity is not None)
+    # A primeira carga cria a grade de revisão e a etapa a recusa no serviço;
+    # a recusa tem de chegar ao operador (gradeDeRevisao).
+    estado.recusar_grade=SCENARIO=='versionado'
     ctrl.loadActivityLayers()
     layers={layer.name():layer for layer in project.mapLayers().values() if isinstance(layer,QgsVectorLayer) and layer.name()!='moldura'}
     log['camadas']={name:{'provedor':layer.providerType(),'valida':layer.isValid(),'fonte_tem_service':'service=' in layer.source()}
@@ -256,6 +277,9 @@ def versionado(ctrl,sap,estado,layers,iface,project):
           (old.dataProvider().uri().table(),camadas.tabelaDaCamada(old)))
     del old
 
+    gradeDeRevisao(ctrl,estado,project)
+    rotinasFme(ctrl)
+
     # Editar e salvar -------------------------------------------------------------
     before=estado.generation
     target=next(f for f in cobter.getFeatures() if f['dsg_id']==estado.f2)
@@ -271,7 +295,7 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     check('adicionar',cobter.addFeature(added))
     committed=cobter.commitChanges(False)
     check('salvar',committed,cobter.commitErrors())
-    saves=[p for p in estado.pedidos if p['method']=='POST' and p['path'].endswith('/features')]
+    saves=[p for p in estado.pedidos if p['method']=='POST' and p['path'].endswith('/features') and p['body'].get('dataset')=='cobter_massa_dagua_a']
     check('um POST /features por salvamento',len(saves)==1,len(saves))
     body=saves[-1]['body']
     check('salvamento sem actor e com request_id','actor' not in body and bool(body.get('request_id')),sorted(body))
@@ -379,6 +403,92 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     check('sem conexão, a camada reaberta fica inválida',not again.isValid())
     reopened=ctrl.reconnectVersionedLayers()
     check('depois do login a camada reabre',again.id() in reopened and again.isValid() and again.featureCount()>0,reopened)
+
+
+def gradeDeRevisao(ctrl,estado,project):
+    """Grade de revisão no versionado remoto: mora na classe aux_grid_revisao_a do
+    clone da atividade e é gravada pelo provedor, pelas rotas do SAP."""
+    from SAP_Operador.modules.versionamento import camadas, model as model_rules
+    grid=next((l for l in project.mapLayers().values() if camadas.tabelaDaCamada(l)[1]=='aux_grid_revisao_a'),None)
+    check('grade de revisão aberta pelo provedor, do clone da atividade',
+          grid is not None and grid.providerType()=='dsgversioning' and grid.isValid() and
+          grid.subsetString()=='unidade_trabalho_id = 55 AND etapa_id = 9',
+          (grid.providerType() if grid else None,grid.subsetString() if grid else None,getattr(ctrl,'reviewGridGap',None)))
+    # 1. A etapa recusa a grade (servidor falso, `recusar_grade`): o operador vê o
+    # motivo, nada fica no buffer e a barra do DsgTools não é ligada.
+    refused=[m for m in log['mensagens'] if m['tipo']=='critical' and 'grade de revisão não foi gravada' in m['texto']]
+    check('grade recusada pelo serviço: motivo mostrado ao operador',
+          refused and 'permission' in refused[-1]['texto'] and not grid.isEditable() and not grid.isModified() and
+          not estado.features['aux_grid_revisao_a'] and not log.get('revisao'),
+          ([m['texto'] for m in refused],grid.isEditable(),len(estado.features['aux_grid_revisao_a']),log.get('revisao')))
+    # 2. Sem a recusa, a mesma ação grava a grade nova pelo provedor.
+    estado.recusar_grade=False
+    before=len(estado.pedidos)
+    ctrl.loadReviewTool()
+    posts=[p for p in estado.pedidos[before:] if p['method']=='POST' and p['path'].endswith('/features')]
+    stored=list(estado.features['aux_grid_revisao_a'].values())
+    check('grade nova gravada pelo provedor (POST /features do clone, pelo repasse do SAP)',
+          len(posts)==1 and posts[0]['body']['dataset']=='aux_grid_revisao_a' and
+          posts[0]['path']=='/api/versionamento/servico/repos/'+estado.atividade+'/features' and
+          len(posts[0]['body'].get('inserts') or [])==len(stored)>0 and 'actor' not in posts[0]['body'],
+          [(p['path'],p['body'].get('dataset'),len(p['body'].get('inserts') or [])) for p in posts])
+    check('células da grade no destino: identidade, unidade de trabalho, etapa e posição',
+          all(model_rules.is_canonical_uuid(f['id']) and f['properties']['unidade_trabalho_id']==55 and
+              f['properties']['etapa_id']==9 and f['properties']['visited'] is False for f in stored) and
+          sorted(f['properties']['rank'] for f in stored)==list(range(len(stored))) and
+          all(f['properties']['atividade_id']==101 for f in stored),
+          [f['properties'] for f in stored][:3])
+    check('grade relida na camada (filtrada) e barra de revisão ligada nela',
+          grid.featureCount()==len(stored) and not grid.isEditable() and
+          log.get('revisao') and log['revisao'][-1]['layer']==grid.name() and log['revisao'][-1]['rankFieldName']=='rank',
+          (grid.featureCount(),len(stored),log.get('revisao')))
+    # 3. A barra do DsgTools marca a célula visitada pelo commit da camada.
+    cell=next(iter(grid.getFeatures()))
+    grid.startEditing(); grid.changeAttributeValue(cell.id(),grid.fields().indexOf('visited'),True)
+    check('célula visitada gravada pelo provedor',grid.commitChanges() and
+          estado.features['aux_grid_revisao_a'][cell['dsg_id']]['properties']['visited'] is True,grid.commitErrors())
+    # 4. Recarregar a ferramenta com a grade cheia não cria outra.
+    before=len(estado.pedidos)
+    ctrl.loadReviewTool()
+    check('grade cheia: a ferramenta não grava outra',
+          not [p for p in estado.pedidos[before:] if p['method']=='POST'] and len(estado.features['aux_grid_revisao_a'])==len(stored))
+    log['grade']={'celulas':len(stored),'filtro':grid.subsetString()}
+
+
+def rotinasFme(ctrl):
+    """Rotinas FME na atividade versionada: a que pede o banco da atividade é
+    recusada com o motivo e não vai ao FME; a que não pede roda sem credencial."""
+    comBanco={'id':11,'rotina':'verifica_no_banco','descricao':'Verifica no banco','routineType':'fme','server':'http://fme.invalid',
+              'parameters':['dbarea','dbhost','dbname','dbpassword','dbport','dbuser','sapsubfase'],
+              'description':'verifica_no_banco: Verifica no banco'}
+    semBanco={'id':12,'rotina':'gera_da_area','descricao':'Usa só a área','routineType':'fme','server':'http://fme.invalid',
+              'parameters':['dbarea','sapsubfase'],'description':'gera_da_area: Usa só a área'}
+
+    class FmeFalso:
+        def getSapRoutines(self,config):
+            return [dict(comBanco),dict(semBanco)]
+    ctrl.fme=FmeFalso()
+    html=[]
+    ctrl.showHtmlMessageDialog=lambda parent,title,message:html.append(message)
+    routines={r['rotina']:r for r in ctrl.getActivityRoutines() if r.get('routineType')=='fme'}
+    check('rotina FME com banco marcada na lista da atividade versionada',
+          'não roda na base versionada' in routines['verifica_no_banco']['description'] and
+          'não roda' not in routines['gera_da_area']['description'],{k:v['description'] for k,v in routines.items()})
+    before=len(log['processing']); messages=len(log['mensagens'])
+    ctrl.runRoutine(routines['verifica_no_banco'])
+    runs=[p for p in log['processing'][before:] if p['alg']=='dsgtools:runremotefme']
+    texts=[m['texto'] for m in log['mensagens'][messages:] if m['tipo']=='critical']
+    check('rotina FME com banco recusada com o motivo, sem ir ao FME',
+          not runs and texts and 'verifica_no_banco' in texts[-1] and 'base versionada' in texts[-1] and 'dbhost' in texts[-1]
+          and not html,(runs,texts,html))
+    before=len(log['processing'])
+    ctrl.runRoutine(routines['gera_da_area'])
+    runs=[p for p in log['processing'][before:] if p['alg']=='dsgtools:runremotefme']
+    sent=runs[0]['params']['FME_MANAGER']['parameters']['parametros'] if runs else None
+    check('rotina FME sem banco roda com a área e a subfase, sem credencial',
+          len(runs)==1 and sent=={'dbarea':"'"+ctrl.sapActivity.getWorkUnitGeometry()+"'",'sapsubfase':7} and html,
+          (sent,html))
+    log['fme']={'recusa':texts[-1] if texts else None,'enviado':sent}
 
 
 def versioning_reports():

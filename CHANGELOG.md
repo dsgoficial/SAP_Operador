@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 4.2.0
+
+Melhorias:
+- Grade de revisão na atividade de base versionada (tipo 4): a grade mora na classe `aux_grid_revisao_a` do repositório da atividade (o clone que o SAP cria com as camadas da subfase), abre pelo provedor do versionamento filtrada por unidade de trabalho e etapa, e a grade nova é gravada pelo provedor, pelas rotas do SAP, com a cobrança do modelo e da permissão da etapa; na finalização ela sobe ao bloco com o resto do clone. Sem a classe no repositório, a ferramenta de revisão não carrega e o motivo aparece na barra de mensagens (a camada `aux_grid_revisao_a` precisa estar entre as camadas da subfase).
+- Rotinas FME na atividade de base versionada: a rotina que pede a conexão do banco da atividade (parâmetros `dbname`, `dbhost`, `dbport`, `dbuser` ou `dbpassword`) não roda, com o motivo, e nada vai ao FME; na lista de rotinas ela aparece marcada. O gerenciador do FME roda a rotina em outro servidor e só recebe parâmetros de texto, e a base versionada não tem banco: o que a rotina gravasse não passaria pelo serviço. A rotina que pede só a área (`dbarea`) e a subfase roda como antes, sem credencial.
+- Modo local da base versionada: os valores padrão literais do modelo do clone (`dsg_model` do GeoPackage de campo) entram no formulário das camadas, como no provedor remoto; o valor padrão por expressão do modelo continua ignorado.
+
+Correção de bug:
+- Grade de revisão: a gravação da grade nova que o servidor (ou o banco) recusa não fica mais pela metade no buffer da camada, com a ferramenta de revisão ligada a uma grade vazia; a edição é desfeita e o motivo aparece.
+- Modo local: recarregar o painel (depois de reportar problema) chamava `getActivity()` sem o pacote e montava o painel do modo remoto com o painel no lugar do `sap`; agora refaz o painel do modo local com o pacote já lido.
+- Modo local: o usuário da atividade (`ultimo_usuario` dos valores padrão por camada) é lido de `usuario_uuid` do SAP 3.0; antes lia `usuario_id`, que o pacote não traz.
+- `SapActivityLocal.getScale` estava definido duas vezes, e a primeira definição não era usada: saiu.
+
 ## 4.1.1
 
 Correção de bug:

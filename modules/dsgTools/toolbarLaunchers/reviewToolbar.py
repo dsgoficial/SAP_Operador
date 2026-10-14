@@ -17,7 +17,8 @@ class ReviewToolBar:
         if not self.validateGridLayer(gridLayer):
             return None
         if outputLayer is not None and outputLayer.featureCount() > 0:
-            self.populateGridLayerWithOutputLayerFeatures(gridLayer, outputLayer)
+            if not self.populateGridLayerWithOutputLayerFeatures(gridLayer, outputLayer):
+                return None
         reviewToolBar = self.getTool()
         self.prepareFieldCombos(reviewToolBar, gridLayer)
         reviewToolBar.setState(
@@ -82,8 +83,17 @@ class ReviewToolBar:
             )
         )
         gridLayer.endEditCommand()
-        gridLayer.commitChanges()
-
-        
-
-        
+        if gridLayer.commitChanges():
+            return True
+        # Gravação recusada (no versionado, pelo serviço: modelo ou permissão
+        # da etapa): a grade não fica pela metade no buffer, e o motivo aparece.
+        errors = ' '.join(gridLayer.commitErrors())
+        gridLayer.rollBack()
+        self.controller.showErrorMessageBox(
+            None,
+            'Erro',
+            'A grade de revisão não foi gravada em "{0}", e a ferramenta de revisão não foi carregada: {1}'.format(
+                gridLayer.name(), errors
+            )
+        )
+        return False

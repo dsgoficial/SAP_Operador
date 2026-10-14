@@ -82,7 +82,7 @@ Usar scripts em `.dev/` para criar symlink do repositório para o diretório de 
 
 ### Testes
 
-Sem framework de testes automatizados. Testes são manuais dentro do QGIS.
+Testes automatizados no QGIS 4 real, sem interface, em `tests/versionamento/`: `prova_qgis.py` (cenários `versionado` e `tipo2`) e `prova_campo.py` (`campo` e `local2`), rodados por `python-qgis.bat` com `QT_QPA_PLATFORM=offscreen` e `DSGTOOLS_PATH`; o uso está no cabeçalho de cada um. O resto do plugin ainda se testa à mão dentro do QGIS.
 
 ## Comandos úteis
 

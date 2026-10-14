@@ -114,7 +114,17 @@ class Estado:
             'aux_revisao_p':{'name':'aux_revisao_p','geometry_type':'Point','srid':4674,'z':False,'fields':[
                 {'name':'descricao','kind':'text','nullable':True},{'name':'subfase_id','kind':'integer','nullable':True},
                 {'name':'situacao_correcao','kind':'integer','nullable':True},{'name':'justificativa','kind':'text','nullable':True}]},
+            # A grade de revisão do versionado mora no clone da atividade (a
+            # camada está na subfase): a ferramenta de revisão a abre pelo
+            # provedor e grava nela a grade nova.
+            'aux_grid_revisao_a':{'name':'aux_grid_revisao_a','geometry_type':'Polygon','srid':4674,'z':False,'fields':[
+                {'name':'rank','kind':'integer','nullable':True},{'name':'visited','kind':'boolean','nullable':True},
+                {'name':'atividade_id','kind':'integer','nullable':True},{'name':'unidade_trabalho_id','kind':'integer','nullable':True},
+                {'name':'etapa_id','kind':'integer','nullable':True}]},
         }
+        # Recusa a gravação na grade de revisão (permissão da etapa), para a
+        # prova da recusa mostrada ao operador.
+        self.recusar_grade=False
         self.f1=_id(); self.f2=_id(); self.f3=_id(); self.p1=_id(); self.p2=_id()
         self.features={
             'cobter_massa_dagua_a':{
@@ -126,6 +136,7 @@ class Estado:
                          'geometry':{'type':'Point','coordinates':[-50.99,-29.995]}},
                 self.p2:{'id':self.p2,'properties':{'descricao':'de outra subfase','subfase_id':8,'situacao_correcao':None,'justificativa':None},
                          'geometry':{'type':'Point','coordinates':[-50.97,-29.995]}}},
+            'aux_grid_revisao_a':{},
         }
         self.saves=[]; self.history=[]; self.lineage={}
         base={'id':self.f1,'properties':{'nome':'Lago A','tipo_massa_dagua':1,'subfase_id':7},'geometry':square(-51.0,-30.0)}
@@ -199,6 +210,10 @@ class Estado:
             if (feature.get('properties') or {}).get('nome')=='PROIBIDO':
                 violations.append({'dataset':dataset,'id':feature['id'],'field':'nome','code':'permission',
                                    'detail':'campo nome não é editável na etapa desta atividade'})
+        if dataset=='aux_grid_revisao_a' and self.recusar_grade:
+            violations+=[{'dataset':dataset,'id':feature['id'],'field':None,'code':'permission',
+                          'detail':'a etapa desta atividade não permite inserir feição em aux_grid_revisao_a'}
+                         for feature in body.get('inserts') or []]
         if violations:
             return 409,{'error':'Salvamento recusado.','code':'model_violation','violations':violations}
         before={}

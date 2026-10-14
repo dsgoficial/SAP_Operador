@@ -11,9 +11,6 @@ class SapActivityLocal:
     def getData(self):
         return self.data
 
-    def getScale(self):
-        return self.getData()['dados']['atividade']['denominador_escala']
-
     def getThemes(self):
         # Como no pacote remoto (SapActivityHttp): `definicao_tema` chega em
         # texto JSON e o carregamento de temas espera a lista.
@@ -255,7 +252,7 @@ class SapActivityLocal:
                 'atributos': [
                     {
                         'nome': 'ultimo_usuario',
-                        'valor': self.getUserId()
+                        'valor': self.getUserUuid()
                     }
                 ]
             }
@@ -407,8 +404,9 @@ class SapActivityLocal:
             for d in self.getData()['dados']['atividade']['linhagem']
         ]
 
-    def getUserId(self):
-        return self.getData()['dados']['usuario_id']
+    def getUserUuid(self):
+        # SAP 3.0: o usuário da atividade é `usuario_uuid` (era `usuario_id`).
+        return self.getData()['dados']['usuario_uuid']
 
     def getLayerFilter(self, layer):
         layerSchema = layer["schema"]

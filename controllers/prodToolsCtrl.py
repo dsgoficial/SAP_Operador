@@ -294,6 +294,12 @@ class ProdToolsCtrl(QtCore.QObject):
         fmeData = self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
         #except Exception as e:
         #    self.showErrorMessageBox(None, 'Erro', 'Sem conexão com o FME!')
+        if self.isVersionedFmeActivity():
+            for routine in fmeData:
+                if self.getFmeDatabaseParameters(routine):
+                    routine['description'] = '{0}\n(não roda na base versionada: usa o banco da atividade)'.format(
+                        routine.get('description', '')
+                    )
         return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + fmeData
 
     def runRoutine(self, routineData):
@@ -316,15 +322,40 @@ class ProdToolsCtrl(QtCore.QObject):
         }
         rountineFunctions[routineData['routineType']](routineData)
 
+    # Parâmetros publicados da rotina FME que levam a conexão do banco da
+    # atividade, com a mesma regra de nome do lançador (RunFMESAP).
+    FME_DATABASE_PARAMETERS = ('dbname', 'dbport', 'dbhost', 'dbuser', 'dbpassword')
+
+    def isVersionedFmeActivity(self):
+        return bool(getattr(self.sapActivity, 'isVersioned', lambda: False)())
+
+    def getFmeDatabaseParameters(self, routineData):
+        return [
+            parameter
+            for parameter in routineData.get('parameters') or []
+            if 'dbarea' not in parameter and any(name in parameter for name in self.FME_DATABASE_PARAMETERS)
+        ]
+
+    def getFmeVersionedRefusal(self, routineData):
+        # Base versionada (tipo 4): a rotina roda no servidor do FME, que só
+        # recebe parâmetros de texto (o gerenciador não aceita arquivo), e a
+        # que pede a conexão lê e grava direto no banco da atividade, que o
+        # tipo 4 não tem. O que ela gravasse não passaria pelo serviço, com a
+        # cobrança do modelo e da permissão da etapa: ela não roda.
+        databaseParameters = self.getFmeDatabaseParameters(routineData)
+        if not databaseParameters:
+            return None
+        return (
+            'A rotina FME "{0}" não roda na atividade de base versionada: ela se conecta direto ao banco '
+            'da atividade (parâmetros {1}), e a base versionada não tem esse banco. Na base versionada, '
+            'toda gravação passa pelo serviço do SAP, que cobra o modelo e a permissão da etapa, e o '
+            'servidor do FME não recebe as camadas da atividade. Nada foi enviado ao FME.'
+        ).format(routineData.get('rotina', ''), ', '.join(databaseParameters))
+
     def getFmeParameters(self, routineData):
-        if getattr(self.sapActivity, 'isVersioned', lambda: False)():
-            # Lacuna registrada: no versionado não há banco nem credencial a
-            # passar à rotina; as rotinas FME precisarão gravar pelo serviço.
-            core.QgsMessageLog.logMessage(
-                'Lacuna: rotina FME em atividade versionada roda sem credencial de banco; ela precisará gravar pelo serviço.',
-                'SAP Versionamento',
-                core.Qgis.MessageLevel.Warning
-            )
+        if self.isVersionedFmeActivity():
+            # Só chega aqui a rotina sem conexão de banco (runFMESAP recusa a
+            # outra): ela recebe a área e a subfase, e nenhuma credencial.
             return {
                 'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
                 'fmeRoutine': routineData,
@@ -347,6 +378,12 @@ class ProdToolsCtrl(QtCore.QObject):
         }
 
     def runFMESAP(self, routineData):
+        if self.isVersionedFmeActivity():
+            refusal = self.getFmeVersionedRefusal(routineData)
+            if refusal:
+                core.QgsMessageLog.logMessage(refusal, 'SAP Versionamento', core.Qgis.MessageLevel.Warning)
+                self.showErrorMessageBox(None, 'Aviso', refusal)
+                return
         runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
         output = runFMESAP.run(self.getFmeParameters(routineData))
         html = "<p>[rotina nome] : {0}</p>".format(routineData['rotina'])
