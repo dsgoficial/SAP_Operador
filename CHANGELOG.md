@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.3.0
+
+Remoção:
+- O FME saiu do plugin (decisão de 2026-10-14: o FME foi abandonado no SAP 3.0 e o serviço gerenciador_fme, aposentado). A lista de rotinas da atividade traz só os modelos do QGIS e a estatística de regras, em todo tipo de dado; saíram o módulo `modules/fme`, o lançador `RunFMESAP` e a recusa da rotina FME na base versionada. A chave `fme` que o servidor ainda mande no pacote da atividade é ignorada, e o pacote sem ela não quebra mais a lista (antes dava KeyError). O DsgTools não muda.
+
 ## 4.2.1
 
 Correção de bug:

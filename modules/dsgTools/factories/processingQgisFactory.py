@@ -10,7 +10,6 @@ from SAP_Operador.modules.dsgTools.processingLaunchers.assignActionsToLayers imp
 from SAP_Operador.modules.dsgTools.processingLaunchers.assignDefaultFieldValueToLayers import AssignDefaultFieldValueToLayers
 from SAP_Operador.modules.dsgTools.processingLaunchers.assignExpressionFieldToLayers import AssignExpressionFieldToLayers
 from SAP_Operador.modules.dsgTools.processingLaunchers.assignConditionalStyleToLayers import AssignConditionalStyleToLayers
-from SAP_Operador.modules.dsgTools.processingLaunchers.runFMESAP import RunFMESAP
 from SAP_Operador.modules.dsgTools.processingLaunchers.ruleStatistics import RuleStatistics
 from SAP_Operador.modules.dsgTools.processingLaunchers.setRemoveDuplicateNodePropertyOnLayers import SetRemoveDuplicateNodePropertyOnLayers
 from SAP_Operador.modules.dsgTools.processingLaunchers.assignFormatRulesToLayers import AssignFormatRulesToLayers
@@ -37,7 +36,6 @@ class ProcessingQgisFactory(IProcessingFactory):
             'AssignExpressionFieldToLayers': AssignExpressionFieldToLayers,
             'AssignConditionalStyleToLayers': AssignConditionalStyleToLayers,
             'RuleStatistics': RuleStatistics,
-            'RunFMESAP': RunFMESAP,
             'SetRemoveDuplicateNodePropertyOnLayers': SetRemoveDuplicateNodePropertyOnLayers,
             'AssignFormatRulesToLayers': AssignFormatRulesToLayers,
             'CreateReviewGrid': CreateReviewGrid,

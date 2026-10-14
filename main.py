@@ -14,7 +14,6 @@ from .modules.qgis.scripts.toggle import toggle
 from .modules.pluginUpdater.controllers.updaterCtrl import UpdaterCtrl
 
 from .modules.qgis.qgisApi import QgisApi
-from .modules.fme.factories.fmeApiSingleton import FmeApiSingleton
 from .modules.utils.factories.utilsFactory import UtilsFactory
 from .modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from .modules.dsgTools.factories.toolFactory import ToolFactory
@@ -42,7 +41,6 @@ class Main:
             qgis=self.qgisCtrl,
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
-            fme=FmeApiSingleton.getInstance(),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
         )
@@ -51,7 +49,6 @@ class Main:
             qgis=self.qgisCtrl,
             databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
-            fme=FmeApiSingleton.getInstance(),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
         )

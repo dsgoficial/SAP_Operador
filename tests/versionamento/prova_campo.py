@@ -32,6 +32,7 @@ Sem o terceiro argumento, o plugin é o deste repositório. Para reprovar o
 estado anterior, extraia a revisão (`git archive <rev>`) numa pasta chamada
 SAP_Operador e passe a pasta-mãe dela.
 """
+import inspect
 import json
 import os
 import shutil
@@ -172,10 +173,6 @@ class Recorder:
         return call
 
 
-class Fme:
-    def getSapRoutines(self,config): return []
-
-
 class Database:
     def createPostgres(self,*args):
         log['banco']=[str(a) for a in args]
@@ -211,9 +208,12 @@ def montar(pacote,iface):
     # Como o main.initGui do plugin: provedor e ligação das camadas que entram no projeto.
     from SAP_Operador.modules import versionamento
     versionamento.registrar(iface)
-    ctrl=module.LocalProdToolsDockCtrl(sap=LocalSapCtrl(qgisApi),qgis=qgisApi,databaseFactory=Database(),
-                                       processingFactoryDsgTools=ProcessingQgisFactory(),fme=Fme(),
-                                       prodToolsSettings=Recorder('settings'),toolFactoryDsgTools=Tools())
+    kwargs=dict(sap=LocalSapCtrl(qgisApi),qgis=qgisApi,databaseFactory=Database(),processingFactoryDsgTools=ProcessingQgisFactory(),
+                prodToolsSettings=Recorder('settings'),toolFactoryDsgTools=Tools())
+    if 'fme' in inspect.signature(module.LocalProdToolsDockCtrl.__init__).parameters:
+        # Plugin anterior à 4.3.0: o gerenciador sem rotina, como era aqui.
+        kwargs['fme']=type('GerenciadorAntigo',(),{'getSapRoutines':lambda self,config:[]})()
+    ctrl=module.LocalProdToolsDockCtrl(**kwargs)
     check('login local (banco do sap_local)',ctrl.authUser('operador','senha','localhost','5432','sap_local'))
     try:
         dock=ctrl.loadDockWidget('operador',SENHA_LOCAL,'localhost','5432','sap_local')

@@ -33,7 +33,6 @@ class ProdToolsCtrl(QtCore.QObject):
             qgis=None,
             databaseFactory=None,
             processingFactoryDsgTools=None,
-            fme=None,
             prodToolsSettings=None,
             toolFactoryDsgTools=None,
             pomodoro=None,
@@ -48,7 +47,6 @@ class ProdToolsCtrl(QtCore.QObject):
             return
         self.sap = sap
         self.qgis = qgis
-        self.fme = fme
         self.pomodoro = Pomodoro() if pomodoro is None else pomodoro
         self.canvasMonitoring = Canvas() if canvasMonitoring is None else canvasMonitoring
         self.canvasMonitoring.changeStatus.connect(self.pomodoro.setWorkStatusText)
@@ -289,18 +287,9 @@ class ProdToolsCtrl(QtCore.QObject):
         return results
 
     def getActivityRoutines(self):
-        fmeData = []
-        #try:
-        fmeData = self.fme.getSapRoutines(self.sapActivity.getFmeConfig())
-        #except Exception as e:
-        #    self.showErrorMessageBox(None, 'Erro', 'Sem conexão com o FME!')
-        if self.isVersionedFmeActivity():
-            for routine in fmeData:
-                if self.getFmeDatabaseParameters(routine):
-                    routine['description'] = '{0}\n(não roda na base versionada: usa o banco da atividade)'.format(
-                        routine.get('description', '')
-                    )
-        return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines() + fmeData
+        # Modelos do QGIS e estatística de regras. O FME saiu do SAP 3.0
+        # (4.3.0): a chave `fme` que o servidor ainda mande é ignorada.
+        return self.sapActivity.getQgisModels() + self.sapActivity.getRuleRoutines()
 
     def runRoutine(self, routineData):
         if not routineData:
@@ -317,84 +306,9 @@ class ProdToolsCtrl(QtCore.QObject):
             return
         rountineFunctions = {
             'rules': self.runRuleStatistics,
-            'fme': self.runFMESAP,
             'qgisModel': self.runQgisModel
         }
         rountineFunctions[routineData['routineType']](routineData)
-
-    # Parâmetros publicados da rotina FME que levam a conexão do banco da
-    # atividade, com a mesma regra de nome do lançador (RunFMESAP).
-    FME_DATABASE_PARAMETERS = ('dbname', 'dbport', 'dbhost', 'dbuser', 'dbpassword')
-
-    def isVersionedFmeActivity(self):
-        return bool(getattr(self.sapActivity, 'isVersioned', lambda: False)())
-
-    def getFmeDatabaseParameters(self, routineData):
-        return [
-            parameter
-            for parameter in routineData.get('parameters') or []
-            if 'dbarea' not in parameter and any(name in parameter for name in self.FME_DATABASE_PARAMETERS)
-        ]
-
-    def getFmeVersionedRefusal(self, routineData):
-        # Base versionada (tipo 4): a rotina roda no servidor do FME, que só
-        # recebe parâmetros de texto (o gerenciador não aceita arquivo), e a
-        # que pede a conexão lê e grava direto no banco da atividade, que o
-        # tipo 4 não tem. O que ela gravasse não passaria pelo serviço, com a
-        # cobrança do modelo e da permissão da etapa: ela não roda.
-        databaseParameters = self.getFmeDatabaseParameters(routineData)
-        if not databaseParameters:
-            return None
-        return (
-            'A rotina FME "{0}" não roda na atividade de base versionada: ela se conecta direto ao banco '
-            'da atividade (parâmetros {1}), e a base versionada não tem esse banco. Na base versionada, '
-            'toda gravação passa pelo serviço do SAP, que cobra o modelo e a permissão da etapa, e o '
-            'servidor do FME não recebe as camadas da atividade. Nada foi enviado ao FME.'
-        ).format(routineData.get('rotina', ''), ', '.join(databaseParameters))
-
-    def getFmeParameters(self, routineData):
-        if self.isVersionedFmeActivity():
-            # Só chega aqui a rotina sem conexão de banco (runFMESAP recusa a
-            # outra): ela recebe a área e a subfase, e nenhuma credencial.
-            return {
-                'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
-                'fmeRoutine': routineData,
-                'dbName': '',
-                'dbPort': '',
-                'dbHost': '',
-                'dbUser': '',
-                'dbPassword': '',
-                'sapSubfase': self.sapActivity.getSubphaseId()
-            }
-        return {
-            'workUnitGeometry': self.sapActivity.getWorkUnitGeometry(),
-            'fmeRoutine': routineData,
-            'dbName': self.sapActivity.getDatabaseName(),
-            'dbPort': self.sapActivity.getDatabasePort(),
-            'dbHost': self.sapActivity.getDatabaseServer(),
-            'dbUser': self.sapActivity.getDatabaseUserName(),
-            'dbPassword': self.sapActivity.getDatabasePassword(),
-            'sapSubfase': self.sapActivity.getSubphaseId()
-        }
-
-    def runFMESAP(self, routineData):
-        if self.isVersionedFmeActivity():
-            refusal = self.getFmeVersionedRefusal(routineData)
-            if refusal:
-                core.QgsMessageLog.logMessage(refusal, 'SAP Versionamento', core.Qgis.MessageLevel.Warning)
-                self.showErrorMessageBox(None, 'Aviso', refusal)
-                return
-        runFMESAP = self.processingFactoryDsgTools.createProcessing('RunFMESAP', self)
-        output = runFMESAP.run(self.getFmeParameters(routineData))
-        html = "<p>[rotina nome] : {0}</p>".format(routineData['rotina'])
-        html += "<p>[status de execução] : {0}</p>".format(output['result']['dados']['status'])
-        for flags in output['result']['dados']['sumario']:
-            html += """<p>[rotina flags] : {} - {}</p>""".format(flags['classes'], flags['feicoes'])
-        self.showHtmlMessageDialog(
-            self.qgis.getMainWindow(),
-            'Aviso',
-            html
-        )
 
     def runRuleStatistics(self, routineData):
         ruleStatistics = self.processingFactoryDsgTools.createProcessing('RuleStatistics', self)

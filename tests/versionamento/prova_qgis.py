@@ -15,8 +15,8 @@ Cenários:
   regras de formatação, temas e estatística de regras (algoritmos reais do
   DsgTools, sem mudança neles), o filtro de subfase, a leitura pela página
   DSGP/1, a grade de revisão gravada pelo provedor (com a recusa da etapa
-  mostrada antes), as rotinas FME (a que pede o banco da atividade é recusada
-  sem ir ao FME), edita e salva, recebe recusa por campo (`permission`),
+  mostrada antes), a lista de rotinas sem FME (com e sem a chave `fme` na
+  resposta do servidor), edita e salva, recebe recusa por campo (`permission`),
   desfaz, divide, funde, lê o histórico e finaliza com 409, resolve o
   conflito na tela e finaliza de novo.
 - `tipo2`: carrega uma atividade do tipo 2 (PostGIS fictício) com o
@@ -27,6 +27,7 @@ Sem o terceiro argumento, o plugin é o deste repositório. Para reprovar o
 estado anterior, extraia o HEAD (`git archive HEAD`) numa pasta chamada
 SAP_Operador e passe a pasta-mãe dela.
 """
+import inspect
 import json
 import os
 import sys
@@ -96,7 +97,7 @@ def main():
         return 'camada:'+layer.name() if layer is not None else value
 
     def normalize(value):
-        if isinstance(value,dict): return {k:normalize(v) for k,v in value.items() if k!='FME_MANAGER' or True}
+        if isinstance(value,dict): return {k:normalize(v) for k,v in value.items()}
         if isinstance(value,list): return [normalize(v) for v in value]
         if isinstance(value,str): return layerName(value)
         return value
@@ -115,9 +116,6 @@ def main():
         log['processing'].append(entry)
         if algorithmId=='dsgtools:loadlayersfrompostgisalgorithm':
             return fakePostgis(parameters)
-        if algorithmId=='dsgtools:runremotefme':
-            # Sem servidor do FME: o rastro é a prova; a rotina não roda.
-            return {'result':{'dados':{'status':'Executada (falso)','sumario':[]}}}
         if SCENARIO=='tipo2' and algorithmId=='dsgtools:grouplayers':
             # Sem banco as camadas são inválidas e o processing as recusa: o
             # grupo raiz com o nome do banco, de que o resto depende, nasce aqui.
@@ -181,8 +179,11 @@ def main():
     except ImportError as error:
         log['registro']='ausente: '+str(error)
     sap=RemoteSapCtrl(qgisApi)
-    ctrl=RemoteProdToolsDockCtrl(sap=sap,qgis=qgisApi,databaseFactory=Database(),processingFactoryDsgTools=ProcessingQgisFactory(),
-                                 fme=Recorder('fme'),prodToolsSettings=Recorder('settings'),toolFactoryDsgTools=Tools())
+    kwargs=dict(sap=sap,qgis=qgisApi,databaseFactory=Database(),processingFactoryDsgTools=ProcessingQgisFactory(),
+                prodToolsSettings=Recorder('settings'),toolFactoryDsgTools=Tools())
+    if 'fme' in inspect.signature(RemoteProdToolsDockCtrl.__init__).parameters:
+        kwargs['fme']=Recorder('fme')  # plugin anterior à 4.3.0, para reprovar o estado anterior
+    ctrl=RemoteProdToolsDockCtrl(**kwargs)
     check('login',ctrl.authUser(servidor_falso.USER,'senha-de-teste',url))
     ctrl.sapActivity=sap.getActivity()
     check('pacote lido',ctrl.sapActivity is not None)
@@ -278,7 +279,7 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     del old
 
     gradeDeRevisao(ctrl,estado,project)
-    rotinasFme(ctrl)
+    rotinasSemFme(ctrl)
 
     # Editar e salvar -------------------------------------------------------------
     before=estado.generation
@@ -455,40 +456,38 @@ def gradeDeRevisao(ctrl,estado,project):
     log['grade']={'celulas':len(stored),'filtro':grid.subsetString()}
 
 
-def rotinasFme(ctrl):
-    """Rotinas FME na atividade versionada: a que pede o banco da atividade é
-    recusada com o motivo e não vai ao FME; a que não pede roda sem credencial."""
-    comBanco={'id':11,'rotina':'verifica_no_banco','descricao':'Verifica no banco','routineType':'fme','server':'http://fme.invalid',
-              'parameters':['dbarea','dbhost','dbname','dbpassword','dbport','dbuser','sapsubfase'],
-              'description':'verifica_no_banco: Verifica no banco'}
-    semBanco={'id':12,'rotina':'gera_da_area','descricao':'Usa só a área','routineType':'fme','server':'http://fme.invalid',
-              'parameters':['dbarea','sapsubfase'],'description':'gera_da_area: Usa só a área'}
+def rotinasSemFme(ctrl):
+    """O FME saiu do SAP 3.0 (4.3.0): a lista de rotinas da atividade traz só os
+    modelos e as regras, sem quebrar, com a chave `fme` na resposta (o servidor
+    de hoje) e sem ela (o servidor sem FME). O plugin anterior listava a rotina
+    que o gerenciador devolvia e, sem a chave, dava KeyError."""
+    atividade=ctrl.sapActivity.getData()['dados']['atividade']
+    tinha='fme' in atividade; original=atividade.get('fme')
+    rotina={'id':11,'rotina':'verifica_no_banco','descricao':'Verifica no banco','routineType':'fme','server':'http://fme.invalid',
+            'parameters':['dbarea','sapsubfase'],'description':'verifica_no_banco: Verifica no banco'}
 
-    class FmeFalso:
+    class GerenciadorFalso:
+        # Só o plugin anterior o consulta; responde como o gerenciador respondia.
         def getSapRoutines(self,config):
-            return [dict(comBanco),dict(semBanco)]
-    ctrl.fme=FmeFalso()
-    html=[]
-    ctrl.showHtmlMessageDialog=lambda parent,title,message:html.append(message)
-    routines={r['rotina']:r for r in ctrl.getActivityRoutines() if r.get('routineType')=='fme'}
-    check('rotina FME com banco marcada na lista da atividade versionada',
-          'não roda na base versionada' in routines['verifica_no_banco']['description'] and
-          'não roda' not in routines['gera_da_area']['description'],{k:v['description'] for k,v in routines.items()})
-    before=len(log['processing']); messages=len(log['mensagens'])
-    ctrl.runRoutine(routines['verifica_no_banco'])
-    runs=[p for p in log['processing'][before:] if p['alg']=='dsgtools:runremotefme']
-    texts=[m['texto'] for m in log['mensagens'][messages:] if m['tipo']=='critical']
-    check('rotina FME com banco recusada com o motivo, sem ir ao FME',
-          not runs and texts and 'verifica_no_banco' in texts[-1] and 'base versionada' in texts[-1] and 'dbhost' in texts[-1]
-          and not html,(runs,texts,html))
-    before=len(log['processing'])
-    ctrl.runRoutine(routines['gera_da_area'])
-    runs=[p for p in log['processing'][before:] if p['alg']=='dsgtools:runremotefme']
-    sent=runs[0]['params']['FME_MANAGER']['parameters']['parametros'] if runs else None
-    check('rotina FME sem banco roda com a área e a subfase, sem credencial',
-          len(runs)==1 and sent=={'dbarea':"'"+ctrl.sapActivity.getWorkUnitGeometry()+"'",'sapsubfase':7} and html,
-          (sent,html))
-    log['fme']={'recusa':texts[-1] if texts else None,'enviado':sent}
+            return [dict(rotina)] if config else []
+    ctrl.fme=GerenciadorFalso()
+    esperado=[r.get('routineType') for r in ctrl.sapActivity.getQgisModels()+ctrl.sapActivity.getRuleRoutines()]
+    resultados={}
+    for nome,chave in (('com a chave fme',[{'servidor':'http://fme.invalid','rotina':'verifica_no_banco'}]),('sem a chave fme',None)):
+        if chave is None: atividade.pop('fme',None)
+        else: atividade['fme']=chave
+        try:
+            resultados[nome]={'tipos':[r.get('routineType') for r in ctrl.getActivityRoutines()],'erro':None}
+        except Exception as error:
+            resultados[nome]={'tipos':None,'erro':type(error).__name__+': '+str(error)}
+    if tinha: atividade['fme']=original
+    else: atividade.pop('fme',None)
+    log['rotinas']=resultados
+    for nome,resultado in resultados.items():
+        check('rotinas da atividade '+nome+': só modelos e regras, sem erro',
+              resultado['erro'] is None and resultado['tipos']==esperado,{'esperado':esperado,**resultado})
+    check('nenhuma rotina FME disparada no cenário',
+          not [p for p in log['processing'] if p['alg']=='dsgtools:runremotefme'])
 
 
 def versioning_reports():
