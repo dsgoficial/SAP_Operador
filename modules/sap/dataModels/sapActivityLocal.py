@@ -452,7 +452,9 @@ class SapActivityLocal:
         return self.getData()['dados']['atividade']['bloco'] if 'bloco' in self.getData()['dados']['atividade'] else '-'
 
     def getProductType(self):
-        return self.getData()['dados']['atividade']['tipo_produto'] if 'tipo_produto' in self.getData()['dados']['atividade'] else '-'
+        # SAP 3.0: o tipo de produto vem em `subtipo_produto` (da linha de
+        # produção), como no pacote remoto (SapActivityHttp).
+        return self.getData()['dados']['atividade']['subtipo_produto'] if 'subtipo_produto' in self.getData()['dados']['atividade'] else '-'
 
     def getLot(self):
         return self.getData()['dados']['atividade']['lote'] if 'lote' in self.getData()['dados']['atividade'] else '-'

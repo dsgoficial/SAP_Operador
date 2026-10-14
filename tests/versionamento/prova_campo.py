@@ -25,8 +25,8 @@ Cenários:
 - `local2`: atividade do tipo 2 no modo local (PostGIS fictício, processing
   gravado): o painel monta e as camadas carregam pelo botão; o painel se
   refaz (`reload`) como painel do modo local, o usuário da atividade é o
-  `usuario_uuid` do SAP 3.0 e o modelo da atividade local não tem método
-  repetido (morto).
+  `usuario_uuid` do SAP 3.0, o tipo de produto é o `subtipo_produto` e o
+  modelo da atividade local não tem método repetido (morto).
 
 Sem o terceiro argumento, o plugin é o deste repositório. Para reprovar o
 estado anterior, extraia a revisão (`git archive <rev>`) numa pasta chamada
@@ -573,6 +573,11 @@ def defeitosDoModoLocal(ctrl,dock,pacote):
     classe=next(n for n in arvore.body if isinstance(n,ast.ClassDef) and n.name=='SapActivityLocal')
     nomes=[n.name for n in classe.body if isinstance(n,ast.FunctionDef)]
     repetidos=sorted({n for n in nomes if nomes.count(n)>1})
+    # 4. Tipo de produto do SAP 3.0: `subtipo_produto` (o pacote não tem `tipo_produto`).
+    atividade=pacote['dados']['atividade']
+    check('tipo de produto da atividade local lido de subtipo_produto, como no remoto',
+          ctrl.sapActivity.getProductType()==atividade['subtipo_produto']=='Carta topográfica' and 'tipo_produto' not in atividade and
+          ctrl.getProductType()==atividade['subtipo_produto'],(ctrl.sapActivity.getProductType(),sorted(k for k in atividade if 'produto' in k)))
     check('SapActivityLocal sem método repetido (morto)',not repetidos and ctrl.sapActivity.getScale()=='1:25000',
           (repetidos,ctrl.sapActivity.getScale()))
 

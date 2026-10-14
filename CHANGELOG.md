@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.2.1
+
+Correção de bug:
+- Modo local: o tipo de produto da atividade é lido de `subtipo_produto`, como no modo remoto e no pacote do SAP 3.0; antes lia `tipo_produto`, que o pacote não traz, e o painel mostrava "-".
+
 ## 4.2.0
 
 Melhorias:
