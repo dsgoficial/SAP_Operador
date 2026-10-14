@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.1.1
+
+Correção de bug:
+- Conflito no pull (atualizar e finalizar a atividade versionada): a tela tomava sempre a origem como "o meu", e na sessão do pull, que mora no clone do operador, a origem é o trabalho do outro; escolher "o meu" gravava o trabalho alheio. O lado agora vem do modo da sessão (pull ou merge). Achado pelo roteiro de ponta a ponta do SAP 3.0.
+
 ## 4.1.0
 
 Melhorias:

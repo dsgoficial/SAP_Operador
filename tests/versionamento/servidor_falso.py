@@ -346,10 +346,17 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200,{'predecessors':[],'successors':successors})
         if key==('POST','lineage') and len(rest)==2: return self._send(*estado.lineage_op(rest[1],body))
         if rest[0]=='sessions' and len(rest)>=2 and rest[1]==estado.sessao and repo==estado.sessao_repo:
+            # A sessão do PULL mora no clone (destino): `ours` é o que a
+            # atividade gravou e `theirs` o bloco, como o serviço real responde
+            # (medido no roteiro de ponta a ponta do controle_acervo). A do
+            # merge mora no bloco, com os lados ao contrário.
+            pull=repo==estado.atividade
             if method=='GET' and len(rest)==2:
-                return self._send(200,{'id':estado.sessao,'mode':'push','state':'prepared','target_id':estado.bloco})
+                return self._send(200,{'id':estado.sessao,'mode':'pull' if pull else 'push','state':'prepared',
+                                       'target_id':repo,'source_id':estado.bloco if pull else estado.atividade})
             if method=='GET' and rest[2:]==['items']:
                 items=[i for i in estado.items if q.get('conflicts')!='true' or i['status']=='conflict']
+                if pull: items=[dict(i,ours=i['theirs'],theirs=i['ours']) for i in items]
                 return self._send(200,{'items':items,'next':None,'counts':{'conflict':sum(1 for i in estado.items if i['status']=='conflict')}})
             if method=='POST' and rest[2:]==['resolve']:
                 item=next(i for i in estado.items if i['feature_id']==body['id'] and i['dataset']==body['dataset'])

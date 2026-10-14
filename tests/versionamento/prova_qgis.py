@@ -347,6 +347,10 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     check('sessão do pull lida no próprio clone (repo_id do 409 igual ao do pacote)',
           pullCalls and all('/repos/'+estado.atividade+'/' in p for p in pullCalls) and 'finalizada' in message and estado.items[0]['status']=='resolved',
           (pullCalls,message))
+    # No pull o lado do operador é o DESTINO (`ours`, o clone): "o meu" grava o
+    # que a atividade gravou, e não o bloco.
+    decision=estado.decisoes[-1]
+    check('pull: "o meu" é o que a atividade gravou',decision['result']['properties']['nome']=='Lago A da atividade',decision)
     estado.sessao_repo=estado.bloco
     from SAP_Operador.modules.versionamento.painel import ConflictPayload
     check('sem repo_id no 409, a sessão é a do pai (status.parent_id)',
