@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 4.4.1
+
+Correção de bug:
+- Conflito do versionamento: "Manter o meu" e "Manter o deles" mandavam a justificativa em branco, e "Editar resultado" mandava o que fosse digitado, inclusive nada. O serviço do versionamento recusa justificativa em branco (409 "Justificativa obrigatória para resolução."), então resolver um conflito sem texto falhava em produção; as provas não mostravam porque sempre passavam a justificativa e o servidor falso não a conferia. Agora (decisão de 2026-10-15) a justificativa é opcional em "Manter o meu", "Manter o deles" e na aceitação da depreciação, e, deixada em branco, vai com o nome da decisão, os mesmos textos do dsg-edit 0.5.1: "Manter o meu (sem justificativa)", "Manter o deles (sem justificativa)" e "Aceitar a depreciação (sem justificativa)". Em "Editar resultado" ela é obrigatória: em branco, o formulário não fecha, mostra o motivo e nada vai ao serviço. A justificativa digitada vai sem os espaços das pontas, e só espaços vale como em branco, como no serviço.
+- Painel do versionamento: "Dividir feição" e "Fundir feições" mandavam o motivo em branco quando o campo ficava vazio, e o serviço recusa (409 "Motivo obrigatório: a operação de linhagem registra por que a feição original deixou de existir."). Agora o motivo é obrigatório: em branco ou só de espaços, o formulário não fecha, mostra a recusa e nenhum pedido sai; a mesma recusa vale em `split()`/`fuse()` chamados sem o formulário. O motivo digitado vai sem os espaços das pontas.
+
+Melhorias:
+- A tela de conflitos ganhou o campo "Justificativa", usado por "Manter o meu" e "Manter o deles" (antes esses botões não tinham onde receber uma) e trazido para o formulário de "Editar resultado" e da depreciação.
+
 ## 4.4.0
 
 Remoção:

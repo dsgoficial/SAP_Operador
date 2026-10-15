@@ -19,6 +19,11 @@ Cenários:
   resposta do servidor), o insumo de banco PostGIS recusado, edita e salva,
   recebe recusa por campo (`permission`), desfaz, divide, funde, lê o
   histórico e finaliza com 409, resolve o conflito na tela e finaliza de novo.
+  Dividir e fundir sem motivo são recusados no formulário e em
+  `split()`/`fuse()`, sem pedido ao serviço; com motivo, ele chega aparado.
+  A justificativa da resolução: "Manter o meu", "Manter o deles" e a
+  depreciação sem ela gravam com o nome da decisão ("... (sem justificativa)"),
+  e "Editar resultado" em branco é recusado na tela, sem pedido ao serviço.
   O pacote é lido com `tipo_dado_producao_id` = 4 e depois sem ele, sem
   `configuracao_producao` e sem `login_info` (o servidor 3.38.0 em diante), e
   a senha do SAP não entra no pacote.
@@ -441,16 +446,30 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     check('botão de atualizar com o bloco escondido (sem rota no SAP)',panel.pull.isHidden())
     target=next(f for f in cobter.getFeatures() if f['dsg_id']==estado.f1)
     cobter.selectByIds([target.id()])
-    panel.split('LINESTRING(-50.995 -30.01,-50.995 -29.98)','divisão de teste')
+    cut='LINESTRING(-50.995 -30.01,-50.995 -29.98)'
+    motivo_em_branco(panel,painel,estado,QtWidgets,'split','Dividir feição','versioningSplit',{'line':cut,'reason':'  '},
+                     lambda:panel.split(cut,''))
+    # Com motivo, pelo formulário: divide, e o motivo vai sem os espaços das pontas.
+    shown={}; realExec=painel.Form.exec
+    try:
+        painel.Form.exec=preencher(QtWidgets,{'line':cut,'reason':'  divisão de teste  '},shown)
+        panel.findChild(QtWidgets.QPushButton,'versioningSplit').click()
+    finally:
+        painel.Form.exec=realExec
     check('dividir',estado.f1 not in estado.features['cobter_massa_dagua_a'] and len(estado.lineage.get(estado.f1,{}).get('successors',[]))==2,panel.notice.text())
     pieces=[f for f in cobter.getFeatures() if f['dsg_id'] in estado.lineage[estado.f1]['successors']]
     check('partes relidas na camada',len(pieces)==2)
     cobter.selectByIds([f.id() for f in pieces])
+    motivo_em_branco(panel,painel,estado,QtWidgets,'fuse','Fundir feições','versioningFuse',{'prevail':pieces[0]['dsg_id'],'reason':''},
+                     lambda:panel.fuse(pieces[0]['dsg_id'],'   '))
     panel.fuse(pieces[0]['dsg_id'],'fusão de teste')
     fused=estado.lineage[pieces[0]['dsg_id']]['successors'][0]
     check('fundir',fused in estado.features['cobter_massa_dagua_a'] and pieces[0]['dsg_id'] not in estado.features['cobter_massa_dagua_a'],panel.notice.text())
     lineageBodies=[p['body'] for p in estado.pedidos if '/lineage/' in p['path']]
     check('linhagem sem actor',all('actor' not in b for b in lineageBodies) and len(lineageBodies)==2)
+    check('dividir e fundir com motivo: o motivo chega ao serviço, sem os espaços das pontas',
+          [b.get('reason') for b in lineageBodies]==['divisão de teste','fusão de teste'] and not estado.linhagens_recusadas,
+          ([b.get('reason') for b in lineageBodies],estado.linhagens_recusadas))
     target=next(f for f in cobter.getFeatures() if f['dsg_id']==estado.f2)
     cobter.selectByIds([target.id()])
     history=panel.history(show=False)
@@ -497,6 +516,7 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     except Exception as error:
         kept='continua em execução' in str(error)
     check('fechar a tela de conflito mantém a atividade em execução',kept)
+    justificativa(client,estado,painel,QtWidgets)
 
     # Botão "Versionamento" no quadro da atividade -----------------------------------
     from SAP_Operador.widgets.activityInfo import ActivityInfo
@@ -513,6 +533,152 @@ def versionado(ctrl,sap,estado,layers,iface,project):
     check('sem conexão, a camada reaberta fica inválida',not again.isValid())
     reopened=ctrl.reconnectVersionedLayers()
     check('depois do login a camada reabre',again.id() in reopened and again.isValid() and again.featureCount()>0,reopened)
+
+
+def justificativa(client,estado,painel,QtWidgets):
+    """Justificativa da resolução (decisão de 2026-10-15): opcional em "Manter o meu",
+    "Manter o deles" e na depreciação, que em branco vão com o nome da decisão (os textos
+    do dsg-edit); obrigatória em "Editar resultado", recusada na tela antes de enviar. O
+    servidor falso recusa a justificativa em branco como o serviço (409)."""
+    item=estado.items[0]
+    def aberta(row=0):
+        item['status']='conflict'; item['result']=None
+        dialog=painel.ConflictDialog(None,painel.SessionResolver(client,estado.bloco,estado.sessao))
+        dialog.table.selectRow(row)
+        return dialog
+    def resolves(): return sum(1 for p in estado.pedidos if p['method']=='POST' and p['path'].endswith('/resolve'))
+    realExec=painel.Form.exec
+    def form(reason='',result=None,shown=None):
+        def run(dialog):
+            if result is not None: dialog.controls['result'][0].setPlainText(json.dumps(result,ensure_ascii=False))
+            dialog.controls['reason'][0].setPlainText(reason)
+            dialog.accept()
+            if shown is not None:
+                problem=getattr(dialog,'problem',None)
+                shown['problema']=problem.text() if problem is not None else None
+            accepted=dialog.result()==QtWidgets.QDialog.DialogCode.Accepted.value
+            return QtWidgets.QDialog.DialogCode.Accepted if accepted else QtWidgets.QDialog.DialogCode.Rejected
+        return run
+
+    # "Manter o meu" e "Manter o deles" pelos botões, sem justificativa.
+    for button,side,name,nome in (('mine','theirs','Manter o meu','Lago A da atividade'),('theirs','ours','Manter o deles','Lago A do bloco')):
+        dialog=aberta(); decided=len(estado.decisoes); refused=len(estado.resolucoes_recusadas)
+        getattr(dialog,button).click()
+        decision=estado.decisoes[-1] if len(estado.decisoes)>decided else None
+        check('"'+name+'" sem justificativa: grava com "'+name+' (sem justificativa)"',
+              decision is not None and decision['reason']==name+' (sem justificativa)' and decision['result']['properties']['nome']==nome
+              and len(estado.resolucoes_recusadas)==refused and item['status']=='resolved',
+              (decision,estado.resolucoes_recusadas[refused:],dialog.notice.text()))
+    # Só espaços vale como em branco; o digitado vai sem os espaços das pontas.
+    dialog=aberta(); decided=len(estado.decisoes)
+    dialog.guard(lambda:dialog.decide('mine',reason='   ',ask=False))
+    check('"Manter o meu" com justificativa só de espaços: vai como "sem justificativa"',
+          len(estado.decisoes)>decided and estado.decisoes[-1]['reason']=='Manter o meu (sem justificativa)',
+          (estado.decisoes[decided:],dialog.notice.text()))
+    dialog=aberta(); decided=len(estado.decisoes)
+    dialog.guard(lambda:dialog.decide('theirs',reason='  o bloco vale  ',ask=False))
+    check('"Manter o deles" com justificativa: vai a digitada',
+          len(estado.decisoes)>decided and estado.decisoes[-1]['reason']=='o bloco vale',(estado.decisoes[decided:],dialog.notice.text()))
+
+    # "Editar resultado" em branco: recusado na tela, nada vai ao serviço.
+    edited=dict(json.loads(json.dumps(item['ours'])),properties=dict(item['ours']['properties'],nome='Lago A corrigido'))
+    dialog=aberta(); sent=resolves(); shown={}
+    try:
+        painel.Form.exec=form(reason='  ',result=edited,shown=shown)
+        dialog.edit.click()
+    finally:
+        painel.Form.exec=realExec
+    check('"Editar resultado" em branco: recusado no formulário, antes de enviar',
+          resolves()==sent and item['status']=='conflict' and shown.get('problema')==painel_text(painel,'EDIT_REASON_REQUIRED'),
+          (resolves()-sent,item['status'],shown,dialog.notice.text(),estado.resolucoes_recusadas[-1:]))
+    dialog=aberta(); sent=resolves()
+    dialog.guard(lambda:dialog.decide('edit',reason='',edited=edited,ask=False))
+    check('"Editar resultado" em branco sem o formulário: recusado antes de enviar, com a mensagem',
+          resolves()==sent and item['status']=='conflict' and dialog.notice.text()==painel_text(painel,'EDIT_REASON_REQUIRED'),
+          (resolves()-sent,dialog.notice.text()))
+    # Com justificativa, a edição grava (controle).
+    dialog=aberta(); decided=len(estado.decisoes)
+    try:
+        painel.Form.exec=form(reason='nome conferido no campo',result=edited)
+        dialog.edit.click()
+    finally:
+        painel.Form.exec=realExec
+    decision=estado.decisoes[-1] if len(estado.decisoes)>decided else None
+    check('"Editar resultado" com justificativa grava o resultado editado',
+          decision is not None and decision['reason']=='nome conferido no campo' and decision['result']['properties']['nome']=='Lago A corrigido',
+          (decision,dialog.notice.text()))
+
+    # Depreciação: a justificativa é opcional, e em branco vai "Aceitar a depreciação (sem justificativa)".
+    absent={'dataset':'cobter_massa_dagua_a','feature_id':estado.f2,'status':'conflict','only_absent':True,
+            'conflicts':[{'field':'$feature','reason':'deprecated','message':'A feição foi depreciada no bloco.'}],
+            'base':copy_of(estado.features['cobter_massa_dagua_a'][estado.f2]),'ours':None,
+            'theirs':copy_of(estado.features['cobter_massa_dagua_a'][estado.f2]),'result':None}
+    estado.items.append(absent)
+    try:
+        item['status']='resolved'
+        dialog=painel.ConflictDialog(None,painel.SessionResolver(client,estado.bloco,estado.sessao))
+        dialog.table.selectRow([i['feature_id'] for i in dialog.items].index(estado.f2))
+        decided=len(estado.decisoes)
+        try:
+            painel.Form.exec=form(reason='')
+            dialog.mine.click()
+        finally:
+            painel.Form.exec=realExec
+        decision=estado.decisoes[-1] if len(estado.decisoes)>decided else None
+        check('depreciação sem justificativa: grava "Aceitar a depreciação (sem justificativa)" e a feição ausente',
+              decision is not None and decision['reason']=='Aceitar a depreciação (sem justificativa)' and decision['delete'] is True
+              and decision['result'] is None and absent['status']=='resolved',(decision,dialog.notice.text()))
+    finally:
+        estado.items.remove(absent)
+    item['status']='resolved'
+
+
+def preencher(QtWidgets,values,shown):
+    """`Form.exec` falso: preenche os campos, aperta OK e devolve o que a tela devolveria
+    (o OK recusado pela validação deixa o formulário aberto; aqui, Rejected)."""
+    def run(dialog):
+        for name,value in values.items():
+            widget,kind=dialog.controls[name]
+            if kind=='choice': widget.setCurrentIndex(widget.findData(value))
+            else: widget.setPlainText(value)
+        dialog.accept()
+        problem=getattr(dialog,'problem',None)
+        shown['problema']=problem.text() if problem is not None else None
+        shown['aceito']=dialog.result()==QtWidgets.QDialog.DialogCode.Accepted.value
+        return QtWidgets.QDialog.DialogCode.Accepted if shown['aceito'] else QtWidgets.QDialog.DialogCode.Rejected
+    return run
+
+
+def motivo_em_branco(panel,painel,estado,QtWidgets,operation,name,button,values,direct):
+    """Dividir e fundir sem motivo: o serviço recusa (409 "Motivo obrigatório", e o
+    servidor falso também); o plugin recusa antes, no formulário (o OK não fecha) e em
+    `split()`/`fuse()` (ValueError), sem pedido de linhagem nem salvamento."""
+    def posts(): return sum(1 for p in estado.pedidos if p['method']=='POST' and '/lineage/' in p['path'])
+    messages=painel_text(painel,'LINEAGE_REASON_REQUIRED')
+    expected=messages.get(operation) if isinstance(messages,dict) else messages
+    sent=posts(); generation=estado.generation; shown={}; realExec=painel.Form.exec
+    try:
+        painel.Form.exec=preencher(QtWidgets,values,shown)
+        panel.findChild(QtWidgets.QPushButton,button).click()
+    finally:
+        painel.Form.exec=realExec
+    check('"'+name+'" sem motivo: recusado no formulário, antes de enviar',
+          posts()==sent and estado.generation==generation and shown.get('problema')==expected and not shown.get('aceito'),
+          (posts()-sent,estado.linhagens_recusadas[-1:],shown,panel.notice.text()))
+    sent=posts()
+    panel.guard(direct)
+    check('"'+name+'" sem motivo, sem o formulário: recusado antes de enviar, com a mensagem',
+          posts()==sent and estado.generation==generation and panel.notice.text()==expected,
+          (posts()-sent,estado.linhagens_recusadas[-1:],panel.notice.text()))
+
+
+def painel_text(painel,name):
+    """Texto da mensagem do plugin; o plugin anterior à 4.4.1 não o tem."""
+    return getattr(painel,name,'(ausente no plugin: '+name+')')
+
+
+def copy_of(value):
+    return json.loads(json.dumps(value))
 
 
 def gradeDeRevisao(ctrl,estado,project):

@@ -6,7 +6,9 @@ pacote de um servidor antigo, do tipo 2 (modo `recusa`), que o plugin recusa: lo
 `sessao_id` enquanto houver conflito), microcontrole, e o repasse
 `/api/versionamento/servico/*` com as rotas do serviço (info, datasets, model,
 extent, features em JSON e na página binária DSGP/1, salvamento com recusa por
-campo, status, undo, history, lineage, split, fuse, sessões, resolve).
+campo, status, undo, history, lineage, split e fuse com a recusa do motivo
+ausente ou em branco, sessões, resolve com a recusa da justificativa em
+branco, 409 como o serviço).
 
 A página DSGP/1 é montada por `encode_page`, conferida pelo decodificador do
 próprio plugin (`modules/versionamento/feature_page.py`) em `checar_codificador`.
@@ -144,7 +146,7 @@ class Estado:
                      'conflicts':[{'field':'nome','reason':'both_changed'}],'base':base,
                      'ours':dict(copy.deepcopy(base),properties=dict(base['properties'],nome='Lago A do bloco')),
                      'theirs':dict(copy.deepcopy(base),properties=dict(base['properties'],nome='Lago A da atividade')),'result':None}]
-        self.decisoes=[]; self.finalizacoes=[]; self.microcontrole=[]
+        self.decisoes=[]; self.resolucoes_recusadas=[]; self.linhagens_recusadas=[]; self.finalizacoes=[]; self.microcontrole=[]
         # Ajuste do pacote antes de responder (variantes de tipo e de campos).
         self.ajuste=None
 
@@ -255,6 +257,11 @@ class Estado:
         return 200,{'generation':self.generation,'features':len(last['before'])}
 
     def lineage_op(self,operation,body):
+        # Como o serviço real (service/src/lineage_ops.rs, `reason`): o motivo
+        # ausente, não texto ou em branco é 409, antes da geração e da classe.
+        if not isinstance(body.get('reason'),str) or not body['reason'].strip():
+            self.linhagens_recusadas.append(dict(body,operation=operation))
+            return 409,{'error':'Motivo obrigatório: a operação de linhagem registra por que a feição original deixou de existir.'}
         dataset=body['dataset']
         if body.get('expected_generation')!=self.generation:
             return 409,{'error':'Geração vencida.','code':'stale_generation'}
@@ -382,6 +389,13 @@ class Handler(BaseHTTPRequestHandler):
                 if pull: items=[dict(i,ours=i['theirs'],theirs=i['ours']) for i in items]
                 return self._send(200,{'items':items,'next':None,'counts':{'conflict':sum(1 for i in estado.items if i['status']=='conflict')}})
             if method=='POST' and rest[2:]==['resolve']:
+                # Como o serviço real: `reason` ausente é 404 (sync_ops.rs `resolve`),
+                # e o que não é texto, ou é texto em branco, 409 (exchange.rs `resolve`).
+                if 'reason' not in body:
+                    return self._send(404,{'error':'Parâmetro ausente: reason.','code':'missing_parameter'})
+                if not isinstance(body['reason'],str) or not body['reason'].strip():
+                    estado.resolucoes_recusadas.append(body)
+                    return self._send(409,{'error':'Justificativa obrigatória para resolução.'})
                 item=next(i for i in estado.items if i['feature_id']==body['id'] and i['dataset']==body['dataset'])
                 item['status']='resolved'; item['result']=body['result']; estado.decisoes.append(body)
                 return self._send(200,{'resolved':True})
