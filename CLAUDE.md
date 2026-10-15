@@ -6,7 +6,7 @@ Plugin QGIS 4.x para gerenciamento de produção cartográfica da DSG (Diretoria
 
 - **QGIS 4.0+** com PyQt6
 - **Python 3.9+**
-- **PostgreSQL/PostGIS** via `psycopg2`
+- **PostgreSQL** via `psycopg2`, só no modo local (o pacote em `public.sap_local` do banco local do login)
 - **HTTP/REST** via `requests`
 - Integração opcional: DSGTools (o FME saiu na 4.3.0)
 
@@ -18,7 +18,7 @@ config.py                # NAME e VERSION
 metadata.txt             # Metadados do plugin QGIS
 controllers/             # Controllers (MVC) - lógica de negócio
   remoteProdToolsDockCtrl.py  # Atividades remotas (SAP HTTP)
-  localProdToolsDockCtrl.py   # Atividades locais (PostgreSQL)
+  localProdToolsDockCtrl.py   # Atividades locais (pacote em public.sap_local, camadas do GeoPackage de campo)
   loginCtrl.py                # Autenticação
   prodToolsSettingsCtrl.py    # Configurações e menu
 factories/               # Factories, Singletons e Builders
@@ -27,7 +27,7 @@ modules/                 # Módulos de funcionalidade
   sap/                   # Integração com SAP (api, controllers, dataModels)
   qgis/                  # Abstração da API QGIS (qgisApi.py)
   dsgTools/              # Integração DSGTools (processing launchers)
-  database/              # Conectividade PostgreSQL/PostGIS
+  versionamento/         # Provedor dsgversioning, GeoPackage de campo, painel e conflitos
   utils/                 # Utilitários e mensagens
   pomodoro/              # Timer de produtividade
   pluginUpdater/         # Auto-atualização do plugin
@@ -74,6 +74,7 @@ Usar scripts em `.dev/` para criar symlink do repositório para o diretório de 
 ### Contrato com o servidor (branch `sap3`)
 
 - O servidor é o SAP 3.0 (repositório `controle_acervo`), e ele é a fonte da verdade do contrato: rotas em `server/src/{login,distribuicao,metadado,microcontrole}/*_route.js`, corpos nos `*_schema.js` (Joi) e o pacote da atividade em `distribuicao_ctrl.js` (`getDadosAtividade`).
+- Só a BASE VERSIONADA (tipo 4 de `dominio.tipo_dado_producao`, decisão de 2026-10-15): o pacote de outro tipo, ou sem a seção `versionamento`, é recusado com o motivo (`modules/sap/dataModels/productionData.py`). O plugin não depende de `tipo_dado_producao_id`, `login_info` nem `configuracao_producao`; o PostGIS de produção saiu na 4.4.0.
 - O plugin e o servidor sobem em LOCKSTEP, sem compatibilidade com o SAP 2.3.x. `validVersion` (`modules/sap/api/sapHttp.py`) aceita só major `3`, e o servidor barra no login do cliente `sap_fp` o plugin abaixo da versão mínima de `qgis.plugin`.
 - Chave desconhecida no corpo: `microcontrole` e `metadados` recusam com 400; `distribuicao` e `login` descartam a chave e avisam em `avisos`. Nos dois casos o campo não chega ao banco, então nome de campo se copia do schema, nunca da memória.
 - Nomes do 3.0 que o plugin usa: `versao_id` e `uuid_versao` no metadado de edição (o que se publica é a EDIÇÃO, `acervo.versao`), `usuario_uuid`, `subtipo_produto`, `atalhos`. `denominador_escala` é derivado das folhas da unidade de trabalho e vem null quando elas têm escalas diferentes ou nenhuma: o plugin tolera o null.
@@ -81,7 +82,7 @@ Usar scripts em `.dev/` para criar symlink do repositório para o diretório de 
 
 ### Testes
 
-Testes automatizados no QGIS 4 real, sem interface, em `tests/versionamento/`: `prova_qgis.py` (cenários `versionado` e `tipo2`) e `prova_campo.py` (`campo` e `local2`), rodados por `python-qgis.bat` com `QT_QPA_PLATFORM=offscreen` e `DSGTOOLS_PATH`; o uso está no cabeçalho de cada um. O resto do plugin ainda se testa à mão dentro do QGIS.
+Testes automatizados no QGIS 4 real, sem interface, em `tests/versionamento/`: `prova_qgis.py` (cenários `versionado` e `recusa`) e `prova_campo.py` (`campo` e `recusa`), rodados por `python-qgis.bat` com `QT_QPA_PLATFORM=offscreen` e `DSGTOOLS_PATH`; o uso está no cabeçalho de cada um. O resto do plugin ainda se testa à mão dentro do QGIS.
 
 ## Comandos úteis
 

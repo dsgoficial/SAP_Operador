@@ -25,11 +25,30 @@ class RemoteSapCtrl(SapCtrl):
         self.activityDataModel = self.dataModelFactory.createDataModel('SapActivityHttp')
 
     def setupActivityDataModel(self, data):
-        if not('login' in data):
-            data['login'] = self.qgis.getProjectVariable('productiontools:user')
-        if not('senha' in data):
-            data['senha'] = self.qgis.getProjectVariable('productiontools:password')
+        # O login e a senha do SAP não entram mais no pacote: serviam de
+        # credencial do banco de produção do tipo 3, que saiu (4.4.0).
         self.activityDataModel.setData( data ) 
+
+    def getUnsupportedReason(self, data):
+        # O motivo de recusar o pacote (dado de produção que não é a base
+        # versionada, de um servidor antigo), lido num modelo à parte para não
+        # trocar o pacote da atividade aberta.
+        candidate = self.dataModelFactory.createDataModel('SapActivityHttp')
+        candidate.setData(data)
+        return candidate.getUnsupportedReason()
+
+    def refuseUnsupportedActivity(self, data):
+        # True quando o pacote foi recusado; o operador vê o motivo, e o
+        # plugin segue sem atividade aberta.
+        reason = self.getUnsupportedReason(data)
+        if not reason:
+            return False
+        self.showErrorMessageBox(
+            self.qgis.getMainWindow(),
+            'Atividade não atendida',
+            '<p>{0}</p>'.format(reason)
+        )
+        return True
 
     def setupActivityDataModelExternally(self, data):
         self.activityDataModel.setData( data ) 
@@ -89,6 +108,8 @@ class RemoteSapCtrl(SapCtrl):
     def getActivity(self):
         response = self.sapApi.getActivity()
         if 'dados' in response and response['dados']:  
+            if self.refuseUnsupportedActivity(response):
+                return None
             self.setupActivityDataModel(response)
             #self.activityDataModel.setData(response)
             self.qgis.setProjectVariable(
@@ -104,6 +125,8 @@ class RemoteSapCtrl(SapCtrl):
             return None
         response = self.initActivity()
         if response:
+            if self.refuseUnsupportedActivity(response):
+                return None
             self.setupActivityDataModel(response)
             #self.activityDataModel.setData(response)
             return self.activityDataModel
@@ -213,6 +236,8 @@ class RemoteSapCtrl(SapCtrl):
         response = self.getCurrentActivity()
         if not response:
             return True   
+        if self.refuseUnsupportedActivity(response):
+            return False
         self.setupActivityDataModel(response)
         return self.qgis.getProjectVariable('productiontools:activityName') == self.activityDataModel.getDescription()
 

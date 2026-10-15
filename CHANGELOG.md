@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 4.4.0
+
+Remoção:
+- O plugin atende só a base versionada (decisão de 2026-10-15: no SAP 3.0 toda produção é base versionada, o tipo 4 de `dominio.tipo_dado_producao`, e os tipos 1, 2 e 3 deixam de existir). Saíram o carregamento das camadas pelo PostGIS (`LoadLayersFromPostgis` com o filtro SQL da unidade de trabalho, o agrupamento e o filtro pelo DsgTools), o mapa de valores lido do banco, as regras de formatação pelo algoritmo do DsgTools, a grade de revisão aberta do banco, a credencial efêmera `login_info`, a senha e o login do SAP gravados no pacote da atividade como credencial do banco (tipo 3), a leitura de `configuracao_producao` como "servidor:porta/banco", os módulos `modules/database` e `modules/sap/api/sapPostgres.py` (este já sem uso) e os lançadores `LoadLayersFromPostgis`, `GroupLayers`, `AssingFilterToLayers`, `AssignValueMapToLayers` e `AssignFormatRulesToLayers`. O parâmetro `databaseFactory` saiu dos controladores e de `main.py`.
+- O plugin não lê mais `tipo_dado_producao_id`, `login_info` nem `configuracao_producao` para trabalhar: o servidor 3.38.0 deixa de mandar os dois últimos e manda o tipo por mais uma versão. Antes, o insumo de banco PostGIS lia o tipo, e a atividade que tivesse um dava KeyError quando o tipo faltasse.
+
+Mudanças de comportamento:
+- Atividade de dado de produção do tipo 1, 2 ou 3, ou do tipo 4 sem a seção `versionamento` (servidor antigo), é recusada com o motivo, em português, sem painel, sem camada e sem exceção: ao abrir a atividade, no projeto reaberto, no pacote que outro plugin entrega e no carregamento de camadas. O pacote sem o tipo e com a seção `versionamento` é aceito.
+- Modo local: o login recusa, com o motivo, o pacote de `public.sap_local` de outro tipo (SAP Gerente antigo). O modo local da base versionada continua como na 4.3.0: o pacote mora em `public.sap_local` no banco local do login, as camadas abrem do GeoPackage de campo e o quadro "Controle" grava início, fim e usuário nessa tabela.
+- Insumo de banco PostGIS (tipo de insumo 3): não recebe mais a credencial do banco da atividade, que a base versionada não tem, e o carregamento o recusa com o motivo, sem camada.
+
+Correção de bug:
+- Modo local: a trava de apontamentos da etapa de correção estava invertida (`if stepTypeId == 3 and checkStep:`): barrava a finalização com todos os apontamentos resolvidos e deixava passar o apontamento não resolvido. Agora barra o não resolvido, como no modo remoto.
+
 ## 4.3.0
 
 Remoção:

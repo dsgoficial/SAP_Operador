@@ -1,8 +1,8 @@
 """Servidor FALSO do SAP 3.0 com o repasse do versionamento, para as provas do plugin.
 
 Responde, só em memória e só no endereço de loopback que o sistema escolher,
-às rotas que o SAP Operador usa numa atividade versionada (tipo 4) e numa do
-tipo 2: login, `distribuicao/verifica`, `distribuicao/finaliza` (409 com
+às rotas que o SAP Operador usa numa atividade versionada (tipo 4) e no
+pacote de um servidor antigo, do tipo 2 (modo `recusa`), que o plugin recusa: login, `distribuicao/verifica`, `distribuicao/finaliza` (409 com
 `sessao_id` enquanto houver conflito), microcontrole, e o repasse
 `/api/versionamento/servico/*` com as rotas do serviço (info, datasets, model,
 extent, features em JSON e na página binária DSGP/1, salvamento com recusa por
@@ -145,6 +145,8 @@ class Estado:
                      'ours':dict(copy.deepcopy(base),properties=dict(base['properties'],nome='Lago A do bloco')),
                      'theirs':dict(copy.deepcopy(base),properties=dict(base['properties'],nome='Lago A da atividade')),'result':None}]
         self.decisoes=[]; self.finalizacoes=[]; self.microcontrole=[]
+        # Ajuste do pacote antes de responder (variantes de tipo e de campos).
+        self.ajuste=None
 
     # pacote ---------------------------------------------------------------------
     def pacote(self):
@@ -169,7 +171,10 @@ class Estado:
                                                       'atributosApelido':[{'nome':'nome','alias':'Nome da massa d água'}]}])}],
             'regras':[{'regra':json.dumps(regras,ensure_ascii=False)}],
             'temas':[{'nome':'Hidrografia','definicao_tema':json.dumps([{'nome':'Hidrografia','camadas':[{'schema':'edgv','camada':'cobter_massa_dagua_a'}]}])}],
-            'menus':[],'workflow_dsgtools':[],'insumos':[],'models_qgis':[],'fme':[],'monitoramento':[1],'linhagem':[],
+            'menus':[],'workflow_dsgtools':[],'models_qgis':[],
+            # Insumo de banco PostGIS (tipo de insumo 3), fictício: o plugin não o abre mais.
+            'insumos':[{'id':1,'nome':'insumo_banco','caminho':'banco.invalid:5432/insumos/edgv/cobter_massa_dagua_a','epsg':'4674',
+                        'tipo_insumo_id':3,'caminho_padrao':None}],'fme':[],'monitoramento':[1],'linhagem':[],
             'atalhos':[],'colunas_ocultas':[],'requisitos':[],'observacao_atividade':None,
         }
         dados={'login':USER,'usuario_uuid':str(uuid.UUID(int=1)),'atividade':atividade}
@@ -177,9 +182,12 @@ class Estado:
             dados['versionamento']={'repo_id':self.atividade,'servico':SERVICE,'papel':'atividade',
                                     'datasets':[{'schema':'edgv','nome':n,'dataset':n} for n in self.specs]}
         else:
-            # Tipo 2: banco de produção fictício (domínio reservado .invalid).
+            # Tipo 2 de um servidor antigo: banco de produção fictício (domínio
+            # reservado .invalid) e a credencial efêmera.
             atividade['dado_producao']['configuracao_producao']='banco.invalid:5432/producao_teste'
             dados['login_info']={'login':'usuario_banco','senha':'senha_ficticia'}
+        if self.ajuste:
+            dados=self.ajuste(dados) or dados
         return dados
 
     # serviço --------------------------------------------------------------------

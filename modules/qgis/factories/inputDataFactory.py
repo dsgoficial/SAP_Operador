@@ -1,6 +1,6 @@
 from SAP_Operador.modules.qgis.inputs.rasterRemote import RasterRemote
 from SAP_Operador.modules.qgis.inputs.rasterLocal import RasterLocal
-from SAP_Operador.modules.qgis.inputs.postgis import Postgis
+from SAP_Operador.modules.qgis.inputs.postgis import UnsupportedPostgis
 from SAP_Operador.modules.qgis.inputs.message import Message
 from SAP_Operador.modules.qgis.inputs.browserUrl import BrowserUrl
 from SAP_Operador.modules.qgis.inputs.wms import Wms
@@ -14,7 +14,7 @@ class InputDataFactory:
         types = {
             1: RasterLocal,
             2: RasterRemote,
-            3: Postgis,
+            3: UnsupportedPostgis,
             4: Message,
             5: BrowserUrl,
             6: Wms,

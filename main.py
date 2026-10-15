@@ -17,7 +17,6 @@ from .modules.qgis.qgisApi import QgisApi
 from .modules.utils.factories.utilsFactory import UtilsFactory
 from .modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from .modules.dsgTools.factories.toolFactory import ToolFactory
-from .modules.database.factories.databaseFactory import DatabaseFactory
 from .config import Config
 from .modules import versionamento
 from qgis.utils import iface
@@ -39,7 +38,6 @@ class Main:
         self.remoteProdToolsDockCtrl = RemoteProdToolsDockCtrl(
             sap=remoteSap,
             qgis=self.qgisCtrl,
-            databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
@@ -47,7 +45,6 @@ class Main:
         self.localProdToolsDockCtrl = LocalProdToolsDockCtrl(
             sap=LocalSapCtrl( self.qgisCtrl ),
             qgis=self.qgisCtrl,
-            databaseFactory=DatabaseFactory(),
             processingFactoryDsgTools=ProcessingQgisFactory(),
             prodToolsSettings=self.prodToolsSettingsCtrl,
             toolFactoryDsgTools=ToolFactory()
@@ -145,6 +142,10 @@ class Main:
             remoteSapCtrl.getActivityDataModel(),
             remoteSapCtrl
         )
+        # Pacote recusado (dado de produção que não é a base versionada): o
+        # motivo já foi mostrado, e não há painel.
+        if not productionTools:
+            return
         widget = productionTools.getActivityWidget('Atividade:')
         if not widget:
             return

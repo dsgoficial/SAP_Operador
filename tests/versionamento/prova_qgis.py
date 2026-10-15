@@ -16,12 +16,18 @@ Cenários:
   DsgTools, sem mudança neles), o filtro de subfase, a leitura pela página
   DSGP/1, a grade de revisão gravada pelo provedor (com a recusa da etapa
   mostrada antes), a lista de rotinas sem FME (com e sem a chave `fme` na
-  resposta do servidor), edita e salva, recebe recusa por campo (`permission`),
-  desfaz, divide, funde, lê o histórico e finaliza com 409, resolve o
-  conflito na tela e finaliza de novo.
-- `tipo2`: carrega uma atividade do tipo 2 (PostGIS fictício) com o
-  `processing.run` gravado; a saída é o rastro das chamadas, que tem de ser
-  IGUAL ao do HEAD (compare os dois JSON).
+  resposta do servidor), o insumo de banco PostGIS recusado, edita e salva,
+  recebe recusa por campo (`permission`), desfaz, divide, funde, lê o
+  histórico e finaliza com 409, resolve o conflito na tela e finaliza de novo.
+  O pacote é lido com `tipo_dado_producao_id` = 4 e depois sem ele, sem
+  `configuracao_producao` e sem `login_info` (o servidor 3.38.0 em diante), e
+  a senha do SAP não entra no pacote.
+- `recusa`: o servidor antigo manda atividade do tipo 2 (PostGIS fictício),
+  3, 1, ou do tipo 4 sem a seção `versionamento`. O plugin (4.4.0, só a base
+  versionada) recusa cada uma com o motivo, sem exceção, sem painel, sem
+  camada e sem chamada de processing, ao abrir a atividade, no projeto
+  reaberto, pelo outro plugin (`loadDockWidgetExternally`) e no
+  carregamento; o pacote sem o tipo e com a base versionada é aceito.
 
 Sem o terceiro argumento, o plugin é o deste repositório. Para reprovar o
 estado anterior, extraia o HEAD (`git archive HEAD`) numa pasta chamada
@@ -102,31 +108,14 @@ def main():
         if isinstance(value,str): return layerName(value)
         return value
 
-    def fakePostgis(parameters):
-        ids=[]
-        for name in parameters['LAYER_LIST'].split(','):
-            uri=QgsDataSourceUri(); uri.setConnection(parameters['HOST'],str(parameters['PORT']),parameters['DATABASE'],parameters['USER'],parameters['PASSWORD'])
-            uri.setDataSource('edgv',name,'geom','','id')
-            layer=QgsVectorLayer(uri.uri(False),name,'postgres'); project.addMapLayer(layer); ids.append(layer.id())
-        return {'OUTPUT':ids}
-
     def recordingRun(algorithm,parameters,*args,**kwargs):
         algorithmId=algorithm if isinstance(algorithm,str) else algorithm.id()
         entry={'alg':algorithmId,'params':normalize(parameters)}
         log['processing'].append(entry)
-        if algorithmId=='dsgtools:loadlayersfrompostgisalgorithm':
-            return fakePostgis(parameters)
-        if SCENARIO=='tipo2' and algorithmId=='dsgtools:grouplayers':
-            # Sem banco as camadas são inválidas e o processing as recusa: o
-            # grupo raiz com o nome do banco, de que o resto depende, nasce aqui.
-            root=project.layerTreeRoot()
-            for source in parameters['INPUT_LAYERS']:
-                name=QgsDataSourceUri(source).database()
-                if name and root.findGroup(name) is None: root.addGroup(name)
+        if SCENARIO=='recusa':
+            # Nada deve chegar aqui; o rastro é a prova, e o algoritmo não roda
+            # (o plugin anterior pediria o banco fictício).
             return {'OUTPUT':[]}
-        if SCENARIO=='tipo2':
-            # Sem banco: o rastro é a prova; o algoritmo não roda.
-            return {'OUTPUT':'' if algorithmId=='dsgtools:rulestatistics' else None}
         return realRun(algorithm,parameters,*args,**kwargs)
     processing.run=recordingRun
 
@@ -179,14 +168,37 @@ def main():
     except ImportError as error:
         log['registro']='ausente: '+str(error)
     sap=RemoteSapCtrl(qgisApi)
-    kwargs=dict(sap=sap,qgis=qgisApi,databaseFactory=Database(),processingFactoryDsgTools=ProcessingQgisFactory(),
+    kwargs=dict(sap=sap,qgis=qgisApi,processingFactoryDsgTools=ProcessingQgisFactory(),
                 prodToolsSettings=Recorder('settings'),toolFactoryDsgTools=Tools())
-    if 'fme' in inspect.signature(RemoteProdToolsDockCtrl.__init__).parameters:
+    parameters=inspect.signature(RemoteProdToolsDockCtrl.__init__).parameters
+    if 'databaseFactory' in parameters:
+        kwargs['databaseFactory']=Database()  # plugin anterior à 4.4.0, para reprovar o estado anterior
+    if 'fme' in parameters:
         kwargs['fme']=Recorder('fme')  # plugin anterior à 4.3.0, para reprovar o estado anterior
     ctrl=RemoteProdToolsDockCtrl(**kwargs)
     check('login',ctrl.authUser(servidor_falso.USER,'senha-de-teste',url))
+    if SCENARIO=='recusa':
+        recusa(ctrl,sap,estado,project,qgisApi)
+        return
     ctrl.sapActivity=sap.getActivity()
-    check('pacote lido',ctrl.sapActivity is not None)
+    check('pacote lido (tipo 4 em dado_producao)',ctrl.sapActivity is not None and
+          ctrl.sapActivity.getData()['dados']['atividade']['dado_producao'].get('tipo_dado_producao_id')==4)
+    check('a senha e o login do SAP não entram no pacote da atividade',
+          'senha' not in ctrl.sapActivity.getData() and 'login' not in ctrl.sapActivity.getData(),sorted(ctrl.sapActivity.getData()))
+    # O servidor 3.38.0 mantém o tipo 4 por uma versão e não manda mais
+    # login_info nem configuracao_producao: o plugin não depende desses campos.
+    def semTipo(dados):
+        dados['atividade']['dado_producao'].pop('tipo_dado_producao_id',None)
+        dados['atividade']['dado_producao'].pop('configuracao_producao',None)
+        dados.pop('login_info',None)
+        return dados
+    estado.ajuste=semTipo
+    before=len(log['mensagens'])
+    ctrl.sapActivity=sap.getActivity()
+    check('pacote sem tipo_dado_producao_id, configuracao_producao e login_info aceito',
+          ctrl.sapActivity is not None and ctrl.sapActivity.getData()['dados']['atividade']['dado_producao']=={} and
+          'login_info' not in ctrl.sapActivity.getData()['dados'] and not log['mensagens'][before:],
+          (ctrl.sapActivity.getData()['dados']['atividade'].get('dado_producao') if ctrl.sapActivity else None,log['mensagens'][before:]))
     # A primeira carga cria a grade de revisão e a etapa a recusa no serviço;
     # a recusa tem de chegar ao operador (gradeDeRevisao).
     estado.recusar_grade=SCENARIO=='versionado'
@@ -194,10 +206,106 @@ def main():
     layers={layer.name():layer for layer in project.mapLayers().values() if isinstance(layer,QgsVectorLayer) and layer.name()!='moldura'}
     log['camadas']={name:{'provedor':layer.providerType(),'valida':layer.isValid(),'fonte_tem_service':'service=' in layer.source()}
                     for name,layer in layers.items()}
-    if SCENARIO=='tipo2':
-        check('nenhum pedido ao versionamento',not [p for p in estado.pedidos if p['path'].startswith(servidor_falso.SERVICE)])
-        return
     versionado(ctrl,sap,estado,layers,iface,project)
+
+
+def recusa(ctrl,sap,estado,project,qgisApi):
+    """Servidor antigo: atividade de dado de produção que não é a base
+    versionada (tipos 1, 2 e 3, ou o tipo 4 sem a seção `versionamento`). O
+    plugin anterior aceitava e abria o banco (tipos 2 e 3) com a credencial."""
+    from qgis.core import QgsVectorLayer
+    import servidor_falso
+    from SAP_Operador.modules.sap.controllers.remoteSapCtrl import RemoteSapCtrl
+
+    def tipo(numero,semLogin=False,semConfiguracao=False,versionamento=False):
+        def ajustar(dados):
+            if numero is None: dados['atividade']['dado_producao'].pop('tipo_dado_producao_id',None)
+            else: dados['atividade']['dado_producao']['tipo_dado_producao_id']=numero
+            if semLogin: dados.pop('login_info',None)
+            if semConfiguracao: dados['atividade']['dado_producao'].pop('configuracao_producao',None)
+            if versionamento:
+                dados['versionamento']={'repo_id':estado.atividade,'servico':servidor_falso.SERVICE,'papel':'atividade',
+                                        'datasets':[{'schema':'edgv','nome':n,'dataset':n} for n in estado.specs]}
+            return dados
+        return ajustar
+
+    def criticas(before):
+        return [m['texto'] for m in log['mensagens'][before:] if m['tipo']=='critical']
+
+    variantes=[
+        ('tipo 2 (banco PostGIS com controle de permissões, com login_info)',tipo(2),'tipo 2'),
+        ('tipo 3 (banco PostGIS, senha do SAP como credencial)',tipo(3,semLogin=True),'tipo 3'),
+        ('tipo 1 (dado não controlado pelo SAP)',tipo(1,semLogin=True,semConfiguracao=True),'tipo 1'),
+        ('tipo 4 sem a seção versionamento',tipo(4,semLogin=True,semConfiguracao=True),'não enviou a base versionada'),
+    ]
+    resultados={}
+    for nome,ajuste,trecho in variantes:
+        estado.ajuste=ajuste
+        before=len(log['mensagens'])
+        try:
+            model=sap.getActivity(); erro=None
+        except Exception as error:
+            model=None; erro=type(error).__name__+': '+str(error)
+        textos=criticas(before)
+        resultados[nome]={'aceito':model is not None,'erro':erro,'mensagens':textos}
+        check('recusa ao abrir a atividade, '+nome+': sem pacote, sem exceção e com o motivo',
+              model is None and erro is None and len(textos)==1 and trecho in textos[0] and 'base versionada' in textos[0] and
+              not qgisApi.getProjectVariable('productiontools:activityName'),resultados[nome])
+    log['recusas']=resultados
+
+    # O botão do plugin (login): o painel não monta, e nada quebra.
+    estado.ajuste=tipo(2)
+    before=len(log['mensagens'])
+    try:
+        dock=ctrl.loadDockWidget(); erro=None
+    except Exception as error:
+        dock=None; erro=type(error).__name__+': '+str(error)
+    check('painel não monta para o tipo 2, sem exceção e com o motivo',
+          dock is None and erro is None and ctrl.productionTools is None and len(criticas(before))==1,(erro,criticas(before)))
+
+    # Projeto reaberto com a atividade do tipo 2 em execução: recusado.
+    qgisApi.setProjectVariable('productiontools:activityName','Aquisição de hidrografia')
+    before=len(log['mensagens'])
+    try:
+        valid=sap.isValidActivity(); erro=None
+    except Exception as error:
+        valid=None; erro=type(error).__name__+': '+str(error)
+    check('projeto reaberto com atividade do tipo 2 recusado com o motivo',
+          valid is False and erro is None and any('tipo 2' in t for t in criticas(before)),(valid,erro,criticas(before)))
+
+    # O outro plugin entrega o pacote (main.startPluginExternally).
+    externo=RemoteSapCtrl(qgisApi)
+    externo.setupActivityDataModelExternally({'dados':estado.pacote()})
+    before=len(log['mensagens'])
+    try:
+        dock=ctrl.loadDockWidgetExternally(externo.getActivityDataModel(),externo); erro=None
+    except Exception as error:
+        dock=None; erro=type(error).__name__+': '+str(error)
+    check('pacote do tipo 2 entregue por outro plugin recusado, sem painel',
+          dock is None and erro is None and any('tipo 2' in t for t in criticas(before)),(erro,criticas(before)))
+
+    # Carregar camadas com o pacote do tipo 2 (nenhum caminho deve chegar aqui,
+    # e se chegar não abre banco).
+    ctrl.sapActivity=externo.getActivityDataModel()
+    before=len(log['mensagens'])
+    try:
+        ctrl.loadActivityLayers(); erro=None
+    except Exception as error:
+        erro=type(error).__name__+': '+str(error)
+    check('carregar camadas do tipo 2: nada carrega, sem exceção e com o motivo',
+          erro is None and any('tipo 2' in t for t in criticas(before)),(erro,criticas(before)))
+
+    vetores=[l.name() for l in project.mapLayers().values() if isinstance(l,QgsVectorLayer)]
+    check('nenhuma camada, nenhum processing e nenhum pedido ao versionamento nas recusas',
+          not vetores and not log['processing'] and not [p for p in estado.pedidos if p['path'].startswith(servidor_falso.SERVICE)],
+          (vetores,[p['alg'] for p in log['processing']]))
+
+    # Controle: sem o tipo (o servidor depois da 3.38.0) e com a base versionada, aceito.
+    estado.ajuste=tipo(None,semLogin=True,semConfiguracao=True,versionamento=True)
+    before=len(log['mensagens'])
+    model=sap.getActivity()
+    check('controle: pacote sem o tipo e com a base versionada aceito',
+          model is not None and model.isVersioned() and not criticas(before),criticas(before))
 
 
 def versionado(ctrl,sap,estado,layers,iface,project):
@@ -280,6 +388,7 @@ def versionado(ctrl,sap,estado,layers,iface,project):
 
     gradeDeRevisao(ctrl,estado,project)
     rotinasSemFme(ctrl)
+    insumoPostgis(ctrl,project)
 
     # Editar e salvar -------------------------------------------------------------
     before=estado.generation
@@ -488,6 +597,25 @@ def rotinasSemFme(ctrl):
               resultado['erro'] is None and resultado['tipos']==esperado,{'esperado':esperado,**resultado})
     check('nenhuma rotina FME disparada no cenário',
           not [p for p in log['processing'] if p['alg']=='dsgtools:runremotefme'])
+
+
+def insumoPostgis(ctrl,project):
+    """Insumo de banco PostGIS (tipo de insumo 3): até a 4.3.0 recebia a
+    credencial do banco da atividade (na base versionada, None) e o carregamento
+    tentava o banco. Agora o insumo vem como o SAP o manda e é recusado com o
+    motivo, sem camada."""
+    banco=[i for i in ctrl.getActivityInputs() if i['tipo_insumo_id']==3]
+    check('insumo PostGIS sem a credencial do banco da atividade',
+          len(banco)==1 and not any(k in banco[0] for k in ('usuario','senha','workUnitGeometry')),banco)
+    before=set(project.mapLayers()); n=len(log['mensagens'])
+    try:
+        ctrl.loadActivityInputs([dict(banco[0])]); erro=None
+    except Exception as error:
+        erro=type(error).__name__+': '+str(error)
+    textos=[m['texto'] for m in log['mensagens'][n:] if m['tipo']=='critical']
+    check('insumo PostGIS recusado com o motivo, nada carregado',
+          erro is None and len(textos)==1 and 'banco PostGIS' in textos[0] and 'insumo_banco' in textos[0] and set(project.mapLayers())==before,
+          (erro,textos))
 
 
 def versioning_reports():

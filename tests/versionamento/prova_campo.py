@@ -20,13 +20,16 @@ Cenários:
   `ogr`, tabelaDaCamada, estilos, apelidos, ações, domínios do modelo,
   regras de formatação, filtro de subfase, temas, menus, estatística de
   regras, grade de revisão, valores padrão do modelo do clone no formulário,
-  edição capturada pelos gatilhos, identidade nova, permissão da etapa,
-  projeto reaberto e as recusas do arquivo.
-- `local2`: atividade do tipo 2 no modo local (PostGIS fictício, processing
-  gravado): o painel monta e as camadas carregam pelo botão; o painel se
-  refaz (`reload`) como painel do modo local, o usuário da atividade é o
-  `usuario_uuid` do SAP 3.0, o tipo de produto é o `subtipo_produto` e o
-  modelo da atividade local não tem método repetido (morto).
+  edição capturada pelos gatilhos, identidade nova, permissão da etapa, a
+  trava de apontamentos não resolvidos na correção, projeto reaberto e as
+  recusas do arquivo. O painel se refaz (`reload`) como painel do modo
+  local, o usuário da atividade é o `usuario_uuid` do SAP 3.0, o tipo de
+  produto é o `subtipo_produto` e o modelo da atividade local não tem método
+  repetido (morto).
+- `recusa`: o `public.sap_local` gravado por um SAP Gerente antigo traz
+  atividade do tipo 2, 3 ou do tipo 4 sem a seção `versionamento`. O login
+  do modo local a recusa com o motivo, sem exceção, sem painel e sem
+  camada; o pacote sem o tipo e com a base versionada é aceito.
 
 Sem o terceiro argumento, o plugin é o deste repositório. Para reprovar o
 estado anterior, extraia a revisão (`git archive <rev>`) numa pasta chamada
@@ -126,27 +129,11 @@ def main():
         if isinstance(value,str): return layerName(value)
         return value
 
-    def fakePostgis(parameters):
-        ids=[]
-        for name in parameters['LAYER_LIST'].split(','):
-            uri=QgsDataSourceUri(); uri.setConnection(parameters['HOST'],str(parameters['PORT']),parameters['DATABASE'],parameters['USER'],parameters['PASSWORD'])
-            uri.setDataSource('edgv',name,'geom','','id')
-            layer=QgsVectorLayer(uri.uri(False),name,'postgres'); project.addMapLayer(layer); ids.append(layer.id())
-        return {'OUTPUT':ids}
-
     def recordingRun(algorithm,parameters,*args,**kwargs):
         algorithmId=algorithm if isinstance(algorithm,str) else algorithm.id()
         log['processing'].append({'alg':algorithmId,'params':normalize(parameters)})
-        if algorithmId=='dsgtools:loadlayersfrompostgisalgorithm':
-            return fakePostgis(parameters)
-        if SCENARIO=='local2':
-            if algorithmId=='dsgtools:grouplayers':
-                root=project.layerTreeRoot()
-                for source in parameters['INPUT_LAYERS']:
-                    name=QgsDataSourceUri(source).database()
-                    if name and root.findGroup(name) is None: root.addGroup(name)
-            if algorithmId=='dsgtools:createreviewgridalgorithm':
-                return {'OUTPUT':None}
+        if SCENARIO=='recusa':
+            # Nada deve chegar aqui; o algoritmo não roda.
             return {'OUTPUT':[]}
         return realRun(algorithm,parameters,*args,**kwargs)
     processing.run=recordingRun
@@ -159,7 +146,7 @@ def main():
         if SCENARIO=='campo':
             campo(pacote,pasta,project,iface)
         else:
-            local2(pacote,project,iface)
+            recusa(pacote,project,iface)
     finally:
         shutil.rmtree(pasta,ignore_errors=True)
 
@@ -186,8 +173,8 @@ class Tools:
         return Recorder(name)
 
 
-def montar(pacote,iface):
-    """Controlador do modo local com o `public.sap_local` falso; devolve (ctrl, painel)."""
+def controlador(pacote,iface):
+    """Controlador do modo local com o `public.sap_local` falso, antes do login."""
     from SAP_Operador.modules.qgis.qgisApi import QgisApi
     from SAP_Operador.modules.sap.controllers.localSapCtrl import LocalSapCtrl
     from SAP_Operador.controllers import localProdToolsDockCtrl as module
@@ -208,12 +195,20 @@ def montar(pacote,iface):
     # Como o main.initGui do plugin: provedor e ligação das camadas que entram no projeto.
     from SAP_Operador.modules import versionamento
     versionamento.registrar(iface)
-    kwargs=dict(sap=LocalSapCtrl(qgisApi),qgis=qgisApi,databaseFactory=Database(),processingFactoryDsgTools=ProcessingQgisFactory(),
+    kwargs=dict(sap=LocalSapCtrl(qgisApi),qgis=qgisApi,processingFactoryDsgTools=ProcessingQgisFactory(),
                 prodToolsSettings=Recorder('settings'),toolFactoryDsgTools=Tools())
-    if 'fme' in inspect.signature(module.LocalProdToolsDockCtrl.__init__).parameters:
+    parameters=inspect.signature(module.LocalProdToolsDockCtrl.__init__).parameters
+    if 'databaseFactory' in parameters:
+        kwargs['databaseFactory']=Database()  # plugin anterior à 4.4.0, para reprovar o estado anterior
+    if 'fme' in parameters:
         # Plugin anterior à 4.3.0: o gerenciador sem rotina, como era aqui.
         kwargs['fme']=type('GerenciadorAntigo',(),{'getSapRoutines':lambda self,config:[]})()
-    ctrl=module.LocalProdToolsDockCtrl(**kwargs)
+    return module.LocalProdToolsDockCtrl(**kwargs)
+
+
+def montar(pacote,iface):
+    """Controlador do modo local com o `public.sap_local` falso; devolve (ctrl, painel)."""
+    ctrl=controlador(pacote,iface)
     check('login local (banco do sap_local)',ctrl.authUser('operador','senha','localhost','5432','sap_local'))
     try:
         dock=ctrl.loadDockWidget('operador',SENHA_LOCAL,'localhost','5432','sap_local')
@@ -417,6 +412,11 @@ def campoProva(pacote,versionamento,trabalho,pasta,project,iface,escolhas,repo,c
           sorted(v[1] for v in versions if v[0]==1 and v[2]=='external:unattributed')==sorted(novas.values()) and
           any(v[0]==2 and v[1]==ids['b'] for v in versions),versions[-5:])
 
+    # Trava de apontamentos não resolvidos na correção (antes da edição) ------------
+    trava=travaDeApontamentos(ctrl)
+    check('correção com apontamento não resolvido: a finalização é barrada',
+          trava['avisos']==['Existem apontamentos não resolvidos!'] and not trava['dialogo'],trava)
+
     # Permissão da etapa ----------------------------------------------------------------
     from qgis.core import QgsApplication
     rIndex=revisao.fields().indexOf('descricao'); jIndex=revisao.fields().indexOf('justificativa')
@@ -440,6 +440,9 @@ def campoProva(pacote,versionamento,trabalho,pasta,project,iface,escolhas,repo,c
     check('salvar o que a etapa permite',revisao.commitChanges(),revisao.commitErrors())
     stored={f['dsg_id']:(f['descricao'],f['justificativa']) for f in revisao.getFeatures()}
     check('relido no arquivo',stored.get(ids['p1'])==('da subfase','apontamento conferido'),stored)
+    trava=travaDeApontamentos(ctrl)
+    check('correção com o apontamento justificado: a finalização segue para o diálogo',
+          not trava['avisos'] and len(trava['dialogo'])==1,trava)
 
     # Grade nova gravada no arquivo, como o ReviewToolBar do plugin a grava -----------
     output=QgsVectorLayer('Polygon?crs=EPSG:4674&field=unidade_trabalho_id:integer&field=etapa_id:integer&field=rank:integer&field=visited:integer','saida','memory')
@@ -506,7 +509,31 @@ def campoProva(pacote,versionamento,trabalho,pasta,project,iface,escolhas,repo,c
         except campoMod.CampoError:
             ok=True
         check('pacote sem nome simples ou sem SHA-256 recusado: '+json.dumps(wrong),ok)
+    defeitosDoModoLocal(ctrl,dock,pacote)
     check('nenhum pedido de rede em toda a prova',not log['rede'],log['rede'])
+
+
+def travaDeApontamentos(ctrl):
+    """Finalizar na etapa de correção (tipo_etapa_id 3): o qgisApi devolve
+    False quando há apontamento sem resolução, e é aí que a finalização para,
+    como no remoto. Até a 4.3.0 o modo local testava `checkStep` sem o `not`:
+    barrava o apontamento resolvido e deixava passar o não resolvido."""
+    atividade=ctrl.sapActivity.getData()['dados']['atividade']
+    original=atividade['tipo_etapa_id']
+    atividade['tipo_etapa_id']=3
+    dialogo=[]
+    # O LocalSapCtrl não tem o diálogo de finalização (o botão fica escondido no
+    # painel do modo local): a chamada é registrada.
+    ctrl.sap.showEndActivityDialog=lambda *args:dialogo.append(args) or False
+    before=len(log['mensagens'])
+    try:
+        ctrl.showEndActivityDialog(); erro=None
+    except Exception as error:
+        erro=type(error).__name__+': '+str(error)
+    finally:
+        atividade['tipo_etapa_id']=original
+        del ctrl.sap.showEndActivityDialog
+    return {'erro':erro,'avisos':[m['texto'] for m in log['mensagens'][before:]],'dialogo':[list(a) for a in dialogo]}
 
 
 def mensagensDaGuarda(layer):
@@ -517,24 +544,52 @@ def mensagensDaGuarda(layer):
     return out
 
 
-def local2(pacoteRemoto,project,iface):
-    pacote=json.loads(json.dumps(pacoteRemoto))
-    pacote['dados'].pop('login_info',None)
-    pacote['local_db']={'alias':'local','database':'producao_local','host':'localhost','port':'5432','username':'operador'}
-    pacote['dados']['atividade']['monitoramento']=[]
-    ctrl,dock=montar(pacote,iface)
-    carregarPeloBotao(dock)
-    algs=[p['alg'] for p in log['processing']]
-    check('camadas pelo PostGIS do banco local',algs and algs[0]=='dsgtools:loadlayersfrompostgisalgorithm' and
-          log['processing'][0]['params']['PASSWORD']==SENHA_LOCAL,algs)
-    themes=[p['params'] for p in log['processing'] if p['alg']=='dsgtools:loadthemes']
-    check('temas como lista de temas (definicao_tema lida)',themes and json.loads(themes[0]['TEXT'])[0]['nome']=='Hidrografia',themes)
-    aliases=[p['params'] for p in log['processing'] if p['alg']=='dsgtools:assignaliasestolayersalgorithm']
-    check('apelidos como o texto da definição',aliases and json.loads(aliases[0]['TEXT'])[0]['camadaNome']=='cobter_massa_dagua_a',aliases)
-    check('grade de revisão pedida ao banco local',
-          sum(1 for p in log['processing'] if p['alg']=='dsgtools:loadlayersfrompostgisalgorithm')==2,algs)
-    defeitosDoModoLocal(ctrl,dock,pacote)
-    check('nenhum pedido de rede',not log['rede'],log['rede'])
+def recusa(pacoteRemoto,project,iface):
+    """Pacote local de um SAP Gerente antigo: tipo 2, 3 ou o tipo 4 sem a seção
+    versionamento. O plugin anterior aceitava o login e abria as camadas do
+    banco local pelo PostGIS."""
+    from qgis.core import QgsVectorLayer
+    def pacoteLocal(numero,versionamento=None):
+        pacote=json.loads(json.dumps(pacoteRemoto))
+        pacote['dados'].pop('login_info',None)
+        if numero is None: pacote['dados']['atividade']['dado_producao'].pop('tipo_dado_producao_id',None)
+        else: pacote['dados']['atividade']['dado_producao']['tipo_dado_producao_id']=numero
+        if versionamento: pacote['dados']['atividade']['versionamento']=versionamento
+        pacote['local_db']={'alias':'local','database':'producao_local','host':'localhost','port':'5432','username':'operador'}
+        pacote['dados']['atividade']['monitoramento']=[]
+        return pacote
+    variantes=[('tipo 2',pacoteLocal(2),'tipo 2'),('tipo 3',pacoteLocal(3),'tipo 3'),
+               ('tipo 4 sem a seção versionamento',pacoteLocal(4),'não enviou a base versionada')]
+    resultados={}
+    for nome,pacote,trecho in variantes:
+        ctrl=controlador(pacote,iface)
+        before=len(log['mensagens'])
+        try:
+            ok=ctrl.authUser('operador','senha','localhost','5432','sap_local'); erro=None
+        except Exception as error:
+            ok=None; erro=type(error).__name__+': '+str(error)
+        textos=[m['texto'] for m in log['mensagens'][before:] if m['tipo']=='critical']
+        resultados[nome]={'login':ok,'erro':erro,'mensagens':textos}
+        check('login local recusado, '+nome+': sem exceção e com o motivo',
+              ok is False and erro is None and len(textos)==1 and trecho in textos[0] and 'base versionada' in textos[0],resultados[nome])
+        # O painel, se pedido mesmo assim, não monta.
+        before=len(log['mensagens'])
+        try:
+            dock=ctrl.loadDockWidget('operador',SENHA_LOCAL,'localhost','5432','sap_local'); erro=None
+        except Exception as error:
+            dock=None; erro=type(error).__name__+': '+str(error)
+        check('painel do modo local não monta, '+nome,dock is None and erro is None and ctrl.sapActivity is None and
+              any(trecho in m['texto'] for m in log['mensagens'][before:]),(erro,log['mensagens'][before:]))
+    log['recusas']=resultados
+    vetores=[l.name() for l in project.mapLayers().values() if isinstance(l,QgsVectorLayer)]
+    check('nenhuma camada, nenhum processing e nenhum pedido de rede nas recusas',
+          not vetores and not log['processing'] and not log['rede'],(vetores,[p['alg'] for p in log['processing']],log['rede']))
+    # Controle: sem o tipo e com a base versionada, o login passa.
+    controle=pacoteLocal(None,{'repo_id':str(uuid.uuid4()),'papel':'atividade','datasets':[],'arquivo':'x.gpkg','sha256':'0'*64})
+    ctrl=controlador(controle,iface)
+    before=len(log['mensagens'])
+    check('controle: pacote local sem o tipo e com a base versionada aceito no login',
+          ctrl.authUser('operador','senha','localhost','5432','sap_local') is True and not log['mensagens'][before:],log['mensagens'][before:])
 
 
 def defeitosDoModoLocal(ctrl,dock,pacote):

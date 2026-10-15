@@ -1,5 +1,7 @@
 import json
 
+from SAP_Operador.modules.sap.dataModels.productionData import getUnsupportedReason
+
 class SapActivityHttp:
 
     def __init__(self):
@@ -54,14 +56,10 @@ class SapActivityHttp:
     def getStepId(self):
         return self.getData()['dados']['atividade']['etapa_id']
 
-    def getTypeProductionData(self):
-        return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
-
     def getVersioning(self):
-        # Tipo 4 do SAP 3.0 (base versionada): o pacote traz
-        # dados.versionamento = {repo_id, servico, papel, datasets} e não traz
-        # login_info nem configuracao_producao. Suposição registrada: aceita
-        # também o bloco dentro de dados.atividade.
+        # Base versionada (tipo 4, a única produção do SAP 3.0): o pacote traz
+        # dados.versionamento = {repo_id, servico, papel, datasets}. Suposição
+        # registrada: aceita também o bloco dentro de dados.atividade.
         if not self.getData():
             return None
         dados = self.getData().get('dados') or {}
@@ -73,12 +71,14 @@ class SapActivityHttp:
     def isVersioned(self):
         return self.getVersioning() is not None
 
+    def getUnsupportedReason(self):
+        # O pacote de dado de produção que não é a base versionada (servidor
+        # antigo) é recusado com o motivo, antes de montar o painel.
+        return getUnsupportedReason(self.getData(), self.getVersioning())
+
     def getLayersGroupName(self):
-        # Grupo raiz das camadas da atividade: o nome do banco no PostGIS; no
-        # versionado não há banco, e o grupo leva o papel do repositório.
-        if self.isVersioned():
-            return 'versionamento_{0}'.format(self.getVersioning().get('papel') or 'atividade')
-        return self.getDatabaseName()
+        # Grupo raiz das camadas da atividade: leva o papel do repositório.
+        return 'versionamento_{0}'.format((self.getVersioning() or {}).get('papel') or 'atividade')
 
     def getStepTypeId(self):
         return self.getData()['dados']['atividade']['tipo_etapa_id']
@@ -102,10 +102,6 @@ class SapActivityHttp:
         return workflowDictList
 
     def getActivityGroupName(self):
-        """ return "{}_{}".format(
-            self.getDatabaseName(), 
-            self.getWorkUnitName()
-        )  """
         return "{}".format(
             self.getWorkUnitName()
         )
@@ -318,52 +314,11 @@ class SapActivityHttp:
         ]))
 
     def getInputs(self):
-        inputs = self.getData()['dados']['atividade']['insumos'][:]
-        for data in inputs:
-            if not(data['tipo_insumo_id'] == 3):
-                continue
-            data.update({
-                'usuario': self.getDatabaseUserName(),
-                'senha': self.getDatabasePassword(),
-                'workUnitGeometry': self.getWorkUnitGeometry()
-            })
-        return inputs
+        # Os insumos como o SAP os manda. O insumo de banco PostGIS (tipo 3)
+        # não recebe mais a credencial do banco da atividade, que não existe na
+        # base versionada: o carregamento o recusa com o motivo.
+        return self.getData()['dados']['atividade']['insumos'][:]
 
-    def getProductionLoginInfo(self):
-        # No SAP 3.0 o acesso ao banco de produção (tipo 2) chega de três jeitos:
-        # ausente (não há permissão a conceder), {login, senha} ou {erro}, este
-        # quando havia permissão a conceder e o servidor não conseguiu.
-        loginInfo = self.getData()['dados'].get('login_info')
-        if not loginInfo:
-            raise Exception('O SAP não enviou o acesso ao banco de produção desta atividade.')
-        if 'erro' in loginInfo:
-            raise Exception(loginInfo['erro'])
-        return loginInfo
-
-    def getDatabasePassword(self):
-        if self.getTypeProductionData() == 2:
-            return self.getProductionLoginInfo()['senha']
-        elif self.getTypeProductionData() == 3:
-            return self.getData()['senha']
-
-    def getDatabaseUserName(self):
-        if self.getTypeProductionData() == 2:
-            return self.getProductionLoginInfo()['login']
-        elif self.getTypeProductionData() == 3:
-            return self.getData()['login']
-
-    def getDatabaseServer(self):
-        path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
-        return path.split(':')[0]
-
-    def getDatabasePort(self):
-        path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
-        return path.split(':')[1].split('/')[0]
-
-    def getDatabaseName(self):
-        path = self.getData()['dados']['atividade']['dado_producao']['configuracao_producao']
-        return path.split(':')[1].split('/')[1]
-    
     def getWorkUnitGeometry(self):
         return self.getData()['dados']['atividade']['geom']
 
@@ -420,30 +375,12 @@ class SapActivityHttp:
         return self.getData()['dados']['usuario_uuid']
 
     def getLayerFilter(self, layer):
-        layerSchema = layer["schema"]
-        layerName = layer["nome"]
-        if self.isVersioned():
-            # O clone já vem recortado pela unidade de trabalho: sem o filtro
-            # SQL. Nas camadas de apontamento, o filtro de subfase vira
-            # expressão QGIS sobre o atributo.
-            if 'camada_apontamento' in layer and layer['camada_apontamento']:
-                return """"{0}" = '{1}'""".format(layer["atributo_filtro_subfase"], self.getSubphaseId())
-            return ''
-
-        #if layerName == u"aux_moldura_a":
-        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
-        filterDefault = """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
-                self.getWorkUnitGeometry(),
-                'id',
-                layerSchema,
-                layerName,
-            )
-        
+        # O clone já vem recortado pela unidade de trabalho: sem filtro
+        # espacial. Nas camadas de apontamento, o filtro de subfase é expressão
+        # QGIS sobre o atributo.
         if 'camada_apontamento' in layer and layer['camada_apontamento']:
-            subphaseId = self.getSubphaseId()
-            attributeName =  layer["atributo_filtro_subfase"]
-            filterDefault += """ AND ( "{0}" = '{1}' )""".format(attributeName, subphaseId)
-        return filterDefault
+            return """"{0}" = '{1}'""".format(layer["atributo_filtro_subfase"], self.getSubphaseId())
+        return ''
 
     def getFrameQuery(self):
         return "?query=SELECT geom_from_wkt('{0}') as geometry".format(

@@ -17,7 +17,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             self,
             sap,
             qgis,
-            databaseFactory,
             processingFactoryDsgTools,
             prodToolsSettings,
             toolFactoryDsgTools,
@@ -29,7 +28,6 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         super(RemoteProdToolsDockCtrl, self).__init__(
             sap=sap,
             qgis=qgis,
-            databaseFactory=databaseFactory,
             processingFactoryDsgTools=processingFactoryDsgTools,
             prodToolsSettings=prodToolsSettings,
             toolFactoryDsgTools=toolFactoryDsgTools,
@@ -122,6 +120,9 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         return self.productionTools
 
     def loadDockWidgetExternally(self, sapActivity, sap):
+        # O pacote que outro plugin entrega passa pela mesma recusa do login.
+        if sap.refuseUnsupportedActivity(sapActivity.getData()):
+            return None
         self.sapActivity = sapActivity
         self.loadShortcuts()
         self.loadChangeStyleTool( self.sapActivity.getStylesName() )
@@ -250,32 +251,15 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             )
         return loadedLayerIds
 
-    def _loadPostgisLayers(self, layerNames):
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        result = loadLayersFromPostgis.run({
-            'dbName' : self.sapActivity.getDatabaseName(),
-            'dbHost' : self.sapActivity.getDatabaseServer(),
-            'layerNames' : layerNames,
-            'dbPassword' : self.sapActivity.getDatabasePassword(),
-            'dbPort' : self.sapActivity.getDatabasePort(),
-            'dbUser' : self.sapActivity.getDatabaseUserName()
-        })
-        loadedLayerIds = result['OUTPUT']
-
-        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
-
-        groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
-        groupLayers.run({'layerIds': loadedLayerIds})
-        return loadedLayerIds
-
     def _loadAndConfigureLayers(self, layerNames):
+        # Só a base versionada (4.4.0): o pacote de outro tipo já é recusado ao
+        # abrir a atividade, e aqui de novo, sem carregar nada.
+        reason = self.sapActivity.getUnsupportedReason()
+        if reason:
+            self.showErrorMessageBox(None, 'Atividade não atendida', reason)
+            return
         self.setScaleVariables()
-        versioned = self.isVersionedActivity()
-        if versioned:
-            loadedLayerIds = self._loadVersionedLayers(layerNames)
-        else:
-            loadedLayerIds = self._loadPostgisLayers(layerNames)
+        loadedLayerIds = self._loadVersionedLayers(layerNames)
 
         defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
         if defaultStyle:
@@ -292,18 +276,8 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) """
 
-        if not versioned:
-            assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
-            database = self.getActivityDatabase()
-            assignValueMapToLayers.run({
-                'valueMaps': {
-                        layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
-                        for layer in self.sapActivity.getLayers()
-                },
-                'layerIds': loadedLayerIds
-            })
-        # No versionado os domínios vêm do modelo do repositório: o provedor já
-        # entrega cada campo de domínio com o editor ValueMap dos rótulos.
+        # Os domínios vêm do modelo do repositório: o provedor já entrega cada
+        # campo de domínio com o editor ValueMap dos rótulos.
 
         assignMeasureColumnToLayers = self.processingFactoryDsgTools.createProcessing('AssignMeasureColumnToLayers', self)
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
@@ -322,17 +296,11 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         })
         rules = self.sapActivity.getRules()
-        if rules and versioned:
+        if rules:
             # O algoritmo do DsgTools descarta provedor diferente de postgres: as
             # regras de formatação da camada versionada se aplicam aqui, com a
             # mesma semântica.
             aplicarRegrasDeFormatacao(self.qgis.getLayerFromIds(loadedLayerIds), rules[0]['regra'])
-        elif rules:
-            assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
-            assignFormatRulesToLayers.run({
-                'rules': rules,
-                'layerIds': loadedLayerIds
-            })
         else:
             # Caso não seja carregada nenhuma regra, o total de violações de regras é tornado 0.
             self.total_rule_violations = 0
@@ -521,54 +489,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        if self.isVersionedActivity():
-            self._loadVersionedReviewTool()
-            return
-        candidateLayerList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
-        if not candidateLayerList:
-            loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-            result = loadLayersFromPostgis.run({
-                'dbName': self.sapActivity.getDatabaseName(),
-                'dbHost': self.sapActivity.getDatabaseServer(),
-                'layerNames': ['aux_grid_revisao_a'],
-                'dbPassword': self.sapActivity.getDatabasePassword(),
-                'dbPort': self.sapActivity.getDatabasePort(),
-                'dbUser': self.sapActivity.getDatabaseUserName()
-            })
-            loadedLayerIds = result['OUTPUT']
-            if not loadedLayerIds:
-                return
-            gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
-        else:
-            gridLayer = candidateLayerList[0]
-        self.moveLayerToGroup(gridLayer)
-
-        # Check for field existence and build appropriate filter
-        fields = [field.name() for field in gridLayer.fields()]
-        has_new_fields = 'unidade_trabalho_id' in fields and 'etapa_id' in fields
-
-        if has_new_fields:
-            filter_expr = f'unidade_trabalho_id = {self.sapActivity.getWorkUnitId()} AND etapa_id = {self.sapActivity.getStepId()}'
-        else:
-            # Fall back to old atividade_id filter
-            filter_expr = f'atividade_id = {self.sapActivity.getId()}'
-
-        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run({
-            'layers': [
-                {
-                    'filter': filter_expr,
-                    'nome': 'aux_grid_revisao_a',
-                    'schema': camadas.tabelaDaCamada(gridLayer)[0]
-                }
-            ]
-        })
-
-        reviewToolBar = self.toolFactoryDsgTools.getTool('ReviewToolBar', self)
-        if gridLayer.featureCount() != 0:
-            reviewToolBar.run(gridLayer)
-            return
-        reviewToolBar.run(gridLayer, outputLayer=self._createReviewGrid())
+        self._loadVersionedReviewTool()
 
     def _createReviewGrid(self):
         # A grade nova sobre a moldura da unidade de trabalho; quem a grava na
@@ -617,7 +538,7 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
         # subfase): ela abre pelo provedor, filtrada por unidade de trabalho e
         # etapa, e a grade nova é gravada pelo provedor, pelas rotas do SAP,
         # com a cobrança do modelo e da permissão da etapa. Na finalização ela
-        # sobe ao bloco com o resto do clone, como a do banco no tipo 2.
+        # sobe ao bloco com o resto do clone.
         self.reviewGridGap = None
         gridLayer = next(
             (l for l in self.qgis.getLoadedVectorLayers() if camadas.ehVersionada(l) and camadas.tabelaDaCamada(l)[1] == 'aux_grid_revisao_a'),
@@ -687,14 +608,3 @@ class RemoteProdToolsDockCtrl(ProdToolsCtrl):
             return
         self.workflowToolbox = self.toolFactoryDsgTools.getTool('WorkflowToolBox', self)
         self.workflowToolbox.run(self.getDSGToolsQAWorkflows())
-
-    def moveLayerToGroup(self, layer, positionToInsert=0):
-        root = core.QgsProject.instance().layerTreeRoot()
-        mylayer = root.findLayer(layer.id())
-        myClone = mylayer.clone()
-        parent = mylayer.parent()
-
-        group = root.findGroup(self.sapActivity.getLayersGroupName())
-        group.insertChildNode(positionToInsert, myClone)
-
-        parent.removeChildNode(mylayer)

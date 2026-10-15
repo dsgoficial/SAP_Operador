@@ -9,8 +9,8 @@ import json
 
 from SAP_Operador.postgresql import Postgresql
 from SAP_Operador.modules.versionamento import camadas, campo
-from SAP_Operador.modules.versionamento.camadas import tabelaDaCamada
 from SAP_Operador.modules.versionamento.regras import aplicarRegrasDeFormatacao, estatisticaDeRegras
+from SAP_Operador.modules.sap.dataModels.sapActivityLocal import SapActivityLocal
 from qgis.PyQt import QtWidgets
 import psycopg2
 
@@ -21,7 +21,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             self,
             sap,
             qgis,
-            databaseFactory,
             processingFactoryDsgTools,
             prodToolsSettings,
             toolFactoryDsgTools,
@@ -33,7 +32,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         super(LocalProdToolsDockCtrl, self).__init__(
             sap=sap,
             qgis=qgis,
-            databaseFactory=databaseFactory,
             processingFactoryDsgTools=processingFactoryDsgTools,
             prodToolsSettings=prodToolsSettings,
             toolFactoryDsgTools=toolFactoryDsgTools,
@@ -62,7 +60,32 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         )
         if result[0][0] == 0:
             raise Exception('Não há dados na tabela "public.sap_local"!')
+        # O pacote local de dado de produção que não é a base versionada (de um
+        # SAP Gerente antigo) é recusado no login, com o motivo, sem painel.
+        reason = self.getUnsupportedReason(self.readLocalPackage(pg))
+        if reason:
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Atividade não atendida', reason)
+            return False
         return True
+
+    def readLocalPackage(self, pg):
+        # O pacote que o SAP Gerente grava em public.sap_local (json_atividade
+        # em texto, ou já lido pelo psycopg2 numa coluna json).
+        result = pg.execute(
+            '''
+                SELECT json_atividade FROM public.sap_local;
+            ''',
+            ()
+        )
+        activityData = result[0][0]
+        if isinstance(activityData, (str, bytes)):
+            activityData = json.loads(activityData)
+        return activityData
+
+    def getUnsupportedReason(self, activityData):
+        candidate = SapActivityLocal()
+        candidate.setData(activityData)
+        return candidate.getUnsupportedReason()
 
     def reload(self):
         #self.prodToolsSettings.checkPluginUpdates()
@@ -81,16 +104,11 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
     def loadDockWidget(self, dbusername, dbpassword, dbhost, dbport, dbname):
         pg = Postgresql(dbname, dbusername, dbhost, dbport, dbpassword)
-        result = pg.execute(
-            '''
-                SELECT json_atividade FROM public.sap_local;
-            ''',
-            ()
-        )
-        # json_atividade em texto, ou já lido pelo psycopg2 numa coluna json.
-        activityData = result[0][0]
-        if isinstance(activityData, (str, bytes)):
-            activityData = json.loads(activityData)
+        activityData = self.readLocalPackage(pg)
+        reason = self.getUnsupportedReason(activityData)
+        if reason:
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Atividade não atendida', reason)
+            return None
         # O SAP Gerente grava o pacote sem segredo (sem `user`, `password` e a
         # senha de `local_db`): o banco local vem do login do operador.
         activityData.setdefault('local_db', {})
@@ -126,7 +144,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         except Exception as e:
             self.showErrorMessageBox( self.productionTools, 'Erro', str(e) )
             return
-        if stepTypeId == 3 and checkStep:
+        if stepTypeId == 3 and not checkStep:
             self.showInfoMessageBox(
                 self.productionTools,
                 'Aviso',
@@ -138,11 +156,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         if not result:
             return
         #self.resetProject()
-
-    def isFieldActivity(self):
-        # Modo local do tipo 4 (contrato-sap.md, 9.4): as camadas abrem do
-        # GeoPackage de campo, pelo ogr, sem rede.
-        return bool(self.sapActivity) and self.sapActivity.isVersioned()
 
     def setScaleVariables(self):
         # Como no remoto: sem escala (denominador_escala null no SAP 3.0), as
@@ -229,34 +242,17 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             )
         return loadedLayerIds
 
-    def _loadPostgisLayers(self, layerNames):
-        loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-        result = loadLayersFromPostgis.run({
-            'dbName' : self.sapActivity.getDatabaseName(),
-            'dbHost' : self.sapActivity.getDatabaseServer(),
-            'layerNames' : layerNames,
-            'dbPassword' : self.sapActivity.getDatabasePassword(),
-            'dbPort' : self.sapActivity.getDatabasePort(),
-            'dbUser' : self.sapActivity.getDatabaseUserName()
-        })
-        loadedLayerIds = result['OUTPUT']
-
-        assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-        assingFilterToLayers.run({'layers': self.sapActivity.getLayers()})
-
-        groupLayers = self.processingFactoryDsgTools.createProcessing('GroupLayers', self)
-        groupLayers.run({'layerIds': loadedLayerIds})
-        return loadedLayerIds
-
     def _loadAndConfigureLayers(self, layerNames):
+        # Só a base versionada (4.4.0): o pacote local de outro tipo já é
+        # recusado no login, e aqui de novo, sem carregar nada.
+        reason = self.sapActivity.getUnsupportedReason()
+        if reason:
+            self.showErrorMessageBox(None, 'Atividade não atendida', reason)
+            return
         self.setScaleVariables()
-        field = self.isFieldActivity()
-        if field:
-            loadedLayerIds = self._loadFieldLayers(layerNames)
-            if loadedLayerIds is None:
-                return
-        else:
-            loadedLayerIds = self._loadPostgisLayers(layerNames)
+        loadedLayerIds = self._loadFieldLayers(layerNames)
+        if loadedLayerIds is None:
+            return
 
         defaultStyle = self.getActivityStyles()[0] if self.getActivityStyles() else None
         if defaultStyle:
@@ -273,16 +269,6 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             'layerIds': loadedLayerIds
         }) """
 
-        if not field:
-            assignValueMapToLayers = self.processingFactoryDsgTools.createProcessing('AssignValueMapToLayers', self)
-            database = self.getActivityDatabase()
-            assignValueMapToLayers.run({
-                'valueMaps': {
-                        layer["nome"]: database.getAttributeValueMap(layer["nome"], layer["schema"])
-                        for layer in self.sapActivity.getLayers()
-                },
-                'layerIds': loadedLayerIds
-            })
         # No campo os domínios vêm do modelo gravado no GeoPackage do clone:
         # campo.abrirCamadas já põe o editor ValueMap dos rótulos.
 
@@ -290,35 +276,15 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         assignMeasureColumnToLayers.run({'layerIds': loadedLayerIds})
 
         alias = self.sapActivity.getLayerALiases()
-        if field:
-            # Os algoritmos de apelidos e ações do DsgTools acham a camada pela
-            # tabela do endereço, que a camada ogr do arquivo não tem: a mesma
-            # semântica, com a camada achada por tabelaDaCamada.
-            campo.aplicarApelidos(self.qgis.getLayerFromIds(loadedLayerIds), alias)
-            campo.aplicarAcoes(self.qgis.getLayerFromIds(loadedLayerIds), self.sapActivity.getLayerActions())
-        else:
-            if alias:
-                assignAliasesToLayers = self.processingFactoryDsgTools.createProcessing('AssignAliasesToLayers', self)
-                assignAliasesToLayers.run({
-                    'aliases': alias,
-                    'layerIds': loadedLayerIds
-                })
-
-            assignActionsToLayers = self.processingFactoryDsgTools.createProcessing('AssignActionsToLayers', self)
-            assignActionsToLayers.run({
-                'actions': self.sapActivity.getLayerActions(),
-                'layerIds': loadedLayerIds
-            })
+        # Os algoritmos de apelidos e ações do DsgTools acham a camada pela
+        # tabela do endereço, que a camada ogr do arquivo não tem: a mesma
+        # semântica, com a camada achada por tabelaDaCamada.
+        campo.aplicarApelidos(self.qgis.getLayerFromIds(loadedLayerIds), alias)
+        campo.aplicarAcoes(self.qgis.getLayerFromIds(loadedLayerIds), self.sapActivity.getLayerActions())
         rules = self.sapActivity.getRules()
-        if rules and field:
+        if rules:
             # O algoritmo do DsgTools descarta provedor diferente de postgres.
             aplicarRegrasDeFormatacao(self.qgis.getLayerFromIds(loadedLayerIds), rules[0]['regra'])
-        elif rules:
-            assignFormatRulesToLayers = self.processingFactoryDsgTools.createProcessing('AssignFormatRulesToLayers', self)
-            assignFormatRulesToLayers.run({
-                'rules': rules,
-                'layerIds': loadedLayerIds
-            })
 
         """ assignConditionalStyleToLayers = self.processingFactoryDsgTools.createProcessing('AssignConditionalStyleToLayers', self)
         assignConditionalStyleToLayers.run({
@@ -386,14 +352,9 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
         self.loadReviewTool()
 
-        if field:
-            # O LoadThemes do DsgTools casa por uri().schema()/table().
-            for theme in self.sapActivity.getThemes():
-                self.qgis.loadThemes(theme['definicao_tema'])
-        else:
-            loadThemes = self.processingFactoryDsgTools.createProcessing('LoadThemes', self)
-            for theme in self.sapActivity.getThemes():
-                loadThemes.run({'themes': theme['definicao_tema']})
+        # O LoadThemes do DsgTools casa por uri().schema()/table().
+        for theme in self.sapActivity.getThemes():
+            self.qgis.loadThemes(theme['definicao_tema'])
         self.sortLayersOnMolduraGroup()
 
     def getDSGToolsQAWorkflows(self):
@@ -408,15 +369,11 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
 
     def getSapMenus(self):
         menus = self.sapActivity.getMenus()
-        if not self.isFieldActivity():
-            return menus
         # O menu de aquisição do DsgTools acha a camada ogr pela tabela do
         # arquivo (f_<hash> no GeoPackage de campo), não pelo nome da camada.
         return campo.traduzirMenus(menus, self.qgis.getLoadedVectorLayers())
 
     def runRuleStatistics(self, routineData):
-        if not self.isFieldActivity():
-            return super().runRuleStatistics(routineData)
         # O dsgtools:rulestatistics acha a camada pela tabela do endereço.
         result = estatisticaDeRegras(
             routineData['ruleStatistics'],
@@ -486,28 +443,9 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
                 'tipo_insumo_id': 100,
                 'qml': self.sapActivity.getFrameQml()
             })
-        if self.isFieldActivity():
-            gridLayer = self._loadFieldReviewGrid()
-            if gridLayer is None:
-                return
-        else:
-            loadLayersFromPostgis = self.processingFactoryDsgTools.createProcessing('LoadLayersFromPostgis', self)
-            gridCandidateList = core.QgsProject.instance().mapLayersByName('aux_grid_revisao_a')
-            if not gridCandidateList:
-                result = loadLayersFromPostgis.run({
-                    'dbName': self.sapActivity.getDatabaseName(),
-                    'dbHost': self.sapActivity.getDatabaseServer(),
-                    'layerNames': ['aux_grid_revisao_a'],
-                    'dbPassword': self.sapActivity.getDatabasePassword(),
-                    'dbPort': self.sapActivity.getDatabasePort(),
-                    'dbUser': self.sapActivity.getDatabaseUserName()
-                })
-                loadedLayerIds = result['OUTPUT']
-                if not loadedLayerIds:
-                    return
-                gridLayer = core.QgsProject.instance().mapLayer(loadedLayerIds[0])
-            else:
-                gridLayer = gridCandidateList[0]
+        gridLayer = self._loadFieldReviewGrid()
+        if gridLayer is None:
+            return
 
         # Check for field existence and build appropriate filter
         fields = [field.name() for field in gridLayer.fields()]
@@ -519,19 +457,7 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
             # Fall back to old atividade_id filter
             filter_expr = f'atividade_id = {self.sapActivity.getId()}'
 
-        if self.isFieldActivity():
-            camadas.aplicarFiltro(gridLayer, filter_expr)
-        else:
-            assingFilterToLayers = self.processingFactoryDsgTools.createProcessing('AssingFilterToLayers', self)
-            assingFilterToLayers.run({
-                'layers': [
-                    {
-                        'filter': filter_expr,
-                        'nome': 'aux_grid_revisao_a',
-                        'schema': tabelaDaCamada(gridLayer)[0]
-                    }
-                ]
-            })
+        camadas.aplicarFiltro(gridLayer, filter_expr)
 
         self.moveLayerToGroup(gridLayer.id())
 
@@ -606,6 +532,8 @@ class LocalProdToolsDockCtrl(ProdToolsCtrl):
         utils.iface.mapCanvas().freeze(False)
 
     def saveControllerInfo(self, user, userID, startTime, endTime):
+        # O quadro "Controle" grava no banco LOCAL do login (public.sap_local),
+        # não num banco de produção.
         pg = Postgresql(
             self.sapActivity.getDatabaseName(),
             self.sapActivity.getDatabaseUserName() ,

@@ -1,5 +1,7 @@
 import json
 
+from SAP_Operador.modules.sap.dataModels.productionData import getUnsupportedReason
+
 class SapActivityLocal:
 
     def __init__(self):
@@ -56,11 +58,8 @@ class SapActivityLocal:
     def getStepId(self):
         return self.getData()['dados']['atividade']['etapa_id']
 
-    def getTypeProductionData(self):
-        return self.getData()['dados']['atividade']['dado_producao']['tipo_dado_producao_id']
-
     def getVersioning(self):
-        # Modo local do tipo 4 (contrato-sap.md, 9.4): o pacote que o SAP
+        # Modo local da base versionada (contrato-sap.md, 9.4): o pacote que o SAP
         # Gerente grava em public.sap_local traz versionamento = {repo_id,
         # papel, datasets, arquivo, sha256}; as camadas abrem do GeoPackage de
         # campo `arquivo`, sem rede. O servidor põe a seção em
@@ -78,12 +77,15 @@ class SapActivityLocal:
     def isVersioned(self):
         return self.getVersioning() is not None
 
+    def getUnsupportedReason(self):
+        # Como no remoto: o pacote local de dado de produção que não é a base
+        # versionada (gravado por um SAP Gerente antigo) é recusado com o motivo.
+        return getUnsupportedReason(self.getData(), self.getVersioning())
+
     def getLayersGroupName(self):
-        # Grupo raiz das camadas da atividade: no versionado leva o papel do
-        # repositório, como no remoto (SapActivityHttp).
-        if self.isVersioned():
-            return 'versionamento_{0}'.format(self.getVersioning().get('papel') or 'atividade')
-        return self.getDatabaseName()
+        # Grupo raiz das camadas da atividade: leva o papel do repositório,
+        # como no remoto (SapActivityHttp).
+        return 'versionamento_{0}'.format((self.getVersioning() or {}).get('papel') or 'atividade')
 
     def getStepTypeId(self):
         return self.getData()['dados']['atividade']['tipo_etapa_id']
@@ -107,10 +109,6 @@ class SapActivityLocal:
         return workflowDictList
 
     def getActivityGroupName(self):
-        """ return "{}_{}".format(
-            self.getDatabaseName(), 
-            self.getWorkUnitName()
-        )  """
         return "{}".format(
             self.getWorkUnitName()
         )
@@ -326,17 +324,10 @@ class SapActivityLocal:
 
     def getInputs(self):
         return []
-        # inputs = self.getData()['dados']['atividade']['insumos'][:]
-        # for data in inputs:
-        #     if not(data['tipo_insumo_id'] == 3):
-        #         continue
-        #     data.update({
-        #         'usuario': self.getDatabaseUserName(),
-        #         'senha': self.getDatabasePassword(),
-        #         'workUnitGeometry': self.getWorkUnitGeometry()
-        #     })
-        # return inputs
 
+    # O banco LOCAL do operador (o do login do modo local), onde mora o pacote
+    # em public.sap_local e o quadro "Controle" grava início, fim e usuário. Não
+    # é banco de produção: as camadas abrem do GeoPackage de campo.
     def getDatabasePassword(self):
         return self.getData()['local_db']['password']
 
@@ -406,30 +397,12 @@ class SapActivityLocal:
         return self.getData()['dados']['usuario_uuid']
 
     def getLayerFilter(self, layer):
-        layerSchema = layer["schema"]
-        layerName = layer["nome"]
-        if self.isVersioned():
-            # O GeoPackage de campo é o clone da atividade, já recortado pela
-            # unidade de trabalho: sem o filtro SQL. Nas camadas de
-            # apontamento, o filtro de subfase, como no remoto.
-            if 'camada_apontamento' in layer and layer['camada_apontamento']:
-                return """"{0}" = '{1}'""".format(layer["atributo_filtro_subfase"], self.getSubphaseId())
-            return ''
-
-        #if layerName == u"aux_moldura_a":
-        #    return u""""mi" = '{}'""".format(self.getWorkUnitName())
-        filterDefault = """ST_INTERSECTS(geom, ST_GEOMFROMEWKT('{0}')) AND {1} in (SELECT {1} FROM ONLY "{2}"."{3}")""".format(
-                self.getWorkUnitGeometry(),
-                'id',
-                layerSchema,
-                layerName,
-            )
-        
+        # O GeoPackage de campo é o clone da atividade, já recortado pela
+        # unidade de trabalho: sem filtro espacial. Nas camadas de
+        # apontamento, o filtro de subfase, como no remoto.
         if 'camada_apontamento' in layer and layer['camada_apontamento']:
-            subphaseId = self.getSubphaseId()
-            attributeName =  layer["atributo_filtro_subfase"]
-            filterDefault += """ AND ( "{0}" = '{1}' )""".format(attributeName, subphaseId)
-        return filterDefault
+            return """"{0}" = '{1}'""".format(layer["atributo_filtro_subfase"], self.getSubphaseId())
+        return ''
 
     def getFrameQuery(self):
         return "?query=SELECT geom_from_wkt('{0}') as geometry".format(

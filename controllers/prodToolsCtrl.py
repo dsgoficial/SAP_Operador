@@ -31,7 +31,6 @@ class ProdToolsCtrl(QtCore.QObject):
             self,
             sap=None,
             qgis=None,
-            databaseFactory=None,
             processingFactoryDsgTools=None,
             prodToolsSettings=None,
             toolFactoryDsgTools=None,
@@ -50,7 +49,6 @@ class ProdToolsCtrl(QtCore.QObject):
         self.pomodoro = Pomodoro() if pomodoro is None else pomodoro
         self.canvasMonitoring = Canvas() if canvasMonitoring is None else canvasMonitoring
         self.canvasMonitoring.changeStatus.connect(self.pomodoro.setWorkStatusText)
-        self.databaseFactory = databaseFactory
         self.processingFactoryDsgTools = processingFactoryDsgTools
         self.guiFactory = GUIFactory() if guiFactory is None else guiFactory
         self.spatialVerificationFactory = SpatialVerificationFactory() if spatialVerificationFactory is None else spatialVerificationFactory
@@ -188,15 +186,6 @@ class ProdToolsCtrl(QtCore.QObject):
         self.stopMicrocontrole()
         self.qgis.cleanProject()
         self.reload()
-
-    def getActivityDatabase(self):
-        return self.databaseFactory.createPostgres(
-            self.sapActivity.getDatabaseName(),
-            self.sapActivity.getDatabaseServer(),
-            self.sapActivity.getDatabasePort(),
-            self.sapActivity.getDatabaseUserName(),
-            self.sapActivity.getDatabasePassword()
-        )
 
     def getActivityLayerNames(self):
         return [item["nome"] for item in self.sapActivity.getLayers()]
